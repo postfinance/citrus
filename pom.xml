@@ -21,7 +21,7 @@
   <groupId>com.consol.citrus</groupId>
   <artifactId>citrus</artifactId>
   <packaging>pom</packaging>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>3.2.0-SNAPSHOT</version>
   <name>Citrus</name>
   <description>Citrus Test Framework</description>
   <url>https://citrusframework.org</url>
@@ -146,7 +146,7 @@
     <spring.restdocs.version>2.0.5.RELEASE</spring.restdocs.version>
     <kafka.version>2.8.0</kafka.version>
     <apache.camel.version>3.9.0</apache.camel.version>
-    <apache.ant.version>1.10.10</apache.ant.version>
+    <apache.ant.version>1.10.11</apache.ant.version>
     <activemq.version>5.16.2</activemq.version>
     <ftpserver.version>1.1.1</ftpserver.version>
     <mockftpserver.version>2.8.0</mockftpserver.version>
@@ -167,8 +167,8 @@
     <zookeeper.version>3.7.0</zookeeper.version>
     <dropwizard.metrics.version>4.1.21</dropwizard.metrics.version>
     <snappy.version>1.1.8.4</snappy.version>
-    <sshd.version>2.5.1</sshd.version>
-    <bouncycastle.version>1.68</bouncycastle.version>
+    <sshd.version>2.7.0</sshd.version>
+    <bouncycastle.version>1.69</bouncycastle.version>
     <jsch.version>0.1.55</jsch.version>
     <json.schema.validator.version>2.2.14</json.schema.validator.version>
     <hamcrest.version>2.2</hamcrest.version>
@@ -204,7 +204,7 @@
     <saaj.version>1.5.3</saaj.version>
     <wsdl4j.version>1.6.3</wsdl4j.version>
     <xbean-spring.version>4.19</xbean-spring.version>
-    <xstream.version>1.4.17</xstream.version>
+    <xstream.version>1.4.18</xstream.version>
     <xalan.version>2.7.2</xalan.version>
     <xerces.version>2.12.1</xerces.version>
     <skip.integration.tests>false</skip.integration.tests>
@@ -338,6 +338,11 @@
         <optional>true</optional>
       </dependency>
 
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
         <artifactId>hamcrest-core</artifactId>
@@ -698,6 +703,11 @@
       <dependency>
         <groupId>org.apache.camel</groupId>
         <artifactId>camel-spring-xml</artifactId>
+        <version>${apache.camel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-endpointdsl</artifactId>
         <version>${apache.camel.version}</version>
       </dependency>
 
