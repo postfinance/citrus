@@ -171,7 +171,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${surefire.version}</version>
         <configuration>
           <properties>
             <property>
@@ -184,12 +183,12 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit-platform</artifactId>
-            <version>${surefire.version}</version>
+            <version>${failsafe.surefire.version}</version>
           </dependency>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-testng</artifactId>
-            <version>${surefire.version}</version>
+            <version>${failsafe.surefire.version}</version>
           </dependency>
         </dependencies>
       </plugin>

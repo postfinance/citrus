@@ -136,11 +136,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <maven.compiler.release>11</maven.compiler.release>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
+    <java.version>11</java.version>
     <project.docs.version>${project.version}</project.docs.version>
-    <spring.version>5.3.6</spring.version>
+    <spring.version>5.3.10</spring.version>
     <spring.ws.version>3.0.10.RELEASE</spring.ws.version>
     <spring.integration.version>5.4.6</spring.integration.version>
     <spring.restdocs.version>2.0.5.RELEASE</spring.restdocs.version>
@@ -178,7 +176,7 @@
     <htmlunit.version>2.49.1</htmlunit.version>
     <byte.buddy.version>1.11.0</byte.buddy.version>
     <google.guava.version>30.1.1-jre</google.guava.version>
-    <surefire.version>2.22.2</surefire.version>
+    <failsafe.surefire.version>3.0.0-M3</failsafe.surefire.version>
     <mockito.version>3.9.0</mockito.version>
     <k8s.client.version>1.4.34</k8s.client.version>
     <k8s.model.version>1.0.65</k8s.model.version>
@@ -1232,8 +1230,8 @@
           <version>3.8.1</version>
           <configuration>
             <encoding>${project.build.sourceEncoding}</encoding>
-            <source>${maven.compiler.source}</source>
-            <target>${maven.compiler.target}</target>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
             <compilerArgs>
               <arg>-Xlint:deprecation</arg>
               <arg>-Xlint:unchecked</arg>
@@ -1264,7 +1262,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire.version}</version>
+          <version>${failsafe.surefire.version}</version>
           <configuration>
             <failIfNoTests>false</failIfNoTests>
             <skipTests>${skip.unit.tests}</skipTests>
@@ -1275,7 +1273,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${surefire.version}</version>
+          <version>${failsafe.surefire.version}</version>
           <executions>
             <execution>
               <id>integration-tests</id>
@@ -1309,7 +1307,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.8</version>
+          <version>3.0.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -1329,7 +1327,7 @@
           <configuration>
             <downloadSources>true</downloadSources>
             <linkModules>true</linkModules>
-            <jdkLevel>1.8</jdkLevel>
+            <jdkLevel>${java.version}</jdkLevel>
           </configuration>
         </plugin>
         <plugin>
@@ -1356,9 +1354,9 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>2.10.4</version>
+          <version>3.3.1</version>
           <configuration>
-            <additionalparam>-Xdoclint:none</additionalparam>
+            <doclint>none</doclint>
           </configuration>
           <executions>
             <execution>
