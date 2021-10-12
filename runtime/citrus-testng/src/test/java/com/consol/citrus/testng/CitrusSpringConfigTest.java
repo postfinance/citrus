@@ -1,6 +1,6 @@
 package com.consol.citrus.testng;
 
-import com.consol.citrus.CitrusSettings;
+import com.consol.citrus.CitrusSpringSettings;
 import com.consol.citrus.context.SpringBeanReferenceResolver;
 import com.consol.citrus.context.TestContextFactoryBean;
 import com.consol.citrus.endpoint.DefaultEndpointFactory;
@@ -8,6 +8,8 @@ import com.consol.citrus.endpoint.EndpointFactory;
 import com.consol.citrus.functions.DefaultFunctionLibrary;
 import com.consol.citrus.functions.FunctionLibrary;
 import com.consol.citrus.functions.FunctionRegistry;
+import com.consol.citrus.log.DefaultLogModifier;
+import com.consol.citrus.log.LogModifier;
 import com.consol.citrus.message.MessageProcessor;
 import com.consol.citrus.message.MessageProcessors;
 import com.consol.citrus.report.FailureStackTestListener;
@@ -49,7 +51,7 @@ import org.testng.annotations.Test;
 public class CitrusSpringConfigTest extends TestNGCitrusSpringSupport {
 
     static {
-        System.setProperty(CitrusSettings.DEFAULT_APPLICATION_CONTEXT_PROPERTY, "classpath:citrus-unit-context.xml");
+        System.setProperty(CitrusSpringSettings.DEFAULT_APPLICATION_CONTEXT_PROPERTY, "classpath:citrus-unit-context.xml");
     }
 
     @Autowired
@@ -87,6 +89,9 @@ public class CitrusSpringConfigTest extends TestNGCitrusSpringSupport {
 
     @Autowired
     private TypeConverter typeConverter;
+
+    @Autowired
+    private LogModifier logModifier;
 
     @Autowired
     private TestContextFactoryBean testContextFactory;
@@ -141,6 +146,7 @@ public class CitrusSpringConfigTest extends TestNGCitrusSpringSupport {
 
         Assert.assertEquals(referenceResolver.getClass(), SpringBeanReferenceResolver.class);
         Assert.assertEquals(typeConverter.getClass(), SpringBeanTypeConverter.class);
+        Assert.assertEquals(logModifier.getClass(), DefaultLogModifier.class);
 
         Assert.assertEquals(testContextFactory.getTestListeners(), testListeners);
         Assert.assertEquals(testContextFactory.getMessageListeners(), messageListeners);
@@ -151,6 +157,7 @@ public class CitrusSpringConfigTest extends TestNGCitrusSpringSupport {
         Assert.assertEquals(testContextFactory.getEndpointFactory(), endpointFactory);
         Assert.assertEquals(testContextFactory.getReferenceResolver(), referenceResolver);
         Assert.assertEquals(testContextFactory.getTypeConverter(), typeConverter);
+        Assert.assertEquals(testContextFactory.getLogModifier(), logModifier);
     }
 
     @Configuration

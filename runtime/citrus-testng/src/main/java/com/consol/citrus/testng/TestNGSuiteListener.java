@@ -31,7 +31,6 @@ public interface TestNGSuiteListener {
     /**
      * Runs tasks before test suite.
      * @param testContext the test context.
-     * @throws Exception on error.
      */
     @BeforeSuite(alwaysRun = true)
     default void beforeSuite(ITestContext testContext) {

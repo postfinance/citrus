@@ -20,6 +20,7 @@ import java.util.Date;
 
 import com.consol.citrus.Citrus;
 import com.consol.citrus.CitrusSpringContext;
+import com.consol.citrus.CitrusSpringContextProvider;
 import com.consol.citrus.GherkinTestActionRunner;
 import com.consol.citrus.TestAction;
 import com.consol.citrus.TestActionBuilder;
@@ -31,6 +32,7 @@ import com.consol.citrus.annotations.CitrusAnnotations;
 import com.consol.citrus.annotations.CitrusTest;
 import com.consol.citrus.annotations.CitrusXmlTest;
 import com.consol.citrus.common.TestLoader;
+import com.consol.citrus.common.TestSourceAware;
 import com.consol.citrus.common.XmlTestLoader;
 import com.consol.citrus.config.CitrusSpringConfig;
 import com.consol.citrus.context.TestContext;
@@ -65,13 +67,17 @@ public class JUnit4CitrusSpringSupport extends AbstractJUnit4SpringContextTests
     @Override
     public void run(CitrusFrameworkMethod frameworkMethod) {
         if (citrus == null) {
-            citrus = Citrus.newInstance(CitrusSpringContext.create(applicationContext));
+            citrus = Citrus.newInstance(new CitrusSpringContextProvider(applicationContext));
         }
 
         TestContext ctx = prepareTestContext(citrus.getCitrusContext().createTestContext());
 
         if (frameworkMethod.getMethod().getAnnotation(CitrusXmlTest.class) != null) {
             TestLoader testLoader = createTestLoader(frameworkMethod.getTestName(), frameworkMethod.getPackageName());
+            if (testLoader instanceof TestSourceAware) {
+                ((TestSourceAware) testLoader).setSource(frameworkMethod.getSource());
+            }
+
             TestCase testCase = testLoader.load();
 
             citrus.run(testCase, ctx);

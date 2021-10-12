@@ -17,13 +17,17 @@
 package com.consol.citrus.integration.inject;
 
 import com.consol.citrus.Citrus;
+import com.consol.citrus.CitrusContext;
 import com.consol.citrus.annotations.CitrusEndpoint;
 import com.consol.citrus.annotations.CitrusFramework;
 import com.consol.citrus.annotations.CitrusTest;
 import com.consol.citrus.endpoint.Endpoint;
+import com.consol.citrus.endpoint.direct.DirectEndpointBuilder;
 import com.consol.citrus.endpoint.direct.annotation.DirectEndpointConfig;
 import com.consol.citrus.message.DefaultMessageQueue;
+import com.consol.citrus.message.MessageQueue;
 import com.consol.citrus.message.MessageType;
+import com.consol.citrus.spi.BindToRegistry;
 import com.consol.citrus.testng.spring.TestNGCitrusSpringSupport;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -41,13 +45,32 @@ public class EndpointInjectionJavaIT extends TestNGCitrusSpringSupport {
     private Citrus citrus;
 
     @CitrusEndpoint
-    @DirectEndpointConfig(queueName = "FOO.test.queue")
+    @DirectEndpointConfig(queueName = "FOO.direct.queue")
+    @BindToRegistry
     private Endpoint directEndpoint;
+
+    @CitrusEndpoint
+    private Endpoint foo;
+
+    @Override
+    public void before(CitrusContext context) {
+        Assert.assertNotNull(citrus);
+
+        context.bind("messages", new DefaultMessageQueue("messages"));
+        context.bind("foo", new DirectEndpointBuilder()
+                .queue("messages")
+                .build());
+    }
+
+    @BindToRegistry(name = "FOO.direct.queue")
+    public MessageQueue queue() {
+        return new DefaultMessageQueue("FOO.direct.queue");
+    }
 
     @Test
     @CitrusTest
     public void injectEndpoint() {
-        citrus.getCitrusContext().getReferenceResolver().bind("FOO.test.queue", new DefaultMessageQueue("FOO.test.queue"));
+        Assert.assertNotNull(foo);
 
         run(send(directEndpoint)
                 .message()
@@ -58,6 +81,26 @@ public class EndpointInjectionJavaIT extends TestNGCitrusSpringSupport {
                 .message()
                     .type(MessageType.PLAINTEXT)
                     .body("Hello!"));
+
+        run(send("directEndpoint")
+                .message()
+                .type(MessageType.PLAINTEXT)
+                .body("Hi!"));
+
+        run(receive("directEndpoint")
+                .message()
+                    .type(MessageType.PLAINTEXT)
+                    .body("Hi!"));
+
+        run(send(foo)
+                .message()
+                .type(MessageType.PLAINTEXT)
+                .body("Hello Citrus!"));
+
+        run(receive(foo)
+                .message()
+                    .type(MessageType.PLAINTEXT)
+                    .body("Hello Citrus!"));
 
         Assert.assertNotNull(citrus);
     }

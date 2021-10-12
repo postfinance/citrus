@@ -6,6 +6,8 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.consol.citrus.message.MessageType;
 import org.slf4j.Logger;
@@ -20,7 +22,7 @@ import org.springframework.util.StringUtils;
 public final class CitrusSettings {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(CitrusSettings.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CitrusSettings.class);
 
     private CitrusSettings() {
         // prevent instantiation
@@ -40,19 +42,19 @@ public final class CitrusSettings {
                 Properties applicationProperties = new Properties();
                 applicationProperties.load(in);
 
-                log.debug("Loading Citrus application properties");
+                LOG.debug("Loading Citrus application properties");
 
                 for (Map.Entry<Object, Object> property : applicationProperties.entrySet()) {
                     if (StringUtils.isEmpty(System.getProperty(property.getKey().toString()))) {
-                        log.debug(String.format("Setting application property %s=%s", property.getKey(), property.getValue()));
+                        LOG.debug(String.format("Setting application property %s=%s", property.getKey(), property.getValue()));
                         System.setProperty(property.getKey().toString(), property.getValue().toString());
                     }
                 }
             } catch (Exception e) {
-                if (log.isTraceEnabled()) {
-                    log.trace("Unable to locate Citrus application properties", e);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Unable to locate Citrus application properties", e);
                 } else {
-                    log.info("Unable to locate Citrus application properties");
+                    LOG.info("Unable to locate Citrus application properties");
                 }
             }
         }
@@ -80,16 +82,10 @@ public final class CitrusSettings {
     public static final String VARIABLE_SUFFIX = "}";
     public static final String VARIABLE_ESCAPE = "//";
 
-    /** Default application context name */
-    public static final String DEFAULT_APPLICATION_CONTEXT_PROPERTY = "citrus.spring.application.context";
-    public static final String DEFAULT_APPLICATION_CONTEXT_ENV = "CITRUS_SPRING_APPLICATION_CONTEXT";
-    public static final String DEFAULT_APPLICATION_CONTEXT = System.getProperty(DEFAULT_APPLICATION_CONTEXT_PROPERTY, System.getenv(DEFAULT_APPLICATION_CONTEXT_ENV) != null ?
-            System.getenv(DEFAULT_APPLICATION_CONTEXT_ENV) : "classpath*:citrus-context.xml");
-
     /** Default application context class */
-    public static final String DEFAULT_APPLICATION_CONTEXT_CLASS_PROPERTY = "citrus.spring.java.config";
-    public static final String DEFAULT_APPLICATION_CONTEXT_CLASS_ENV = "CITRUS_SPRING_JAVA_CONFIG";
-    public static final String DEFAULT_APPLICATION_CONTEXT_CLASS = System.getProperty(DEFAULT_APPLICATION_CONTEXT_CLASS_PROPERTY, System.getenv(DEFAULT_APPLICATION_CONTEXT_CLASS_ENV));
+    public static final String DEFAULT_CONFIG_CLASS_PROPERTY = "citrus.java.config";
+    public static final String DEFAULT_CONFIG_CLASS_ENV = "CITRUS_JAVA_CONFIG";
+    public static final String DEFAULT_CONFIG_CLASS = System.getProperty(DEFAULT_CONFIG_CLASS_PROPERTY, System.getenv(DEFAULT_CONFIG_CLASS_ENV));
 
     /** Default test directories */
     public static final String DEFAULT_TEST_SRC_DIRECTORY_PROPERTY = "citrus.default.src.directory";
@@ -130,6 +126,21 @@ public final class CitrusSettings {
     public static final String TYPE_CONVERTER_ENV = "CITRUS_TYPE_CONVERTER";
     public static final String TYPE_CONVERTER_DEFAULT = "default";
 
+    /** Flag to enable/disable log modifier */
+    public static final String LOG_MODIFIER_PROPERTY = "citrus.log.modifier";
+    public static final String LOG_MODIFIER_ENV = "CITRUS_LOG_MODIFIER";
+    public static final String LOG_MODIFIER_DEFAULT = Boolean.TRUE.toString();
+
+    /** Default log modifier mask value */
+    public static final String LOG_MASK_VALUE_PROPERTY = "citrus.log.mask.value";
+    public static final String LOG_MASK_VALUE_ENV = "CITRUS_LOG_MASK_VALUE";
+    public static final String LOG_MASK_VALUE_DEFAULT = "****";
+
+    /** Default log modifier keywords */
+    public static final String LOG_MASK_KEYWORDS_PROPERTY = "citrus.log.mask.keywords";
+    public static final String LOG_MASK_KEYWORDS_ENV = "CITRUS_LOG_MASK_KEYWORDS";
+    public static final String LOG_MASK_KEYWORDS_DEFAULT = "password,secret,secretKey";
+
     /**
      * Gets set of file name patterns for XML test files.
      * @return
@@ -162,5 +173,34 @@ public final class CitrusSettings {
     public static String getTypeConverter() {
         return System.getProperty(TYPE_CONVERTER_PROPERTY,  System.getenv(TYPE_CONVERTER_ENV) != null ?
                 System.getenv(TYPE_CONVERTER_ENV) : TYPE_CONVERTER_DEFAULT);
+    }
+
+    /**
+     * Gets the log modifier enabled/disabled setting.
+     * @return
+     */
+    public static boolean isLogModifierEnabled() {
+        return Boolean.parseBoolean(System.getProperty(LOG_MODIFIER_PROPERTY,  System.getenv(LOG_MODIFIER_ENV) != null ?
+                System.getenv(LOG_MODIFIER_ENV) : LOG_MODIFIER_DEFAULT));
+    }
+
+    /**
+     * Get log mask value.
+     * @return
+     */
+    public static String getLogMaskValue() {
+        return System.getProperty(LOG_MASK_VALUE_PROPERTY,  System.getenv(LOG_MASK_VALUE_ENV) != null ?
+                System.getenv(LOG_MASK_VALUE_ENV) : LOG_MASK_VALUE_DEFAULT);
+    }
+
+    /**
+     * Get log mask keywords.
+     * @return
+     */
+    public static Set<String> getLogMaskKeywords() {
+        return Stream.of(System.getProperty(LOG_MASK_KEYWORDS_PROPERTY,  System.getenv(LOG_MASK_KEYWORDS_ENV) != null ?
+                System.getenv(LOG_MASK_KEYWORDS_ENV) : LOG_MASK_KEYWORDS_DEFAULT).split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toSet());
     }
 }
