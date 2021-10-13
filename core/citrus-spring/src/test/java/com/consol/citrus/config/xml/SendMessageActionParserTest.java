@@ -84,7 +84,6 @@ public class SendMessageActionParserTest extends AbstractActionParserTest<SendMe
         Assert.assertEquals(action.getVariableExtractors().size(), 1);
         Assert.assertTrue(action.getVariableExtractors().get(0) instanceof MessageHeaderVariableExtractor);
         MessageHeaderVariableExtractor headerVariableExtractor = (MessageHeaderVariableExtractor)action.getVariableExtractors().get(0);
-
         Assert.assertEquals(headerVariableExtractor.getHeaderMappings().size(), 1);
         Assert.assertEquals(headerVariableExtractor.getHeaderMappings().get("operation"), "operation");
         Assert.assertEquals(action.getEndpoint(), beanDefinitionContext.getBean("myMessageEndpoint", Endpoint.class));
