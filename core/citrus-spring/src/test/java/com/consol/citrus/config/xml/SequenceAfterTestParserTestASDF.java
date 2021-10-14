@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
  * @author Christoph Deppisch
  * @since 2.0
  */
-public class SequenceAfterTestParserTest extends AbstractBeanDefinitionParserTest {
+public class SequenceAfterTestParserTestASDF extends AbstractBeanDefinitionParserTest {
 
     @BeforeClass
     @Override
@@ -38,7 +38,7 @@ public class SequenceAfterTestParserTest extends AbstractBeanDefinitionParserTes
     }
 
     @Test
-    public void testSequenceAfterParserASDF() throws Exception {
+    public void testSequenceAfterParser() throws Exception {
         beanDefinitionContext = createApplicationContext("context");
         Map<String, SequenceAfterTest> container = beanDefinitionContext.getBeansOfType(SequenceAfterTest.class);
 
