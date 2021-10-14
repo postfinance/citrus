@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
 /**
  * @author Christoph Deppisch
  */
-public class SendMessageActionParserTestASDF extends AbstractActionParserTest<SendMessageAction> {
+public class SendMessageActionParserTest extends AbstractActionParserTest<SendMessageAction> {
 
     @Test
     public void testSendMessageActionParser() throws IOException {

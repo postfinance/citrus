@@ -30,7 +30,7 @@ import org.testng.annotations.Test;
  * @author Christoph Deppisch
  * @since 2.0
  */
-public class SequenceAfterTestParserTestASDF extends AbstractBeanDefinitionParserTest {
+public class SequenceAfterTestParserTest extends AbstractBeanDefinitionParserTest {
 
     @BeforeClass
     @Override
@@ -120,7 +120,7 @@ public class SequenceAfterTestParserTestASDF extends AbstractBeanDefinitionParse
         Assert.assertNull(sequenceAfter.getNamePattern());
         Assert.assertNull(sequenceAfter.getPackageNamePattern());
         Assert.assertEquals(sequenceAfter.getTestGroups().size(), 0L);
-        Assert.assertEquals(sequenceAfter.getEnv().size(), 1L);
+        Assert.assertEquals(sequenceAfter.getEnv().size(), 0L);
         Assert.assertEquals(sequenceAfter.getSystemProperties().size(), 1L);
         Assert.assertEquals(sequenceAfter.getActionCount(), 1L);
 

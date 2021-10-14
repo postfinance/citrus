@@ -47,6 +47,7 @@ public abstract class PayloadElementParser {
 
     /**
      * Static parse method taking care of payload element.
+     *
      * @param payloadElement
      */
     public static String parseMessagePayload(Element payloadElement) {
@@ -77,6 +78,14 @@ public abstract class PayloadElementParser {
         transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(domSource, result);
-        return writer.toString();
+        return convertToUnixLineSeparator(writer.toString());
+    }
+
+    private static String convertToUnixLineSeparator(String original) {
+
+        if (System.lineSeparator() != "\n") {
+            return original.replace(System.lineSeparator(), "\n");
+        }
+        return original;
     }
 }

@@ -63,11 +63,8 @@
   </citrus:before-test>
 
   <citrus:before-test id="beforeTest5">
-    <citrus:env>
-      <citrus:property name="USER"/>
-    </citrus:env>
     <citrus:system>
-      <citrus:property name="before-test" value="true"/>
+      <citrus:property name="before-test" value="true" />
     </citrus:system>
     <citrus:actions>
       <action:echo>

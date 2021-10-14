@@ -16,6 +16,7 @@
 
 package com.consol.citrus.config.xml;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.consol.citrus.actions.CustomTestAction;
@@ -38,7 +39,7 @@ public class SequenceBeforeTestParserTest extends AbstractBeanDefinitionParserTe
     }
 
     @Test
-    public void testSequenceBeforeParserASDF() throws Exception {
+    public void testSequenceBeforeParser() throws Exception {
         beanDefinitionContext = createApplicationContext("context");
         Map<String, SequenceBeforeTest> container = beanDefinitionContext.getBeansOfType(SequenceBeforeTest.class);
 
@@ -86,7 +87,7 @@ public class SequenceBeforeTestParserTest extends AbstractBeanDefinitionParserTe
 
         Assert.assertFalse(sequenceBefore.shouldExecute("Database_OK_Test", "com.consol.citrus", null));
         Assert.assertTrue(sequenceBefore.shouldExecute("Database_OK_Test", "com.consol.citrus.database", null));
-        Assert.assertTrue(sequenceBefore.shouldExecute("Interface_OK_Test", "com.consol.citrus.database", new String[] {"unit"}));
+        Assert.assertTrue(sequenceBefore.shouldExecute("Interface_OK_Test", "com.consol.citrus.database", new String[]{"unit"}));
         Assert.assertTrue(sequenceBefore.shouldExecute("Database_Failed_Test", "com.consol.citrus.database", null));
 
         sequenceBefore.execute(context);
@@ -110,8 +111,8 @@ public class SequenceBeforeTestParserTest extends AbstractBeanDefinitionParserTe
         Assert.assertTrue(sequenceBefore.shouldExecute("Interface_OK_Test", "com.consol.citrus.database", new String[]{"e2e"}));
         Assert.assertTrue(sequenceBefore.shouldExecute("OK_Test", "com.consol.citrus.database", new String[]{"unit"}));
         Assert.assertTrue(sequenceBefore.shouldExecute("Foo_OK_Test", "com.consol.citrus.database", new String[]{"other", "unit", "e2e"}));
-        Assert.assertTrue(sequenceBefore.shouldExecute("Foo_OK_Test", "com.consol.citrus.database", new String[] {"e2e"}));
-        Assert.assertTrue(sequenceBefore.shouldExecute("Foo_OK_Test", "com.consol.citrus.database", new String[] {"other", "unit", "e2e"}));
+        Assert.assertTrue(sequenceBefore.shouldExecute("Foo_OK_Test", "com.consol.citrus.database", new String[]{"e2e"}));
+        Assert.assertTrue(sequenceBefore.shouldExecute("Foo_OK_Test", "com.consol.citrus.database", new String[]{"other", "unit", "e2e"}));
 
         sequenceBefore.execute(context);
 
@@ -120,7 +121,7 @@ public class SequenceBeforeTestParserTest extends AbstractBeanDefinitionParserTe
         Assert.assertNull(sequenceBefore.getNamePattern());
         Assert.assertNull(sequenceBefore.getPackageNamePattern());
         Assert.assertEquals(sequenceBefore.getTestGroups().size(), 0L);
-        Assert.assertEquals(sequenceBefore.getEnv().size(), 1L);
+        Assert.assertEquals(sequenceBefore.getEnv().size(), 0L);
         Assert.assertEquals(sequenceBefore.getSystemProperties().size(), 1L);
         Assert.assertEquals(sequenceBefore.getActionCount(), 1L);
 
