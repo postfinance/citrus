@@ -31,7 +31,7 @@ import org.testng.annotations.Test;
  * @author Christoph Deppisch
  * @since 2.0
  */
-public class SequenceBeforeSuiteParserTest extends AbstractBeanDefinitionParserTest {
+public class SequenceBeforeSuiteParserTestASDF extends AbstractBeanDefinitionParserTest {
 
     @BeforeClass
     @Override

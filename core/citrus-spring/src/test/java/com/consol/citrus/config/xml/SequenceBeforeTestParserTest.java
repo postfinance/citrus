@@ -38,7 +38,7 @@ public class SequenceBeforeTestParserTest extends AbstractBeanDefinitionParserTe
     }
 
     @Test
-    public void testSequenceBeforeParser() throws Exception {
+    public void testSequenceBeforeParserASDF() throws Exception {
         beanDefinitionContext = createApplicationContext("context");
         Map<String, SequenceBeforeTest> container = beanDefinitionContext.getBeansOfType(SequenceBeforeTest.class);
 
