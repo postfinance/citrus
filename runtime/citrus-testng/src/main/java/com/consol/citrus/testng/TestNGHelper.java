@@ -180,7 +180,7 @@ public final class TestNGHelper {
             for (String source : citrusTestAnnotation.sources()) {
                 Resource file = FileUtils.getFileResource(source);
                 TestLoader testLoader = provider.createTestLoader(FileUtils.getBaseName(file.getFilename()),
-                        source.substring(0, source.lastIndexOf(File.pathSeparator)));
+                        source.substring(0, source.lastIndexOf("/")));
 
                 if (testLoader instanceof TestSourceAware) {
                     ((TestSourceAware) testLoader).setSource(source);

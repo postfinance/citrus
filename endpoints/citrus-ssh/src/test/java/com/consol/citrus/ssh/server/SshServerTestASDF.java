@@ -43,12 +43,12 @@ import static org.testng.Assert.assertTrue;
 /**
  * @author Roland Huss
  */
-public class SshServerTest {
+public class SshServerTestASDF {
 
     private SshServer server;
     private int port;
 
-    public SshServerTest() {
+    public SshServerTestASDF() {
         port = findFreePort();
     }
 

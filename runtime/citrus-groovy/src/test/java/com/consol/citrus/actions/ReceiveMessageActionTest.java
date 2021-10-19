@@ -80,7 +80,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
     }
 
     @Test
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void testReceiveMessageWithMessageBuilderScriptData() {
         DefaultMessageBuilder controlMessageBuilder = new DefaultMessageBuilder();
         String markup = "markupBuilder.TestRequest(){\n" +
@@ -105,7 +105,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
             Message control = invocationOnMock.getArgument(1);
             List<ValidationContext> validationContextList = invocationOnMock.getArgument(3);
 
-            Assert.assertEquals(received.getPayload(String.class).trim(), control.getPayload(String.class).trim());
+            Assert.assertEquals(convertToUnixLineSeparator(received.getPayload(String.class).trim()), convertToUnixLineSeparator(control.getPayload(String.class).trim()));
             new DefaultMessageHeaderValidator().validateMessage(received, control, context, validationContextList);
             return null;
         }).when(validator).validateMessage(any(Message.class), any(Message.class), eq(context), any(List.class));
@@ -119,7 +119,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
     }
 
     @Test
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void testReceiveMessageWithMessageBuilderScriptDataVariableSupport() {
         context.setVariable("text", "Hello World!");
 
@@ -146,7 +146,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
             Message control = invocationOnMock.getArgument(1);
             List<ValidationContext> validationContextList = invocationOnMock.getArgument(3);
 
-            Assert.assertEquals(received.getPayload(String.class).trim(), control.getPayload(String.class).trim());
+            Assert.assertEquals(convertToUnixLineSeparator(received.getPayload(String.class).trim()), convertToUnixLineSeparator(control.getPayload(String.class).trim()));
             new DefaultMessageHeaderValidator().validateMessage(received, control, context, validationContextList);
             return null;
         }).when(validator).validateMessage(any(Message.class), any(Message.class), eq(context), any(List.class));
@@ -160,7 +160,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
     }
 
     @Test
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({"unchecked"})
     public void testReceiveMessageWithMessageBuilderScriptResource() {
         DefaultMessageBuilder controlMessageBuilder = new DefaultMessageBuilder();
         controlMessageBuilder.setPayloadBuilder(new GroovyFileResourcePayloadBuilder("classpath:com/consol/citrus/actions/test-request-payload.groovy"));
@@ -182,7 +182,7 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
             Message control = invocationOnMock.getArgument(1);
             List<ValidationContext> validationContextList = invocationOnMock.getArgument(3);
 
-            Assert.assertEquals(received.getPayload(String.class).trim(), control.getPayload(String.class).trim());
+            Assert.assertEquals(convertToUnixLineSeparator(received.getPayload(String.class).trim()), convertToUnixLineSeparator(control.getPayload(String.class).trim()));
             new DefaultMessageHeaderValidator().validateMessage(received, control, context, validationContextList);
             return null;
         }).when(validator).validateMessage(any(Message.class), any(Message.class), eq(context), any(List.class));
@@ -193,5 +193,12 @@ public class ReceiveMessageActionTest extends AbstractTestNGUnitTest {
                 .build();
         receiveAction.execute(context);
 
+    }
+
+    private static String convertToUnixLineSeparator(String original) {
+        if (System.lineSeparator() != "\n") {
+            return original.replace(System.lineSeparator(), "\n");
+        }
+        return original;
     }
 }

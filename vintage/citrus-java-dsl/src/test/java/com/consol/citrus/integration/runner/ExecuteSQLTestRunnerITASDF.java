@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  * @author Christoph Deppisch
  */
 @Test
-public class ExecuteSQLTestRunnerIT extends TestNGCitrusTestRunner {
+public class ExecuteSQLTestRunnerITASDF extends TestNGCitrusTestRunner {
 
     @Autowired
     @Qualifier("testDataSource")

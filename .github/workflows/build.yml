@@ -19,8 +19,8 @@ name: build
 
 on:
   pull_request:
-    branches:
-      - main
+#    branches:
+#      - main
     paths-ignore:
       - '**.adoc'
       - '**.md'

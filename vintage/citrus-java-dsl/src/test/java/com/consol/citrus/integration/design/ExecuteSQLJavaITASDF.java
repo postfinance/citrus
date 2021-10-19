@@ -29,7 +29,7 @@ import javax.sql.DataSource;
  * @author Christoph Deppisch
  */
 @Test
-public class ExecuteSQLJavaIT extends TestNGCitrusTestDesigner {
+public class ExecuteSQLJavaITASDF extends TestNGCitrusTestDesigner {
 
     @Autowired
     @Qualifier("testDataSource")

@@ -41,7 +41,7 @@ import static org.mockito.Mockito.*;
 /**
  * @author Christoph Deppisch
  */
-public class MailServerTest {
+public class MailServerTestASDF {
 
     private EndpointAdapter endpointAdapterMock = Mockito.mock(EndpointAdapter.class);
 

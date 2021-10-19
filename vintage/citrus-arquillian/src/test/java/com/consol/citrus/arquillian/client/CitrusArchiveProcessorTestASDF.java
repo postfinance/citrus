@@ -45,7 +45,7 @@ import org.testng.annotations.Test;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
-public class CitrusArchiveProcessorTest {
+public class CitrusArchiveProcessorTestASDF {
 
     private CitrusArchiveProcessor archiveProcessor = new CitrusArchiveProcessor();
     private Instance<CitrusConfiguration> configurationInstance = Mockito.mock(Instance.class);

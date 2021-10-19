@@ -54,7 +54,7 @@ import static org.testng.Assert.assertTrue;
  * @author Christoph Deppisch
  * @since 2.7.5
  */
-public class SftpClientTest extends AbstractFtpClientTest {
+public class SftpClientTestASDF extends AbstractFtpClientTest {
 
     private SftpClient sftpClient;
     private SshServer sshServer;

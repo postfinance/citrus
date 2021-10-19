@@ -33,29 +33,39 @@ import org.springframework.util.StringUtils;
  */
 public abstract class AbstractSuiteActionContainer extends AbstractActionContainer {
 
-    /** List of suite names that match for this container */
+    /**
+     * List of suite names that match for this container
+     */
     private List<String> suiteNames = new ArrayList<>();
 
-    /** List of test group names that match for this container */
+    /**
+     * List of test group names that match for this container
+     */
     private List<String> testGroups = new ArrayList<>();
 
-    /** Optional env parameters */
+    /**
+     * Optional env parameters
+     */
     private Map<String, String> env = new HashMap<>();
 
-    /** Optional system properties */
+    /**
+     * Optional system properties
+     */
     private Map<String, String> systemProperties = new HashMap<>();
 
     /**
      * Checks if this suite actions should execute according to suite name and included test groups.
+     *
      * @param suiteName
      * @param includedGroups
      * @return
      */
     public boolean shouldExecute(String suiteName, String[] includedGroups) {
+
         String baseErrorMessage = "Skip before/after suite container because of %s restriction - do not execute container '%s'";
 
         if (StringUtils.hasText(suiteName) &&
-                !CollectionUtils.isEmpty(suiteNames) && ! suiteNames.contains(suiteName)) {
+                !CollectionUtils.isEmpty(suiteNames) && !suiteNames.contains(suiteName)) {
             log.warn(String.format(baseErrorMessage, "suite name", getName()));
             return false;
         }
@@ -109,6 +119,7 @@ public abstract class AbstractSuiteActionContainer extends AbstractActionContain
 
     /**
      * Gets the test groups that restrict the container execution.
+     *
      * @return
      */
     public List<String> getTestGroups() {
@@ -117,6 +128,7 @@ public abstract class AbstractSuiteActionContainer extends AbstractActionContain
 
     /**
      * Sets the test groups that restrict the container execution.
+     *
      * @param testGroups
      */
     public void setTestGroups(List<String> testGroups) {
@@ -125,6 +137,7 @@ public abstract class AbstractSuiteActionContainer extends AbstractActionContain
 
     /**
      * Gets the suite names that restrict the container execution.
+     *
      * @return
      */
     public List<String> getSuiteNames() {
@@ -133,6 +146,7 @@ public abstract class AbstractSuiteActionContainer extends AbstractActionContain
 
     /**
      * Sets the suite names that restrict the container execution.
+     *
      * @param suiteNames
      */
     public void setSuiteNames(List<String> suiteNames) {
