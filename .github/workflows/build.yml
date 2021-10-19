@@ -18,15 +18,15 @@
 name: build
 
 on:
-#  pull_request:
-#    branches:
+  pull_request:
+    branches:
 #      - main
-#    paths-ignore:
-#      - '**.adoc'
-#      - '**.md'
-#      - 'KEYS'
-#      - 'LICENSE'
-#      - 'NOTICE'
+    paths-ignore:
+      - '**.adoc'
+      - '**.md'
+      - 'KEYS'
+      - 'LICENSE'
+      - 'NOTICE'
   push:
     branches:
       - main
