@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
 /**
  * @author Christoph Deppisch
  */
-public class ReceiveMessageActionParserTestasdf extends AbstractActionParserTest<ReceiveMessageAction> {
+public class ReceiveMessageActionParserTest extends AbstractActionParserTest<ReceiveMessageAction> {
 
     @Test
     public void testReceiveMessageActionParser() throws IOException {

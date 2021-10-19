@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2010 the original author or authors.
+ * Copyright 2006-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.consol.citrus.jms.integration;
+package com.consol.citrus.ftp.integration;
 
 import com.consol.citrus.annotations.CitrusXmlTest;
 import com.consol.citrus.testng.spring.TestNGCitrusSpringSupport;
@@ -22,10 +22,11 @@ import org.testng.annotations.Test;
 
 /**
  * @author Christoph Deppisch
- * @since 2008
+ * @since 2.7.5
  */
-public class SyncJmsTopicCommunicationITASDF extends TestNGCitrusSpringSupport {
-    @Test
-    @CitrusXmlTest
-    public void SyncJmsTopicCommunicationIT() {}
+@Test
+public class FtpFileActionIT extends TestNGCitrusSpringSupport {
+
+    @CitrusXmlTest(name = "FtpFileActionIT")
+    public void testFileAction() {}
 }

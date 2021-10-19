@@ -33,7 +33,7 @@ import static com.consol.citrus.container.FinallySequence.Builder.doFinally;
  * @author Christoph Deppisch
  */
 @Test
-public class ValidateSqlResultSetJavaITASDF extends TestNGCitrusSpringSupport {
+public class ValidateSqlResultSetJavaIT extends TestNGCitrusSpringSupport {
 
     @Autowired
     @Qualifier("testDataSource")

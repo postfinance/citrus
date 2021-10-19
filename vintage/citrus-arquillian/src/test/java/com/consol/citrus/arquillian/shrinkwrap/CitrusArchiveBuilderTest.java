@@ -29,7 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class CitrusArchiveBuilderTestASDF {
+public class CitrusArchiveBuilderTest {
 
     @BeforeClass
     public void setCitrusVersion() {

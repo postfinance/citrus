@@ -41,7 +41,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Christoph Deppisch
  */
-public class SoapAttachmentTestASDF {
+public class SoapAttachmentTest {
 
     private Attachment attachment = Mockito.mock(Attachment.class);
 
