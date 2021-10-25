@@ -78,14 +78,6 @@ public abstract class PayloadElementParser {
         transformer.setOutputProperty(OutputKeys.STANDALONE, "no");
         transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
         transformer.transform(domSource, result);
-        return convertToUnixLineSeparator(writer.toString());
-    }
-
-    private static String convertToUnixLineSeparator(String original) {
-
-        if (System.lineSeparator() != "\n") {
-            return original.replace(System.lineSeparator(), "\n");
-        }
-        return original;
+        return writer.toString();
     }
 }

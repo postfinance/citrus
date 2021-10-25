@@ -31,7 +31,9 @@ import org.testng.annotations.Test;
  */
 public class ReadFileResourceFunctionTest extends UnitTestSupport {
 
-    /** Class under test */
+    /**
+     * Class under test
+     */
     private ReadFileResourceFunction function = new ReadFileResourceFunction();
 
     @Test
@@ -54,7 +56,7 @@ public class ReadFileResourceFunctionTest extends UnitTestSupport {
         String path = "classpath:com/consol/citrus/functions/${filename}";
         String result = function.execute(Arrays.asList(path, "true"), context);
 
-        Assert.assertTrue(Base64.isBase64(result));
+        Assert.assertEquals(result, "VGhpcyBpcyBhIHNhbXBsZSBmaWxlIGNvbnRlbnQhCldlIGNhbiBhbHNvIHVzZSB2YXJpYWJsZXMgJyR7dXNlcn0nIGFuZCBmdW5jdGlvbnMgY2l0cnVzOmN1cnJlbnREYXRlKCk=");
     }
 
     @Test(expectedExceptions = InvalidFunctionUsageException.class)

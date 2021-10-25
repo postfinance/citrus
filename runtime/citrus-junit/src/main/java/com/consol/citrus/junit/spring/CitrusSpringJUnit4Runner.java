@@ -91,7 +91,7 @@ public class CitrusSpringJUnit4Runner extends SpringJUnit4ClassRunner {
                 for (String source : citrusXmlTestAnnotation.sources()) {
                     Resource file = FileUtils.getFileResource(source);
                     CitrusFrameworkMethod frameworkMethod = new CitrusFrameworkMethod(method.getMethod(), FileUtils.getBaseName(file.getFilename()),
-                            source.substring(0, source.lastIndexOf("/")));
+                            source.substring(0, source.lastIndexOf(File.pathSeparator)));
                     frameworkMethod.setSource(source);
                     interceptedMethods.add(frameworkMethod);
                 }

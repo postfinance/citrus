@@ -78,7 +78,7 @@ public class XmlTestHelper {
 
                 Resource file = FileUtils.getFileResource(source);
                 testName = FileUtils.getBaseName(file.getFilename());
-                packageName = source.substring(0, source.lastIndexOf("/"));
+                packageName = source.substring(0, source.lastIndexOf(File.pathSeparator));
             }
         }
 
