@@ -14,7 +14,11 @@ hesitate to contact us. Find below the reference documentation for the latest Ci
 |Version |HTML |PDF
 
 |Latest	|link:/citrus/reference/html/index.html[HTML] |link:/citrus/reference/pdf/citrus-reference.pdf[PDF]
-|3.2.0-SNAPSHOT	|link:/citrus/reference/3.2.0-SNAPSHOT/html/index.html[HTML] |link:/citrus/reference/3.2.0-SNAPSHOT/pdf/citrus-reference-3.2.0-SNAPSHOT.pdf[PDF]
+|3.4.0-SNAPSHOT	|link:/citrus/reference/3.4.0-SNAPSHOT/html/index.html[HTML] |link:/citrus/reference/3.4.0-SNAPSHOT/pdf/citrus-reference-3.4.0-SNAPSHOT.pdf[PDF]
+|3.2.0	|link:/citrus/reference/3.2.0/html/index.html[HTML] |link:/citrus/reference/3.2.0/pdf/citrus-reference-3.2.0.pdf[PDF]
+|3.2.0	|link:/citrus/reference/3.2.0/html/index.html[HTML] |link:/citrus/reference/3.2.0/pdf/citrus-reference-3.2.0.pdf[PDF]
+|3.1.2	|link:/citrus/reference/3.1.2/html/index.html[HTML] |link:/citrus/reference/3.1.2/pdf/citrus-reference-3.1.2.pdf[PDF]
+|3.1.1	|link:/citrus/reference/3.1.1/html/index.html[HTML] |link:/citrus/reference/3.1.1/pdf/citrus-reference-3.1.1.pdf[PDF]
 |3.0.0	|link:/citrus/reference/3.0.0/html/index.html[HTML] |link:/citrus/reference/3.0.0/pdf/citrus-reference-3.0.0.pdf[PDF]
 |2.8.0	|link:/citrus/reference/2.8.0/html/index.html[HTML] |link:/citrus/reference/2.8.0/pdf/citrus-reference-2.8.0.pdf[PDF]
 |2.7.9	|link:/citrus/reference/2.7.9/html/index.html[HTML] |link:/citrus/reference/2.7.9/pdf/citrus-reference-2.7.9.pdf[PDF]
@@ -39,11 +43,10 @@ hesitate to contact us. Find below the reference documentation for the latest Ci
 
 * link:https://citrusframework.org/[Citrus Homepage]
 * link:https://citrusframework.org/news[News]
-* link:http://www.github.com/citrusframework/citrus[Java Sources]
+* link:https://github.com/citrusframework/citrus[Java Sources]
 * link:https://citrusframework.org/docs/setup-maven[Quickstart Maven]
 * link:https://citrusframework.org/docs/setup-gradle[Quickstart Gradle]
 * link:https://citrusframework.org/docs/setup-ant[Quickstart Ant]
-* link:http://labs.consol.de/tags/citrus[Blog]
 * link:https://citrusframework.org/docs/history/[Release History]
 
 == Contribute changes

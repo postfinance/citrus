@@ -24,9 +24,15 @@ import com.consol.citrus.message.DelegatingPathExpressionProcessor;
 import com.consol.citrus.testng.AbstractActionParserTest;
 import com.consol.citrus.util.FileUtils;
 import com.consol.citrus.validation.builder.DefaultMessageBuilder;
+import com.consol.citrus.validation.context.ValidationContext;
+import com.consol.citrus.validation.json.JsonMessageValidationContext;
+import com.consol.citrus.validation.xml.XmlMessageValidationContext;
 import com.consol.citrus.variable.MessageHeaderVariableExtractor;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Christoph Deppisch
@@ -35,7 +41,7 @@ public class SendMessageActionParserTest extends AbstractActionParserTest<SendMe
 
     @Test
     public void testSendMessageActionParser() throws IOException {
-        assertActionCount(6);
+        assertActionCount(8);
         assertActionClassAndName(SendMessageAction.class, "send");
 
         DefaultMessageBuilder messageBuilder;
@@ -57,11 +63,11 @@ public class SendMessageActionParserTest extends AbstractActionParserTest<SendMe
         action = getNextTestActionFromTest();
         messageBuilder = (DefaultMessageBuilder)action.getMessageBuilder();
 
-        Assert.assertEquals(messageBuilder.buildMessagePayload(context, action.getMessageType()), "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<TestMessage xmlns=\"http://citrusframework.org/test\">Hello Citrus</TestMessage>");
+        Assert.assertEquals(messageBuilder.buildMessagePayload(context, action.getMessageType()), "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"+System.getProperty("line.separator")+"<TestMessage xmlns=\"http://citrusframework.org/test\">Hello Citrus</TestMessage>");
         Assert.assertEquals(messageBuilder.buildMessageHeaders(context).size(), 1);
         Assert.assertEquals(messageBuilder.buildMessageHeaders(context).get("operation"), "Test");
         Assert.assertEquals(messageBuilder.buildMessageHeaderData(context).size(), 1);
-        Assert.assertEquals(messageBuilder.buildMessageHeaderData(context).get(0).trim(), "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<Header xmlns=\"http://citrusframework.org/test\">\n  <operation>hello</operation>\n</Header>");
+        Assert.assertEquals(messageBuilder.buildMessageHeaderData(context).get(0).trim(), "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>"+System.getProperty("line.separator")+"<Header xmlns=\"http://citrusframework.org/test\">"+System.getProperty("line.separator")+"  <operation>hello</operation>"+System.getProperty("line.separator")+"</Header>");
         Assert.assertEquals(action.getMessageProcessors().size(), 0);
         Assert.assertEquals(action.getEndpoint(), beanDefinitionContext.getBean("myMessageEndpoint", Endpoint.class));
         Assert.assertNull(action.getEndpointUri());
@@ -138,5 +144,18 @@ public class SendMessageActionParserTest extends AbstractActionParserTest<SendMe
 
         Assert.assertEquals(jsonMessageProcessor.getPathExpressions().size(), 1);
         Assert.assertEquals(jsonMessageProcessor.getPathExpressions().get("$.FooMessage.foo"), "newValue");
+
+        // 7th action
+        action = getNextTestActionFromTest();
+        Assert.assertTrue(action.isSchemaValidation());
+        Assert.assertEquals(action.getSchema(), "fooSchema");
+        Assert.assertEquals(action.getSchemaRepository(), "fooRepository");
+
+        // 8th action
+        action = getNextTestActionFromTest();
+        Assert.assertTrue(action.isSchemaValidation());
+        Assert.assertEquals(action.getSchema(), "fooSchema");
+        Assert.assertEquals(action.getSchemaRepository(), "fooRepository");
+
     }
 }

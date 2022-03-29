@@ -15,7 +15,7 @@
 # limitations under the License.
 # ---------------------------------------------------------------------------
 
-name: build
+name: build_jdk11
 
 on:
   pull_request:
@@ -45,7 +45,7 @@ jobs:
       - name: Set up JDK 11
         uses: AdoptOpenJDK/install-jdk@v1
         with:
-          version: "11"
+          version: '11'
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Cache Maven packages

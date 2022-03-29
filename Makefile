@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION := 3.1.0-SNAPSHOT
+VERSION := 3.2.0-SNAPSHOT
 RELEASE_GIT_REMOTE := origin
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
@@ -41,7 +41,7 @@ release:
 	./scripts/citrus release --git-remote $(RELEASE_GIT_REMOTE) --release-version $(VERSION) --skip-tests
 
 release-snapshot:
-	./scripts/citrus release --git-remote $(RELEASE_GIT_REMOTE) --snapshot-release
+	./scripts/citrus release --git-remote $(RELEASE_GIT_REMOTE) --snapshot-release --no-git-push
 
 release-local:
 	./scripts/citrus release --git-remote $(RELEASE_GIT_REMOTE) --local-release --no-git-push --release-version $(VERSION)

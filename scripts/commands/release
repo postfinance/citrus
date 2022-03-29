@@ -95,9 +95,22 @@ release::run() {
     # Set release version in sources
     set_version "$working_dir" "$release_version" "$snapshot_version"
 
-    if [ ! $(hasflag --local-release) ]; then
+    if [ ! $(hasflag --local-release) ] && [ ! $(hasflag --snapshot-release) ]; then
         # Commit spring.schemas for new version
         git_commit "$working_dir" spring.schemas "Add Spring schemas for $release_version"
+    fi
+
+    # Update project metadata to new release version
+    if [ $(hasflag --major-release) ] && [ ! $(hasflag --snapshot-release) ]; then
+        update_project_metadata "$working_dir" "$release_version" "$next_version"
+    else
+        update_project_metadata "$working_dir" "$release_version" "$snapshot_version"
+    fi
+
+
+    if [ ! $(hasflag --local-release) ] && [ ! $(hasflag --snapshot-release) ]; then
+        # Commit project metadata for new version
+        git_commit "$working_dir" project.yml "Update project metadata for $release_version"
     fi
 
     # Build and stage artifacts
@@ -118,30 +131,33 @@ release::run() {
     # Commit, tag, release, push
     # --------------------------
 
-    if [ ! $(hasflag --snapshot-release) ] && [ ! $(hasflag --local-release) ]; then
+    if [ ! $(hasflag --local-release) ] && [ ! $(hasflag --snapshot-release) ]; then
         # Release staging repo
         release_staging_repo "$working_dir" "$maven_opts"
 
-        update_project_metadata "$working_dir" "$release_version" "$next_version"
-    fi
+        # Push everything (if configured)
+        git_push "$working_dir" "$release_version"
 
-    # Push everything (if configured)
-    git_push "$working_dir" "$release_version"
-
-    if [ ! $(hasflag --local-release) ]; then
         # Add SNAPSHOT version to spring.schemas
         update_spring_schemas "$working_dir" "$release_version" "$snapshot_version"
 
+        # Commit spring.schemas for new version
+        git_commit "$working_dir" spring.schemas "Use $snapshot_version version in Spring schemas"
+
         # Use next snapshot version for major release only
-        if [ $(hasflag --major-release) ] && [ ! $(hasflag --snapshot-release) ]; then
+        if [ $(hasflag --major-release) ]; then
             # Set next snapshot version in sources
             set_version "$working_dir" "$next_version" "$snapshot_version"
 
-            # Push new snapshot version (if configured)
-            git_push_next_snapshot "$working_dir" "$next_version"
-        else
-            # Commit spring.schemas for new version
-            git_commit "$working_dir" spring.schemas "Use $snapshot_version version in Spring schemas"
+            # Update to new snapshot version
+            update_next_snapshot "$working_dir" "$next_version"
+        fi
+
+        if [ ! $(hasflag --no-git-push) ]; then
+            local remote=$(get_git_remote)
+
+            # Push changes
+            git push ${remote}
         fi
     fi
 
@@ -173,7 +189,7 @@ build_and_stage_artifacts() {
         ./mvnw ${maven_opts} install
     else
         echo "==== Release to Maven central and stage artifacts to Sonatype"
-        ./mvnw ${maven_opts} install deploy -Prelease-central -DstagingDescription="Staging Citrus for v$release_version"
+        ./mvnw ${maven_opts} install deploy -DfailIfNoTests=false -Dtest -Dit.test -Prelease-central -DstagingDescription="Staging Citrus for v$release_version"
     fi
 }
 
@@ -245,21 +261,14 @@ git_push() {
     git checkout ${original_branch}
 }
 
-git_push_next_snapshot() {
+update_next_snapshot() {
     local working_dir="$1"
     local next_version="$2"
-
-    local remote=$(get_git_remote)
 
     cd $working_dir
     echo "==== Using next snapshot version $next_version"
     git add * || true
     git commit -a -m "Use next snapshot version $next_version"
-
-    if [ ! $(hasflag --no-git-push) ]; then
-        # Push changes
-        git push ${remote}
-    fi
 }
 
 update_spring_schemas() {

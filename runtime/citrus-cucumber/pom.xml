@@ -5,7 +5,7 @@
   <parent>
     <artifactId>citrus-runtime</artifactId>
     <groupId>com.consol.citrus</groupId>
-    <version>3.2.0-SNAPSHOT</version>
+    <version>3.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -64,7 +64,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${surefire.version}</version>
         <configuration>
           <properties>
             <property>
