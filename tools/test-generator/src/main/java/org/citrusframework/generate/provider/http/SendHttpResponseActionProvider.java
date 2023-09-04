@@ -40,8 +40,8 @@ public class SendHttpResponseActionProvider implements MessageActionProvider<Sen
         response.setBody(body);
 
         ResponseHeadersType responseHeaders = new ResponseHeadersType();
-        responseHeaders.setStatus(message.getStatusCode().toString());
-        responseHeaders.setReasonPhrase(message.getStatusCode().getReasonPhrase());
+        responseHeaders.setStatus(Integer.toString(message.getStatusCode().value()));
+        responseHeaders.setReasonPhrase(message.getReasonPhrase());
 
         message.getHeaders().entrySet().stream()
                 .filter(entry -> !entry.getKey().startsWith(MessageHeaders.PREFIX))

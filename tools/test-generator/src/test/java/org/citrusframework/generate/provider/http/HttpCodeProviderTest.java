@@ -77,7 +77,7 @@ class HttpCodeProviderTest {
     void testResponseConfiguration() {
 
         //GIVEN
-        message.statusCode(HttpStatus.SC_NOT_FOUND);
+        message.status(HttpStatus.SC_NOT_FOUND);
         final String expectedCode = ".response(org.springframework.http.HttpStatus.NOT_FOUND)\n.message()\n";
 
         //WHEN

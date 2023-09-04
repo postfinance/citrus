@@ -40,8 +40,8 @@ public class ReceiveHttpResponseActionProvider implements MessageActionProvider<
         response.setBody(body);
 
         ReceiveResponseModel.Headers responseHeaders = new ReceiveResponseModel.Headers();
-        responseHeaders.setStatus(message.getStatusCode().toString());
-        responseHeaders.setReasonPhrase(message.getStatusCode().getReasonPhrase());
+        responseHeaders.setStatus(Integer.toString(message.getStatusCode().value()));
+        responseHeaders.setReasonPhrase(message.getReasonPhrase());
 
         message.getHeaders().entrySet().stream()
                 .filter(entry -> !entry.getKey().startsWith(MessageHeaders.PREFIX))

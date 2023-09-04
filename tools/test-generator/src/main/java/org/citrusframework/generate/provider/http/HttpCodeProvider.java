@@ -43,7 +43,7 @@ class HttpCodeProvider {
     }
 
     void provideResponseConfiguration(final CodeBlock.Builder code, final HttpMessage message) {
-        code.add(".response($T.$L)\n", HttpStatus.class, message.getStatusCode().name());
+        code.add(".response($T.$L)\n", HttpStatus.class, message.getStatusCode().value());
         messageCodeProvider.provideHeaderAndPayload(code, message);
     }
 
