@@ -11,7 +11,7 @@ project.
 [source,xml]
 ----
 <dependency>
-  <groupId>com.consol.citrus</groupId>
+  <groupId>org.citrusframework</groupId>
   <artifactId>citrus-testng</artifactId>
   <version>${citrus.version}</version>
 </dependency>
@@ -25,11 +25,11 @@ See the following sample showing how to write a Citrus test on top of TestNG:
 .TestNG Citrus test
 [source,java]
 ----
-package com.consol.citrus.samples;
+package org.citrusframework.samples;
 
 import org.testng.annotations.Test;
-import com.consol.citrus.annotations.CitrusTest;
-import com.consol.citrus.testng.TestNGCitrusSupport;
+import org.citrusframework.annotations.CitrusTest;
+import org.citrusframework.testng.TestNGCitrusSupport;
 
 @Test
 public class Simple_IT extends TestNGCitrusSupport {
@@ -169,7 +169,7 @@ public class ResourceInjection_IT extends TestNGCitrusSupport {
 ----
 
 First of all the method parameters must be annotated with `@Optional` because the values are not injected by TestNG itself
-but by the Citrus base test class. Finally, the parameter requires the `@CitrusResource` annotations in order to mark the
+but by the Citrus base test class. Finally, the parameter requires the `@CitrusResource` annotation in order to mark the
 parameter for Citrus resource injection.
 
 Now each method uses its own resource instances which makes sure that parallel test execution can take place without having

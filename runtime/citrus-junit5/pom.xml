@@ -4,8 +4,8 @@
 
   <parent>
     <artifactId>citrus-runtime</artifactId>
-    <groupId>com.consol.citrus</groupId>
-    <version>3.3.0-SNAPSHOT</version>
+    <groupId>org.citrusframework</groupId>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -15,13 +15,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-base</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-spring</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -47,8 +47,9 @@
 
     <!-- Test scoped dependencies -->
     <dependency>
-      <groupId>org.codehaus.groovy</groupId>
-      <artifactId>groovy-jsr223</artifactId>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-groovy</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -66,19 +67,19 @@
               <goal>integration-test</goal>
             </goals>
             <configuration>
-              <groups>com.consol.citrus.ShouldFailGroup</groups>
+              <groups>org.citrusframework.ShouldFailGroup</groups>
               <excludedGroups>NonExisting</excludedGroups>
             </configuration>
           </execution>
         </executions>
         <configuration>
-          <excludedGroups>com.consol.citrus.ShouldFailGroup</excludedGroups>
+          <excludedGroups>org.citrusframework.ShouldFailGroup</excludedGroups>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-junit-platform</artifactId>
-            <version>${surefire.version}</version>
+            <version>${maven.surefire.plugin.version}</version>
           </dependency>
         </dependencies>
       </plugin>

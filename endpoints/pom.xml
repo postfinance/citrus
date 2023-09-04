@@ -4,8 +4,8 @@
 
   <parent>
     <artifactId>citrus</artifactId>
-    <groupId>com.consol.citrus</groupId>
-    <version>3.3.0-SNAPSHOT</version>
+    <groupId>org.citrusframework</groupId>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -19,7 +19,6 @@
     <module>citrus-camel</module>
     <module>citrus-ftp</module>
     <module>citrus-http</module>
-    <module>citrus-jdbc</module>
     <module>citrus-jms</module>
     <module>citrus-jmx</module>
     <module>citrus-kafka</module>

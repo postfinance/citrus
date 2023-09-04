@@ -4,8 +4,8 @@
 
   <parent>
     <artifactId>citrus-connectors</artifactId>
-    <groupId>com.consol.citrus</groupId>
-    <version>3.3.0-SNAPSHOT</version>
+    <groupId>org.citrusframework</groupId>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -32,12 +32,13 @@
           <extension>true</extension>
           <sourceType>xmlschema</sourceType>
           <sources>
-            <source>src/main/resources/com/consol/citrus/schema/citrus-docker-config.xsd</source>
-            <source>src/main/resources/com/consol/citrus/schema/citrus-docker-testcase.xsd</source>
+            <source>src/main/resources/org/citrusframework/schema/citrus-docker-config.xsd</source>
+            <source>src/main/resources/org/citrusframework/schema/citrus-docker-testcase.xsd</source>
           </sources>
           <xjbSources>
             <xjbSource>src/main/resources/binding.xjb</xjbSource>
           </xjbSources>
+          <clearOutputDir>true</clearOutputDir>
         </configuration>
       </plugin>
 
@@ -55,12 +56,12 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-base</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-spring</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
@@ -71,8 +72,12 @@
       <artifactId>docker-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-transport-okhttp</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.okhttp3</groupId>
+      <artifactId>okhttp</artifactId>
     </dependency>
 
     <dependency>
@@ -87,10 +92,6 @@
     <dependency>
       <groupId>jakarta.annotation</groupId>
       <artifactId>jakarta.annotation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>jakarta.ws.rs</groupId>
-      <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
 
     <dependency>
@@ -113,13 +114,13 @@
 
     <!-- Test scoped dependencies -->
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-test-support</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-testng</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>

@@ -4,8 +4,8 @@
 
   <parent>
     <artifactId>citrus-endpoints</artifactId>
-    <groupId>com.consol.citrus</groupId>
-    <version>3.3.0-SNAPSHOT</version>
+    <groupId>org.citrusframework</groupId>
+    <version>4.0.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -29,12 +29,13 @@
           <sourceType>xmlschema</sourceType>
           <catalog>src/main/resources/catalog.xml</catalog>
           <sources>
-            <source>src/main/resources/com/consol/citrus/schema/citrus-ws-config.xsd</source>
-            <source>src/main/resources/com/consol/citrus/schema/citrus-ws-testcase.xsd</source>
+            <source>src/main/resources/org/citrusframework/schema/citrus-ws-config.xsd</source>
+            <source>src/main/resources/org/citrusframework/schema/citrus-ws-testcase.xsd</source>
           </sources>
           <xjbSources>
             <xjbSource>src/main/resources/binding.xjb</xjbSource>
           </xjbSources>
+          <clearOutputDir>true</clearOutputDir>
         </configuration>
       </plugin>
 
@@ -52,7 +53,7 @@
               <excludeDefaultDirectories>true</excludeDefaultDirectories>
               <filesets>
                 <fileset>
-                  <directory>${project.build.directory}/generated-sources/jaxb/com/consol/citrus/model/testcase/core</directory>
+                  <directory>${project.build.directory}/generated-sources/jaxb/org/citrusframework/model/testcase/core</directory>
                   <includes>
                     <include>*.java</include>
                   </includes>
@@ -68,18 +69,30 @@
   <dependencies>
   	<!-- Citrus Internal -->
     <dependency>
-  		<groupId>com.consol.citrus</groupId>
+  		<groupId>org.citrusframework</groupId>
   		<artifactId>citrus-base</artifactId>
   		<version>${project.version}</version>
   	</dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-validation-xml</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-spring</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-yaml</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-xml</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -89,8 +102,8 @@
       <artifactId>saaj-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.sun.activation</groupId>
-      <artifactId>jakarta.activation</artifactId>
+      <groupId>org.eclipse.angus</groupId>
+      <artifactId>angus-activation</artifactId>
     </dependency>
 
     <dependency>
@@ -156,25 +169,20 @@
 
     <!-- Test scoped dependencies -->
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-jms</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-http</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-broker</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.activemq</groupId>
-      <artifactId>activemq-spring</artifactId>
+      <artifactId>artemis-jakarta-server</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -184,14 +192,20 @@
     </dependency>
 
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-test-support</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.consol.citrus</groupId>
+      <groupId>org.citrusframework</groupId>
       <artifactId>citrus-testng</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.citrusframework</groupId>
+      <artifactId>citrus-groovy</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

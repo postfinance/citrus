@@ -19,7 +19,7 @@
   </citrus:global-variables>
 
   <!-- Test Listeners -->
-  <bean class="com.consol.citrus.report.MessageTracingTestListener"/>
+  <bean class="org.citrusframework.report.MessageTracingTestListener"/>
 
   <bean class="org.springframework.beans.factory.config.MethodInvokingBean">
     <property name="staticMethod" value="java.rmi.registry.LocateRegistry.createRegistry"/>
@@ -28,14 +28,16 @@
 
   <!-- RMI server -->
   <citrus-rmi:server id="rmiHelloServer"
-                       interface="com.consol.citrus.rmi.remote.HelloService"
+                       host="localhost"
+                       interface="org.citrusframework.rmi.remote.HelloService"
                        binding="helloService"
                        create-registry="false"
                        timeout="10000"
                        auto-start="true"/>
 
   <citrus-rmi:server id="rmiNewsServer"
-                       interface="com.consol.citrus.rmi.remote.NewsService"
+                       host="localhost"
+                       interface="org.citrusframework.rmi.remote.NewsService"
                        binding="newsService"
                        create-registry="false"
                        timeout="10000"

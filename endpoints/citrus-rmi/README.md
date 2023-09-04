@@ -16,19 +16,17 @@ Preconditions
 You need following software on your machine in order to use the
 Citrus framework:
 
-* Java 11 or higher
-Installed JDK plus JAVA_HOME environment variable set
-up and pointing to your Java installation directory
+* Java 11+
+  Installed JDK plus JAVA_HOME environment variable set
+  up and pointing to your Java installation directory. Used to compile and build the Citrus code.
+
+* Maven 3.6.3+
+  Citrus projects will fit best with [Maven](https://maven.apache.org).
+  However, it is not required to use Maven. You can also run tests using [Gradle](https://gradle.org/) for instance.
 
 * Java IDE (optional)
-A Java IDE will help you to manage your Citrus project (e.g. creating
-and executing test cases). You can use the Java IDE that you like best
-like Eclipse or IntelliJ IDEA.
-
-* Maven 3.3.x or higher (optional)
-Citrus projects will fit best with Maven (http://maven.apache.org).
-However it is not required to use Maven. You can also run tests using
-ANT (http://ant.apache.org/) for instance.
+  A Java IDE will help you to manage your Citrus project (e.g. creating
+  and executing test cases). You can use the Java IDE that you like best like Eclipse or IntelliJ IDEA.
 
 Usage
 ---------
@@ -74,7 +72,7 @@ On the server side we define one to many remote interfaces and bind those in a r
                      host="localhost" 
                      port="1099"
                      binding="service/path/or/name"
-                     interface="com.consol.citrus.remote.SomeInterface"/>
+                     interface="org.citrusframework.remote.SomeInterface"/>
                     
 The server component connects to a registry for bindin the remote interface as service with given binding name. Clients 
 can then do a lookup for calling the remote service methods. Each method call is handled within the server and can be validated
@@ -103,7 +101,7 @@ XML DSL support is also available for RMI components and actions:
       <message>
         <payload>
             <service-invocation xmlns="http://www.citrusframework.org/schema/rmi/message">
-              <remote>com.consol.citrus.remote.SomeInterface</remote>
+              <remote>org.citrusframework.remote.SomeInterface</remote>
               <method>someMethod</method>
               <args>
                 <arg value="Hello remote service!"/>
@@ -128,7 +126,7 @@ Citrus will automatically marshal the XML representation of the service invocati
 Licensing
 ---------
   
-Copyright 2006-2018 ConSol Software GmbH.
+Copyright 2006-2023 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -145,11 +143,9 @@ limitations under the License.
 Team
 ---------
 
-ConSol Software GmbH
-Christoph Deppisch
-christoph.deppisch@consol.de
+The Citrus Community
 
-http://www.citrusframework.org
+https://citrusframework.org
 
 Information
 ---------
@@ -157,6 +153,6 @@ Information
 For more information on Citrus see [www.citrusframework.org][2], including
 a complete [reference manual][3].
 
- [1]: http://www.citrusframework.org/images/brand_logo.png "Citrus"
- [2]: http://www.citrusframework.org
- [3]: http://www.citrusframework.org/reference/html/
+ [1]: https://citrusframework.org/images/brand_logo.png "Citrus"
+ [2]: https://citrusframework.org
+ [3]: https://citrusframework.org/reference/html/

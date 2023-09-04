@@ -7,7 +7,7 @@ Citrus offers an easy way to debug all received messages to the file system. You
 
 [source,xml]
 ----
-<bean class="com.consol.citrus.report.MessageTracingTestListener"/>
+<bean class="org.citrusframework.report.MessageTracingTestListener"/>
 ----
 
 Just add this bean to the Spring configuration and Citrus will listen for sent and received messages for saving those to the file system. You will find files like these in the default test output folder after the test run:
@@ -16,16 +16,16 @@ For example:
 
 [source]
 ----
-logs/trace/messages/MyTest.msgs 
-logs/trace/messages/FooTest.msgs 
-logs/trace/messages/SomeTest.msgs 
+logs/trace/messages/MyTest.msgs
+logs/trace/messages/FooTest.msgs
+logs/trace/messages/SomeTest.msgs
 ----
 
 Each Citrus test writes a *.msgs* file containing all messages that went over the wire during the test. By default the debug directory is set to *_logs/trace/messages/_* relative to the project test output directory. But you can set your own output directory in the configuration
 
 [source,xml]
 ----
-<bean class="com.consol.citrus.report.MessageTracingTestListener">
+<bean class="org.citrusframework.report.MessageTracingTestListener">
   <property name="outputDirectory" value="file:/path/to/folder"/>
 </bean>
 ----
@@ -42,7 +42,7 @@ Sending SOAP request:
 <Operation xmlns="http://citrusframework.org/test">sayHello</Operation>
 </SOAP-ENV:Header>
 <SOAP-ENV:Body>
-<ns0:HelloRequest xmlns:ns0="http://www.consol.de/schemas/samples/sayHello.xsd">
+<ns0:HelloRequest xmlns:ns0="http://citrusframework.org/schemas/samples/sayHello.xsd">
     <ns0:MessageId>0857041782</ns0:MessageId>
     <ns0:CorrelationId>6915071793</ns0:CorrelationId>
     <ns0:User>Christoph</ns0:User>
@@ -57,7 +57,7 @@ Received SOAP response:
 <?xml version="1.0" encoding="UTF-8"?><SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
 <SOAP-ENV:Header/>
 <SOAP-ENV:Body>
-<ns0:HelloResponse xmlns:ns0="http://www.consol.de/schemas/samples/sayHello.xsd">
+<ns0:HelloResponse xmlns:ns0="http://citrusframework.org/schemas/samples/sayHello.xsd">
     <ns0:MessageId>0857041782</ns0:MessageId>
     <ns0:CorrelationId>6915071793</ns0:CorrelationId>
     <ns0:User>WebServer</ns0:User>
@@ -75,9 +75,9 @@ For this message tracing to work we need to add logging listeners to our sender 
     request-url="http://localhost:8071"
     message-factory="messageFactory"
     interceptors="clientInterceptors"/>
-    
+
     <util:list id="clientInterceptors">
-        <bean class="com.consol.citrus.ws.interceptor.LoggingClientInterceptor"/>
+        <bean class="org.citrusframework.ws.interceptor.LoggingClientInterceptor"/>
     </util:list>
 ----
 
