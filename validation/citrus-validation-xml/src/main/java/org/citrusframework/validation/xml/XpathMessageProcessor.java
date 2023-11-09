@@ -29,11 +29,11 @@ import org.citrusframework.message.AbstractMessageProcessor;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageProcessor;
 import org.citrusframework.message.MessageType;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.util.XMLUtils;
 import org.citrusframework.xml.xpath.XPathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -49,7 +49,7 @@ public class XpathMessageProcessor extends AbstractMessageProcessor {
     private final Map<String, Object> xPathExpressions;
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(XpathMessageProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(XpathMessageProcessor.class);
 
     /**
      * Default constructor.
@@ -111,8 +111,8 @@ public class XpathMessageProcessor extends AbstractMessageProcessor {
                 node.setNodeValue(valueExpression);
             }
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Element " +  pathExpression + " was set to value: " + valueExpression);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Element " +  pathExpression + " was set to value: " + valueExpression);
             }
         }
 

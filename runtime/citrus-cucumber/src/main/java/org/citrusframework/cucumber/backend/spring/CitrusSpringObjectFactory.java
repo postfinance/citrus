@@ -16,19 +16,19 @@
 
 package org.citrusframework.cucumber.backend.spring;
 
+import io.cucumber.core.backend.CucumberBackendException;
+import io.cucumber.core.backend.ObjectFactory;
+import io.cucumber.spring.SpringFactory;
 import org.citrusframework.Citrus;
 import org.citrusframework.CitrusContext;
 import org.citrusframework.CitrusInstanceManager;
 import org.citrusframework.CitrusSpringContext;
 import org.citrusframework.CitrusSpringContextProvider;
-import org.citrusframework.DefaultTestCaseRunner;
 import org.citrusframework.TestCaseRunner;
+import org.citrusframework.TestCaseRunnerFactory;
 import org.citrusframework.annotations.CitrusAnnotations;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.context.TestContextFactoryBean;
-import io.cucumber.core.backend.CucumberBackendException;
-import io.cucumber.core.backend.ObjectFactory;
-import io.cucumber.spring.SpringFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -40,7 +40,7 @@ import org.springframework.context.ApplicationContext;
 public class CitrusSpringObjectFactory implements ObjectFactory {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(CitrusSpringObjectFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(CitrusSpringObjectFactory.class);
 
     /** Test runner */
     private TestCaseRunner runner;
@@ -65,7 +65,7 @@ public class CitrusSpringObjectFactory implements ObjectFactory {
     public void start() {
         delegate.start();
         context = getInstance(TestContext.class);
-        runner = new DefaultTestCaseRunner(context);
+        runner = TestCaseRunnerFactory.createRunner(context);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class CitrusSpringObjectFactory implements ObjectFactory {
                 context = contextFactoryBean.getObject();
                 initializeCitrus(context, contextFactoryBean.getApplicationContext());
             } catch (CucumberBackendException e) {
-                log.warn("Failed to get proper TestContext from Cucumber Spring application context: " + e.getMessage());
+                logger.warn("Failed to get proper TestContext from Cucumber Spring application context: " + e.getMessage());
                 context = CitrusInstanceManager.getOrDefault().getCitrusContext().createTestContext();
             }
         }
@@ -114,7 +114,7 @@ public class CitrusSpringObjectFactory implements ObjectFactory {
 
             if (citrusContext instanceof CitrusSpringContext
                     && !((CitrusSpringContext) citrusContext).getApplicationContext().equals(applicationContext)) {
-                log.warn("Citrus instance has already been initialized - creating new instance and shutting down current instance");
+                logger.warn("Citrus instance has already been initialized - creating new instance and shutting down current instance");
                 citrusContext.close();
             } else {
                 return;

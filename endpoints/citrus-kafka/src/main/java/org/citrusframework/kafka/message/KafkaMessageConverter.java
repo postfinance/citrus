@@ -19,15 +19,15 @@ package org.citrusframework.kafka.message;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.kafka.endpoint.KafkaEndpointConfiguration;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageConverter;
+import org.citrusframework.spi.Resource;
 import org.citrusframework.util.FileUtils;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.core.io.Resource;
 
 /**
  * Basic message converter for converting Spring Integration message implementations to Kafka
@@ -62,8 +62,8 @@ public class KafkaMessageConverter implements MessageConverter<ConsumerRecord<Ob
             kafkaMessage = new KafkaMessage(internalMessage.getPayload(), internalMessage.getHeaders());
         }
 
-        return new ProducerRecord<>(Optional.ofNullable(kafkaMessage.getTopic()).map(context::replaceDynamicContentInString).orElse(context.replaceDynamicContentInString(endpointConfiguration.getTopic())),
-                                    Optional.ofNullable(kafkaMessage.getPartition()).orElse(endpointConfiguration.getPartition()),
+        return new ProducerRecord<>(Optional.ofNullable(kafkaMessage.getTopic()).map(context::replaceDynamicContentInString).orElseGet(() -> context.replaceDynamicContentInString(endpointConfiguration.getTopic())),
+                                    Optional.ofNullable(kafkaMessage.getPartition()).orElseGet(endpointConfiguration::getPartition),
                                     kafkaMessage.getMessageKey(),
                                     payload,
                                     endpointConfiguration.getHeaderMapper().toHeaders(kafkaMessage.getHeaders(), context));

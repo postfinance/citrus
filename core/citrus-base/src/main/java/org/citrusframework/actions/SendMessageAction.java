@@ -19,6 +19,8 @@ package org.citrusframework.actions;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.Completable;
@@ -42,8 +44,7 @@ import org.citrusframework.variable.VariableExtractor;
 import org.citrusframework.variable.dictionary.DataDictionary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.util.StringUtils;
+import org.citrusframework.util.StringUtils;
 
 
 /**
@@ -98,7 +99,7 @@ public class SendMessageAction extends AbstractTestAction implements Completable
     private CompletableFuture<Void> finished;
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(SendMessageAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(SendMessageAction.class);
 
     /**
      * Default constructor.
@@ -142,9 +143,9 @@ public class SendMessageAction extends AbstractTestAction implements Completable
         }
 
         if (forkMode) {
-            LOG.debug("Forking message sending action ...");
+            logger.debug("Forking message sending action ...");
 
-            SimpleAsyncTaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
+            ExecutorService taskExecutor = Executors.newSingleThreadExecutor();
             taskExecutor.execute(() -> {
                 try {
                     validateMessage(message, context);
@@ -242,7 +243,7 @@ public class SendMessageAction extends AbstractTestAction implements Completable
     public boolean isDone(TestContext context) {
         return Optional.ofNullable(finished)
                 .map(future -> future.isDone() || isDisabled(context))
-                .orElse(isDisabled(context));
+                .orElseGet(() -> isDisabled(context));
     }
 
     /**

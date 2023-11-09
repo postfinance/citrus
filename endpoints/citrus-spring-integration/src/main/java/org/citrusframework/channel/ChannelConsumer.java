@@ -24,13 +24,13 @@ import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.MessageTimeoutException;
 import org.citrusframework.message.Message;
 import org.citrusframework.messaging.AbstractSelectiveMessageConsumer;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.integration.core.MessageSelector;
 import org.springframework.integration.support.channel.BeanFactoryChannelResolver;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.PollableChannel;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -39,10 +39,10 @@ import org.springframework.util.StringUtils;
 public class ChannelConsumer extends AbstractSelectiveMessageConsumer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(ChannelConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelConsumer.class);
 
     /** Endpoint configuration */
-    private ChannelEndpointConfiguration endpointConfiguration;
+    private final ChannelEndpointConfiguration endpointConfiguration;
 
     /**
      * Default constructor using endpoint configuration.
@@ -65,8 +65,8 @@ public class ChannelConsumer extends AbstractSelectiveMessageConsumer {
             destinationChannelName = getDestinationChannelName();
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving message from: " + destinationChannelName);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Receiving message from: " + destinationChannelName);
         }
 
         Message message;
@@ -99,7 +99,7 @@ public class ChannelConsumer extends AbstractSelectiveMessageConsumer {
             throw new MessageTimeoutException(timeout, destinationChannelName);
         }
 
-        log.debug("Received message from: " + destinationChannelName);
+        logger.debug("Received message from: " + destinationChannelName);
         return message;
     }
 

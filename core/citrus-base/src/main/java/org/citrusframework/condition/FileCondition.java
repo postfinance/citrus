@@ -17,7 +17,6 @@
 package org.citrusframework.condition;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.citrusframework.context.TestContext;
 import org.citrusframework.util.FileUtils;
@@ -37,7 +36,7 @@ public class FileCondition extends AbstractCondition {
     private File file;
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(FileCondition.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileCondition.class);
 
     /**
      * Default constructor.
@@ -48,8 +47,8 @@ public class FileCondition extends AbstractCondition {
 
     @Override
     public boolean isSatisfied(TestContext context) {
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Checking file path '%s'", file != null ? file.getPath() : filePath));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Checking file path '%s'", file != null ? file.getPath() : filePath));
         }
 
         if (file != null) {
@@ -57,8 +56,8 @@ public class FileCondition extends AbstractCondition {
         } else {
             try {
                 return FileUtils.getFileResource(context.replaceDynamicContentInString(filePath), context).getFile().isFile();
-            } catch (IOException e) {
-                log.warn(String.format("Failed to access file resource '%s'", e.getMessage()));
+            } catch (Exception e) {
+                logger.warn(String.format("Failed to access file resource '%s'", e.getMessage()));
                 return false;
             }
         }

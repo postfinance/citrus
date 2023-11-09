@@ -3,6 +3,39 @@
 
 The framework generates different reports and results after a test run for you. These report and result pages will help you to get an overview of the test cases that were executed and which one were failing.
 
+In the following chapters, we'll provide an overview of the three standard loggers available in Citrus. It's important to note that in Spring, you have the flexibility to replace these standard loggers with your own implementations. This can be achieved by registering custom implementations, as demonstrated in the following code snippet:
+
+[source,java]
+----
+@Configuration
+public static class OverrideReporterConfiguration {
+
+    @Bean
+    public LoggingReporter citrusLoggingReporter() {
+        return new OverrideLoggingReporter();
+    }
+
+    @Bean
+    public JUnitReporter citrusJunitReporter() {
+        return new OverrideJUnitReporter();
+    }
+
+    @Bean
+    public HtmlReporter citrusHtmlReporter() {
+        return new OverrideHtmlReporter();
+    }
+}
+----
+
+Note that you need to allow spring bean overriding to load this configuration as such. It's worth noting that bean overriding is not recommended by spring. Thus the following properties are provided to deactivate standard reporters as needed.
+
+[source,properties]
+----
+citrus.default.logging.reporter.enabled=false
+citrus.default.junit.reporter.enabled=false
+citrus.default.html.reporter.enabled=false
+----
+
 [[console-logging]]
 == Console logging
 
@@ -66,6 +99,6 @@ citrus.html.report.directory:: Output directory path (default= *_${project.build
 citrus.html.report.file:: File name for the report file (default= *_citrus-test-results.html_*).
 citrus.html.report.template:: Template HTML file with placeholders for report results.
 citrus.html.report.detail.template:: Template file for detailed test results.
-citrus.html.report.logo:: File resource path pointing to a image that is added to top of HTML report.
+citrus.html.report.logo:: File resource path pointing to an image that is added to top of HTML report.
 
 The HTML report is based on a template file that is customizable to your special needs. The default templates can be found in https://github.com/citrusframework/citrus/tree/master/modules/citrus-core/src/main/resources/org/citrusframework/report[report-templates sources].

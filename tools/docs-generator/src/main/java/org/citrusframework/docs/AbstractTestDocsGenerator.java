@@ -16,15 +16,6 @@
 
 package org.citrusframework.docs;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -36,20 +27,29 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.util.FileUtils;
 import org.citrusframework.util.PropertyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 import org.xml.sax.SAXException;
 
 public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
 
     /** Logger */
-    Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String OVERVIEW_PLACEHOLDER = "+++++ OVERVIEW +++++";
     private static final String BODY_PLACEHOLDER = "+++++ BODY +++++";
@@ -102,7 +102,7 @@ public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
                 try {
                     reader.close();
                 } catch (final IOException e) {
-                    log.error("Failed to close reader", e);
+                    logger.error("Failed to close reader", e);
                 }
             }
 
@@ -110,7 +110,7 @@ public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
                 try {
                     buffered.flush();
                 } catch (final IOException e) {
-                    log.error("Failed to close output stream", e);
+                    logger.error("Failed to close output stream", e);
                 }
             }
 
@@ -118,7 +118,7 @@ public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
                 try {
                     fos.close();
                 } catch (final IOException e) {
-                    log.error("Failed to close file", e);
+                    logger.error("Failed to close file", e);
                 }
             }
         }
@@ -192,7 +192,7 @@ public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
      */
     Transformer getTransformer(final String fileName, final String mediaType, final String method) {
         try {
-            final Source source = new StreamSource(new ClassPathResource(fileName, getClass()).getInputStream());
+            final Source source = new StreamSource(Resources.create(fileName, getClass()).getInputStream());
 
             final TransformerFactory factory = TransformerFactory.newInstance();
             final Transformer t = factory.newTransformer(source);
@@ -201,7 +201,7 @@ public abstract class AbstractTestDocsGenerator implements TestDocsGenerator {
             t.setOutputProperty(OutputKeys.METHOD, method);
 
             return t;
-        } catch (final TransformerException | IOException e) {
+        } catch (final TransformerException e) {
             throw new CitrusRuntimeException(e);
         }
     }

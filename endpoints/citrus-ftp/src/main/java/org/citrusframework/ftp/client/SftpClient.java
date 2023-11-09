@@ -29,15 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Vector;
 
-import org.citrusframework.context.TestContext;
-import org.citrusframework.exceptions.CitrusRuntimeException;
-import org.citrusframework.ftp.message.FtpMessage;
-import org.citrusframework.ftp.model.CommandType;
-import org.citrusframework.ftp.model.DeleteCommand;
-import org.citrusframework.ftp.model.GetCommand;
-import org.citrusframework.ftp.model.ListCommand;
-import org.citrusframework.ftp.model.PutCommand;
-import org.citrusframework.util.FileUtils;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -50,11 +41,19 @@ import org.apache.commons.net.ftp.FTPCmd;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.ftpserver.ftplet.DataType;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
+import org.citrusframework.context.TestContext;
+import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.ftp.message.FtpMessage;
+import org.citrusframework.ftp.model.CommandType;
+import org.citrusframework.ftp.model.DeleteCommand;
+import org.citrusframework.ftp.model.GetCommand;
+import org.citrusframework.ftp.model.ListCommand;
+import org.citrusframework.ftp.model.PutCommand;
+import org.citrusframework.spi.Resources;
+import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ResourceUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -63,7 +62,7 @@ import org.springframework.util.StringUtils;
 public class SftpClient extends FtpClient {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(SftpClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(SftpClient.class);
 
     /** Session for the SSH communication */
     private Session session;
@@ -202,7 +201,7 @@ public class SftpClient extends FtpClient {
             String localFilePath = context.replaceDynamicContentInString(command.getFile().getPath());
             String remoteFilePath = addFileNameToTargetPath(localFilePath, context.replaceDynamicContentInString(command.getTarget().getPath()));
 
-            String dataType = context.replaceDynamicContentInString(Optional.ofNullable(command.getFile().getType()).orElse(DataType.BINARY.name()));
+            String dataType = context.replaceDynamicContentInString(Optional.ofNullable(command.getFile().getType()).orElseGet(() -> DataType.BINARY.name()));
             try (InputStream localFileInputStream = getLocalFileInputStream(command.getFile().getPath(), dataType, context)) {
                 sftp.put(localFileInputStream, remoteFilePath);
             }
@@ -220,7 +219,7 @@ public class SftpClient extends FtpClient {
             String localFilePath = addFileNameToTargetPath(remoteFilePath, context.replaceDynamicContentInString(command.getTarget().getPath()));
 
             try (InputStream inputStream = sftp.get(remoteFilePath)) {
-                byte[] bytes = FileCopyUtils.copyToByteArray(inputStream);
+                byte[] bytes = FileUtils.copyToByteArray(inputStream);
 
                 // create intermediate directories if necessary
                 Path localFilePathObj = Paths.get(localFilePath);
@@ -234,7 +233,7 @@ public class SftpClient extends FtpClient {
             if (getEndpointConfiguration().isAutoReadFiles()) {
                 String fileContent;
                 if (command.getFile().getType().equals(DataType.BINARY.name())) {
-                    fileContent = Base64.encodeBase64String(FileCopyUtils.copyToByteArray(FileUtils.getFileResource(localFilePath).getInputStream()));
+                    fileContent = Base64.encodeBase64String(FileUtils.copyToByteArray(FileUtils.getFileResource(localFilePath)));
                 } else {
                     fileContent = FileUtils.readToString(FileUtils.getFileResource(localFilePath));
                 }
@@ -278,7 +277,7 @@ public class SftpClient extends FtpClient {
 
                 getEndpointConfiguration().getSessionConfigs().entrySet()
                         .stream()
-                        .peek(entry -> log.info(String.format("Setting session configuration: %s='%s'", entry.getKey(), entry.getValue())))
+                        .peek(entry -> logger.info(String.format("Setting session configuration: %s='%s'", entry.getKey(), entry.getValue())))
                         .forEach(entry -> session.setConfig(entry.getKey(), entry.getValue()));
 
                 session.connect((int) getEndpointConfiguration().getTimeout());
@@ -287,7 +286,7 @@ public class SftpClient extends FtpClient {
                 channel.connect((int) getEndpointConfiguration().getTimeout());
                 sftp = (ChannelSftp) channel;
 
-                log.info("Opened secure connection to FTP server");
+                logger.info("Opened secure connection to FTP server");
             } catch (JSchException e) {
                 throw new CitrusRuntimeException(String.format("Failed to login to FTP server using credentials: %s:%s", getEndpointConfiguration().getUser(), getEndpointConfiguration().getPassword()), e);
             }
@@ -303,21 +302,22 @@ public class SftpClient extends FtpClient {
             ssh.setKnownHosts(FileUtils.getFileResource(getEndpointConfiguration().getKnownHosts()).getInputStream());
         } catch (JSchException e) {
             throw new CitrusRuntimeException("Cannot add known hosts from " + getEndpointConfiguration().getKnownHosts() + ": " + e,e);
-        } catch (IOException e) {
-            throw new CitrusRuntimeException("Cannot find known hosts file " + getEndpointConfiguration().getKnownHosts() + ": " + e,e);
         }
     }
 
     protected String getPrivateKeyPath() throws IOException {
         if (!StringUtils.hasText(getEndpointConfiguration().getPrivateKeyPath())) {
             return null;
-        } else if (getEndpointConfiguration().getPrivateKeyPath().startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
+        } else if (getEndpointConfiguration().getPrivateKeyPath().startsWith(Resources.CLASSPATH_RESOURCE_PREFIX)) {
             File priv = File.createTempFile("citrus-sftp","priv");
-            InputStream is = getClass().getClassLoader().getResourceAsStream(getEndpointConfiguration().getPrivateKeyPath().substring(ResourceUtils.CLASSPATH_URL_PREFIX.length()));
-            if (is == null) {
-                throw new CitrusRuntimeException("No private key found at " + getEndpointConfiguration().getPrivateKeyPath());
+            try (InputStream is = getClass().getClassLoader().getResourceAsStream(getEndpointConfiguration().getPrivateKeyPath().substring(Resources.CLASSPATH_RESOURCE_PREFIX.length()));
+                    FileOutputStream fos = new FileOutputStream(priv)) {
+                if (is == null) {
+                    throw new CitrusRuntimeException("No private key found at " + getEndpointConfiguration().getPrivateKeyPath());
+                }
+                fos.write(is.readAllBytes());
+                fos.flush();
             }
-            FileCopyUtils.copy(is, new FileOutputStream(priv));
             return priv.getAbsolutePath();
         } else {
             return getEndpointConfiguration().getPrivateKeyPath();
@@ -366,7 +366,7 @@ public class SftpClient extends FtpClient {
     public void destroy() {
         if (session != null && session.isConnected()) {
             session.disconnect();
-            log.info("Closed connection to FTP server");
+            logger.info("Closed connection to FTP server");
         }
 
         sftp.disconnect();

@@ -16,9 +16,9 @@
 
 package org.citrusframework.config;
 
-import java.util.HashMap;
 import java.util.Map;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.citrusframework.config.handler.CitrusTestCaseNamespaceHandler;
 import org.citrusframework.config.xml.*;
 import org.citrusframework.spi.ResourcePathTypeResolver;
@@ -35,7 +35,7 @@ import org.springframework.beans.factory.xml.BeanDefinitionParser;
 public final class CitrusNamespaceParserRegistry {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(CitrusNamespaceParserRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(CitrusNamespaceParserRegistry.class);
 
     /** Resource path where to find custom parsers via lookup */
     private static final String RESOURCE_PATH = "META-INF/citrus/action/parser";
@@ -44,7 +44,7 @@ public final class CitrusNamespaceParserRegistry {
     private static final ResourcePathTypeResolver TYPE_RESOLVER = new ResourcePathTypeResolver(RESOURCE_PATH);
 
     /** Parser registry as map */
-    private static final Map<String, BeanDefinitionParser> BEAN_PARSER = new HashMap<>();
+    private static final Map<String, BeanDefinitionParser> BEAN_PARSER = new ConcurrentHashMap<>();
 
     static {
         registerParser("testcase", new TestCaseParser());
@@ -121,7 +121,7 @@ public final class CitrusNamespaceParserRegistry {
             try {
                 BEAN_PARSER.put(name, TYPE_RESOLVER.resolve(name));
             } catch (Exception e) {
-                LOG.warn(String.format("Unable to locate bean parser for '%s'", name), e);
+                logger.warn(String.format("Unable to locate bean parser for '%s'", name), e);
             }
         }
 

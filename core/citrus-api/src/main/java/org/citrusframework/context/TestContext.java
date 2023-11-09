@@ -68,8 +68,6 @@ import org.citrusframework.variable.VariableUtils;
 import org.citrusframework.xml.namespace.NamespaceContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Class holding and managing test variables. The test context also provides utility methods
@@ -79,7 +77,7 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
     /**
      * Logger
      */
-    private static final Logger LOG = LoggerFactory.getLogger(TestContext.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestContext.class);
 
     /**
      * Local variables
@@ -244,7 +242,7 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
      * @throws CitrusRuntimeException
      */
     public void setVariable(final String variableName, Object value) {
-        if (!StringUtils.hasText(variableName) || VariableUtils.cutOffVariablesPrefix(variableName).length() == 0) {
+        if (variableName == null || variableName.isBlank() || VariableUtils.cutOffVariablesPrefix(variableName).isEmpty()) {
             throw new CitrusRuntimeException("Can not create variable '" + variableName + "', please define proper variable name");
         }
 
@@ -252,8 +250,8 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
             throw new VariableNullValueException("Trying to set variable: " + VariableUtils.cutOffVariablesPrefix(variableName) + ", but variable value is null");
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Setting variable: %s with value: '%s'", VariableUtils.cutOffVariablesPrefix(variableName), value));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Setting variable: %s with value: '%s'", VariableUtils.cutOffVariablesPrefix(variableName), value));
         }
 
         variables.put(VariableUtils.cutOffVariablesPrefix(variableName), value);
@@ -375,7 +373,7 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
      * @return boolean flag to mark existence
      */
     public boolean hasVariables() {
-        return !CollectionUtils.isEmpty(variables);
+        return variables != null && !variables.isEmpty();
     }
 
     /**
@@ -820,8 +818,8 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
             } else if (MessageDirection.INBOUND.equals(direction)) {
                 messageListeners.onInboundMessage(message, this);
             }
-        } else if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("%s message:%n%s", operation, Optional.ofNullable(message).map(Message::toString).orElse("")));
+        } else if (logger.isDebugEnabled()) {
+            logger.debug(String.format("%s message:%n%s", operation, Optional.ofNullable(message).map(Message::toString).orElse("")));
         }
     }
 
@@ -886,7 +884,7 @@ public class TestContext implements ReferenceResolverAware, TestActionListenerAw
      * @return
      */
     public boolean hasExceptions() {
-        return !CollectionUtils.isEmpty(getExceptions());
+        return !getExceptions().isEmpty();
     }
 
     /**

@@ -22,6 +22,7 @@ package org.citrusframework.testng;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,23 +30,22 @@ import java.util.Set;
 
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.DefaultTestCase;
-import org.citrusframework.DefaultTestCaseRunner;
 import org.citrusframework.TestCaseRunner;
+import org.citrusframework.TestCaseRunnerFactory;
 import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.annotations.CitrusTestSource;
-import org.citrusframework.annotations.CitrusXmlTest;
 import org.citrusframework.common.TestLoader;
 import org.citrusframework.common.TestSourceAware;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.ClasspathResourceResolver;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.ReflectionHelper;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 import org.testng.IHookCallBack;
 import org.testng.ITestResult;
 
@@ -57,7 +57,7 @@ public final class TestNGHelper {
     public static final String BUILDER_ATTRIBUTE = "builder";
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(TestNGHelper.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestNGHelper.class);
 
     /**
      * Prevent instantiation of utility class
@@ -79,7 +79,7 @@ public final class TestNGHelper {
                                         TestLoader testLoader, TestContext context, int invocationCount) {
         Object[] params = TestNGParameterHelper.resolveParameter(target, testResult, method, context, invocationCount);
         testLoader.configureTestCase(t -> TestNGParameterHelper.injectTestParameters(method, t, params));
-        testLoader.doWithTestCase(t -> ReflectionUtils.invokeMethod(method, target, params));
+        testLoader.doWithTestCase(t -> ReflectionHelper.invokeMethod(method, target, params));
         testLoader.load();
     }
 
@@ -90,7 +90,7 @@ public final class TestNGHelper {
      * @return
      */
     public static TestCaseRunner createTestCaseRunner(Object target, Method method, TestContext context) {
-        TestCaseRunner testCaseRunner = new DefaultTestCaseRunner(new DefaultTestCase(), context);
+        TestCaseRunner testCaseRunner = TestCaseRunnerFactory.createRunner(new DefaultTestCase(), context);
         testCaseRunner.testClass(target.getClass());
         testCaseRunner.name(target.getClass().getSimpleName());
         testCaseRunner.packageName(target.getClass().getPackage().getName());
@@ -110,7 +110,7 @@ public final class TestNGHelper {
     }
 
     /**
-     * Creates test loader from @CitrusXmlTest annotated test method and saves those to local member.
+     * Creates test loader from @CitrusTestSource(type = TestLoader.SPRING) annotated test method and saves those to local member.
      * Test loaders get executed later when actual method is called by TestNG. This way user can annotate
      * multiple methods in one single class each executing several Citrus XML tests.
      *
@@ -125,10 +125,6 @@ public final class TestNGHelper {
             CitrusTestSource citrusTestAnnotation = method.getAnnotation(CitrusTestSource.class);
             methodTestLoaders.addAll(createMethodTestLoaders(method, citrusTestAnnotation.name(), citrusTestAnnotation.packageName(),
                     citrusTestAnnotation.packageScan(), citrusTestAnnotation.sources(), provider, citrusTestAnnotation.type(), CitrusSettings.getTestFileNamePattern(citrusTestAnnotation.type())));
-        } else if (method.getAnnotation(CitrusXmlTest.class) != null) {
-            CitrusXmlTest citrusTestAnnotation = method.getAnnotation(CitrusXmlTest.class);
-            methodTestLoaders.addAll(createMethodTestLoaders(method, citrusTestAnnotation.name(), citrusTestAnnotation.packageName(),
-                    citrusTestAnnotation.packageScan(), citrusTestAnnotation.sources(), provider, TestLoader.SPRING, CitrusSettings.getTestFileNamePattern(TestLoader.SPRING)));
         }
 
         return methodTestLoaders;
@@ -169,31 +165,31 @@ public final class TestNGHelper {
             Resource file = FileUtils.getFileResource(source);
 
             String sourceFilePackageName  = "";
-            if (source.startsWith(ResourceLoader.CLASSPATH_URL_PREFIX)) {
-                sourceFilePackageName = source.substring(ResourceLoader.CLASSPATH_URL_PREFIX.length());
+            if (source.startsWith(Resources.CLASSPATH_RESOURCE_PREFIX)) {
+                sourceFilePackageName = source.substring(Resources.CLASSPATH_RESOURCE_PREFIX.length());
             }
 
-            if (StringUtils.hasLength(sourceFilePackageName) && sourceFilePackageName.contains("/")) {
+            if (StringUtils.hasText(sourceFilePackageName) && sourceFilePackageName.contains("/")) {
                 sourceFilePackageName = sourceFilePackageName.substring(0, sourceFilePackageName.lastIndexOf("/"));
             }
 
-            TestLoader testLoader = provider.createTestLoader(FileUtils.getBaseName(file.getFilename()),
+            TestLoader testLoader = provider.createTestLoader(FileUtils.getBaseName(FileUtils.getFileName(file.getLocation())),
                     sourceFilePackageName.replace("/","."), type);
 
             if (testLoader instanceof TestSourceAware) {
                 ((TestSourceAware) testLoader).setSource(source);
                 methodTestLoaders.add(testLoader);
             } else {
-                LOG.warn(String.format("Test loader %s is not able to handle test source %s", testLoader.getClass(), source));
+                logger.warn(String.format("Test loader %s is not able to handle test source %s", testLoader.getClass(), source));
             }
         }
 
         for (String packageScan : packagesToScan) {
             try {
                 for (String fileNamePattern : testFileNamePattern) {
-                    Resource[] fileResources = new PathMatchingResourcePatternResolver().getResources(packageScan.replace('.', File.separatorChar) + fileNamePattern);
-                    for (Resource fileResource : fileResources) {
-                        String filePath = fileResource.getFile().getParentFile().getCanonicalPath();
+                    Set<Path> fileResources = new ClasspathResourceResolver().getResources(packageScan.replace('.', File.separatorChar), fileNamePattern);
+                    for (Path fileResource : fileResources) {
+                        String filePath = fileResource.getParent().toFile().getCanonicalPath();
 
                         if (packageScan.startsWith("file:")) {
                             filePath = "file:" + filePath;
@@ -201,7 +197,8 @@ public final class TestNGHelper {
 
                         filePath = filePath.substring(filePath.indexOf(packageScan.replace('.', File.separatorChar)));
 
-                        methodTestLoaders.add(provider.createTestLoader(FileUtils.getBaseName(fileResource.getFilename()), filePath, type));
+                        methodTestLoaders.add(provider.createTestLoader(
+                                FileUtils.getBaseName(String.valueOf(fileResource.getFileName())), filePath, type));
                     }
                 }
             } catch (RuntimeException | IOException e) {

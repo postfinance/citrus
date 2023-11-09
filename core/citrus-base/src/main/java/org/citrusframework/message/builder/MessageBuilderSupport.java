@@ -44,13 +44,13 @@ import org.citrusframework.message.WithHeaderBuilder;
 import org.citrusframework.message.WithPayloadBuilder;
 import org.citrusframework.spi.ReferenceResolver;
 import org.citrusframework.spi.ReferenceResolverAware;
+import org.citrusframework.spi.Resource;
 import org.citrusframework.util.FileUtils;
 import org.citrusframework.validation.builder.DefaultMessageBuilder;
 import org.citrusframework.validation.builder.StaticMessageBuilder;
 import org.citrusframework.variable.VariableExtractor;
 import org.citrusframework.variable.VariableExtractorAdapter;
 import org.citrusframework.variable.dictionary.DataDictionary;
-import org.springframework.core.io.Resource;
 
 /**
  * @author Christoph Deppisch
@@ -442,13 +442,13 @@ public abstract class MessageBuilderSupport<T extends TestAction, B extends Mess
         }
 
         /**
-         * Expect a control message in this action.
+         * Builds message from given message.
          *
-         * @param controlMessage
+         * @param message
          * @return
          */
-        public M message(final Message controlMessage) {
-            return getMessageBuilderSupport().from(controlMessage);
+        public M message(final Message message) {
+            return getMessageBuilderSupport().from(message);
         }
 
         /**

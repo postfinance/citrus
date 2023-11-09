@@ -22,14 +22,19 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.selenium.endpoint.SeleniumBrowser;
 import org.citrusframework.selenium.endpoint.SeleniumHeaders;
+import org.citrusframework.util.StringUtils;
 import org.openqa.selenium.JavascriptExecutor;
-import org.springframework.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Tamer Erdogan, Christoph Deppisch
  * @since 2.7
  */
 public class OpenWindowAction extends AbstractSeleniumAction {
+
+    /** Logger */
+    private static final Logger logger = LoggerFactory.getLogger(OpenWindowAction.class);
 
     /** Window name to open */
     private final String windowName;
@@ -64,7 +69,7 @@ public class OpenWindowAction extends AbstractSeleniumAction {
 
         if (!StringUtils.isEmpty(newWindow)) {
             browser.getWebDriver().switchTo().window(newWindow);
-            log.info("Open window: " + newWindow);
+            logger.info("Open window: " + newWindow);
             context.setVariable(SeleniumHeaders.SELENIUM_ACTIVE_WINDOW, newWindow);
             context.setVariable(windowName, newWindow);
         } else {

@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.citrusframework.AbstractTestActionBuilder;
 import org.citrusframework.actions.AbstractTestAction;
 import org.citrusframework.context.TestContext;
@@ -30,6 +32,7 @@ import org.citrusframework.message.DefaultMessage;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageProcessor;
 import org.citrusframework.spi.ReferenceResolver;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.MessageValidator;
 import org.citrusframework.validation.context.ValidationContext;
 import org.citrusframework.validation.json.JsonMessageValidationContext;
@@ -48,11 +51,8 @@ import org.citrusframework.zookeeper.command.Info;
 import org.citrusframework.zookeeper.command.SetData;
 import org.citrusframework.zookeeper.command.ZooCommand;
 import org.citrusframework.zookeeper.command.ZooResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Executes zookeeper command with given zookeeper client implementation. Possible command result is stored within command object.
@@ -63,7 +63,7 @@ import org.springframework.util.StringUtils;
 public class ZooExecuteAction extends AbstractTestAction {
 
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(ZooExecuteAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(ZooExecuteAction.class);
 
     /** Zookeeper client instance  */
     private final ZooClient zookeeperClient;
@@ -109,14 +109,14 @@ public class ZooExecuteAction extends AbstractTestAction {
     @Override
     public void doExecute(TestContext context) {
         try {
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Executing zookeeper command '%s'", command.getName()));
+            if (logger.isDebugEnabled()) {
+                logger.debug(String.format("Executing zookeeper command '%s'", command.getName()));
             }
             command.execute(zookeeperClient, context);
 
             validateCommandResult(command, context);
 
-            log.info(String.format("Zookeeper command execution successful: '%s'", command.getName()));
+            logger.info(String.format("Zookeeper command execution successful: '%s'", command.getName()));
         } catch (CitrusRuntimeException e) {
             throw e;
         } catch (Exception e) {
@@ -196,8 +196,8 @@ public class ZooExecuteAction extends AbstractTestAction {
             processor.process(commandResult, context);
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Validating Zookeeper response");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Validating Zookeeper response");
         }
 
         if (StringUtils.hasText(expectedCommandResult)) {
@@ -211,7 +211,7 @@ public class ZooExecuteAction extends AbstractTestAction {
             getPathValidator(context).validateMessage(commandResult, null, context, Collections.singletonList(jsonPathMessageValidationContext));
         }
 
-        log.info("Zookeeper command result validation successful - all values OK!");
+        logger.info("Zookeeper command result validation successful - all values OK!");
 
         if (command.getResultCallback() != null) {
             command.getResultCallback().doWithCommandResult(command.getCommandResult(), context);

@@ -18,17 +18,16 @@ package org.citrusframework.testng.spring;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.annotations.CitrusTestSource;
-import org.citrusframework.annotations.CitrusXmlTest;
-import org.citrusframework.common.TestLoader;
+import org.citrusframework.spi.ClasspathResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.testng.IMethodInstance;
 import org.testng.IMethodInterceptor;
 import org.testng.ITestContext;
@@ -45,7 +44,7 @@ import org.testng.internal.MethodInstance;
 public class TestNGCitrusSpringMethodInterceptor implements IMethodInterceptor {
 
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(TestNGCitrusSpringMethodInterceptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestNGCitrusSpringMethodInterceptor.class);
 
     @Override
     public List<IMethodInstance> intercept(List<IMethodInstance> methods, ITestContext context) {
@@ -71,8 +70,8 @@ public class TestNGCitrusSpringMethodInterceptor implements IMethodInterceptor {
                     for (String packageName : packagesToScan) {
                         try {
                             for (String fileNamePattern : CitrusSettings.getTestFileNamePattern(citrusTestAnnotation.type())) {
-                                Resource[] fileResources = new PathMatchingResourcePatternResolver().getResources(packageName.replace('.', File.separatorChar) + fileNamePattern);
-                                for (int i = 0; i < fileResources.length; i++) {
+                                Set<Path> fileResources = new ClasspathResourceResolver().getResources(packageName.replace('.', File.separatorChar), fileNamePattern);
+                                for (int i = 0; i < fileResources.size(); i++) {
                                     if (i == 0 && !baseMethodAdded) {
                                         baseMethodAdded = true;
                                         interceptedMethods.add(method);
@@ -82,38 +81,7 @@ public class TestNGCitrusSpringMethodInterceptor implements IMethodInterceptor {
                                 }
                             }
                         } catch (IOException e) {
-                            log.error("Unable to locate file resources for test package '" + packageName + "'", e);
-                        }
-                    }
-                } else if (method.getMethod().getConstructorOrMethod().getMethod().getAnnotation(CitrusXmlTest.class) != null) {
-                    CitrusXmlTest citrusXmlTestAnnotation = method.getMethod().getConstructorOrMethod().getMethod().getAnnotation(CitrusXmlTest.class);
-                    if (citrusXmlTestAnnotation.name().length > 1) {
-                        for (int i = 0; i < citrusXmlTestAnnotation.name().length; i++) {
-                            if (i == 0) {
-                                baseMethodAdded = true;
-                                interceptedMethods.add(method);
-                            } else {
-                                interceptedMethods.add(new MethodInstance(method.getMethod()));
-                            }
-                        }
-                    }
-
-                    String[] packagesToScan = citrusXmlTestAnnotation.packageScan();
-                    for (String packageName : packagesToScan) {
-                        try {
-                            for (String fileNamePattern : CitrusSettings.getTestFileNamePattern(TestLoader.SPRING)) {
-                                Resource[] fileResources = new PathMatchingResourcePatternResolver().getResources(packageName.replace('.', File.separatorChar) + fileNamePattern);
-                                for (int i = 0; i < fileResources.length; i++) {
-                                    if (i == 0 && !baseMethodAdded) {
-                                        baseMethodAdded = true;
-                                        interceptedMethods.add(method);
-                                    } else {
-                                        interceptedMethods.add(new MethodInstance(method.getMethod()));
-                                    }
-                                }
-                            }
-                        } catch (IOException e) {
-                            log.error("Unable to locate file resources for test package '" + packageName + "'", e);
+                            logger.error("Unable to locate file resources for test package '" + packageName + "'", e);
                         }
                     }
                 }

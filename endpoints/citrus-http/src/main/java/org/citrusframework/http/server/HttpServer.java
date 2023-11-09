@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.Filter;
 import org.citrusframework.context.SpringBeanReferenceResolver;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.http.context.ParentDelegatingWebApplicationContext;
@@ -31,7 +32,7 @@ import org.citrusframework.http.servlet.GzipServletFilter;
 import org.citrusframework.http.servlet.RequestCachingServletFilter;
 import org.citrusframework.report.MessageListeners;
 import org.citrusframework.server.AbstractServer;
-import jakarta.servlet.Filter;
+import org.citrusframework.util.StringUtils;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -47,8 +48,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.ServletMapping;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -75,8 +74,8 @@ public class HttpServer extends AbstractServer {
     /** Use root application context as parent to build WebApplicationContext */
     private boolean useRootContextAsParent = false;
 
-    /** Do only start one instance after another so we need a static lock object */
-    private static Object serverLock = new Object();
+    /** Do only start one instance after another, so we need a static lock object */
+    private static final Object serverLock = new Object();
 
     /** Set custom connector with custom idle time and other configuration options */
     private Connector connector;
@@ -186,7 +185,7 @@ public class HttpServer extends AbstractServer {
                 servletHandler.addFilter(filterHolder, filterMapping);
             }
 
-            if (CollectionUtils.isEmpty(filters)) {
+            if (filters == null || filters.isEmpty()) {
                 addRequestCachingFilter();
                 addGzipFilter();
             }
@@ -303,7 +302,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the port.
-     * @return the port the port to get.
+     * @return the port to get.
      */
     public int getPort() {
         return port;
@@ -319,7 +318,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the resourceBase.
-     * @return the resourceBase the resourceBase to get.
+     * @return the resourceBase to get.
      */
     public String getResourceBase() {
         return resourceBase;
@@ -335,7 +334,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the contextConfigLocation.
-     * @return the contextConfigLocation the contextConfigLocation to get.
+     * @return the contextConfigLocation to get.
      */
     public String getContextConfigLocation() {
         return contextConfigLocation;
@@ -351,7 +350,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the connector.
-     * @return the connector the connector to get.
+     * @return the connector to get.
      */
     public Connector getConnector() {
         return connector;
@@ -366,7 +365,7 @@ public class HttpServer extends AbstractServer {
     }
 
     /**
-     * Sets the filters property.
+     * Sets the map of filters.
      *
      * @param filters
      */
@@ -375,7 +374,7 @@ public class HttpServer extends AbstractServer {
     }
 
     /**
-     * Gets the value of the filters property.
+     * Gets the map of the filters.
      *
      * @return the filters
      */
@@ -423,7 +422,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the servletMappingPath.
-     * @return the servletMappingPath the servletMappingPath to get.
+     * @return the servletMappingPath to get.
      */
     public String getServletMappingPath() {
         return servletMappingPath;
@@ -439,7 +438,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the contextPath.
-     * @return the contextPath the contextPath to get.
+     * @return the contextPath to get.
      */
     public String getContextPath() {
         return contextPath;
@@ -455,7 +454,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the securityHandler.
-     * @return the securityHandler the securityHandler to get.
+     * @return the securityHandler to get.
      */
     public SecurityHandler getSecurityHandler() {
         return securityHandler;
@@ -471,7 +470,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the servletHandler.
-     * @return the servletHandler the servletHandler to get.
+     * @return the servletHandler to get.
      */
     public ServletHandler getServletHandler() {
         return servletHandler;
@@ -495,7 +494,7 @@ public class HttpServer extends AbstractServer {
 
     /**
      * Gets the useRootContextAsParent.
-     * @return the useRootContextAsParent the useRootContextAsParent to get.
+     * @return the useRootContextAsParent to get.
      */
     public boolean isUseRootContextAsParent() {
         return useRootContextAsParent;

@@ -20,11 +20,10 @@ import javax.xml.namespace.QName;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.Message;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.util.XMLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.xml.namespace.QNameUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.LSException;
@@ -37,13 +36,13 @@ import org.w3c.dom.ls.LSException;
 public class RootQNameMessageSelector extends AbstractMessageSelector {
 
     /** Target message XML root QName to look for */
-    private QName rootQName;
+    private final QName rootQName;
 
     /** Special selector element name identifying this message selector implementation */
     public static final String SELECTOR_ID = "root-qname";
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(RootQNameMessageSelector.class);
+    private static final Logger logger = LoggerFactory.getLogger(RootQNameMessageSelector.class);
 
     /**
      * Default constructor using fields.
@@ -51,9 +50,10 @@ public class RootQNameMessageSelector extends AbstractMessageSelector {
     public RootQNameMessageSelector(String name, String value, TestContext context) {
         super(name, value, context);
 
-        Assert.isTrue(selectKey.equals(SELECTOR_ID),
-                String.format("Invalid usage of root QName message selector - " +
+        if (!selectKey.equals(SELECTOR_ID)) {
+            throw new CitrusRuntimeException(String.format("Invalid usage of root QName message selector - " +
                         "usage restricted to key '%s' but was '%s'",  SELECTOR_ID, selectKey));
+        }
 
         if (QNameUtils.validateQName(value)) {
             this.rootQName = QNameUtils.parseQNameString(value);
@@ -69,7 +69,7 @@ public class RootQNameMessageSelector extends AbstractMessageSelector {
         try {
             doc = XMLUtils.parseMessagePayload(getPayloadAsString(message));
         } catch (LSException e) {
-            log.warn("Root QName message selector ignoring not well-formed XML message payload", e);
+            logger.warn("Root QName message selector ignoring not well-formed XML message payload", e);
             return false; // non XML message - not accepted
         }
 

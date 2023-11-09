@@ -16,10 +16,10 @@
 
 package org.citrusframework.actions;
 
-import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.sql.DataSource;
 
 import org.citrusframework.AbstractTestActionBuilder;
 import org.citrusframework.TestAction;
@@ -28,11 +28,9 @@ import org.citrusframework.TestActorAware;
 import org.citrusframework.common.Described;
 import org.citrusframework.common.Named;
 import org.citrusframework.context.TestContext;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.util.SqlUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -45,8 +43,6 @@ import org.springframework.transaction.TransactionDefinition;
  * @author Christoph Deppisch
  */
 public abstract class AbstractDatabaseConnectingTestAction extends JdbcDaoSupport implements TestAction, Named, Described, TestActorAware {
-    /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /** Text describing the test action */
     private String description;
@@ -120,8 +116,7 @@ public abstract class AbstractDatabaseConnectingTestAction extends JdbcDaoSuppor
      * @return list of SQL statements.
      */
     protected List<String> createStatementsFromFileResource(TestContext context) {
-        return SqlUtils.createStatementsFromFileResource(new PathMatchingResourcePatternResolver()
-                .getResource(context.replaceDynamicContentInString(sqlResourcePath)));
+        return SqlUtils.createStatementsFromFileResource(Resources.fromClasspath(context.replaceDynamicContentInString(sqlResourcePath)));
     }
 
     /**
@@ -132,8 +127,7 @@ public abstract class AbstractDatabaseConnectingTestAction extends JdbcDaoSuppor
      * @return list of SQL statements.
      */
     protected List<String> createStatementsFromFileResource(TestContext context, SqlUtils.LastScriptLineDecorator lineDecorator) {
-        return SqlUtils.createStatementsFromFileResource(new PathMatchingResourcePatternResolver()
-                .getResource(context.replaceDynamicContentInString(sqlResourcePath)), lineDecorator);
+        return SqlUtils.createStatementsFromFileResource(Resources.fromClasspath(context.replaceDynamicContentInString(sqlResourcePath)), lineDecorator);
     }
 
     @Override

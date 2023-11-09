@@ -21,18 +21,18 @@ import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
 import org.citrusframework.AbstractTestActionBuilder;
 import org.citrusframework.actions.AbstractTestAction;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resource;
 import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.script.TemplateBasedScriptBuilder;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.util.StringUtils;
 
 /**
  * Action executes groovy scripts either specified inline or from external file resource.
@@ -63,7 +63,7 @@ public class GroovyAction extends AbstractTestAction {
     }
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(GroovyAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(GroovyAction.class);
 
     /**
      * Default constructor.
@@ -81,7 +81,7 @@ public class GroovyAction extends AbstractTestAction {
     @Override
     public void doExecute(TestContext context) {
         try {
-            GroovyClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<GroovyClassLoader>() {
+            GroovyClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<>() {
                 public GroovyClassLoader run() {
                     ClassLoader parent = getClass().getClassLoader();
                     return new GroovyClassLoader(parent);
@@ -116,8 +116,8 @@ public class GroovyAction extends AbstractTestAction {
                 groovyObject = (GroovyObject) groovyClass.getDeclaredConstructor().newInstance();
             }
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Executing Groovy script:\n" + code);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Executing Groovy script:\n" + code);
             }
 
             // execute the Groovy script
@@ -127,7 +127,7 @@ public class GroovyAction extends AbstractTestAction {
                 groovyObject.invokeMethod("run", new Object[] {});
             }
 
-            LOG.info("Groovy script execution successful");
+            logger.info("Groovy script execution successful");
         } catch (CitrusRuntimeException e) {
             throw e;
         } catch (Exception e) {

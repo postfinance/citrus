@@ -22,12 +22,12 @@ import org.citrusframework.message.Message;
 import org.citrusframework.message.correlation.CorrelationManager;
 import org.citrusframework.message.correlation.PollingCorrelationManager;
 import org.citrusframework.messaging.ReplyProducer;
+import org.citrusframework.util.ObjectHelper;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
  */
 public class ChannelSyncConsumer extends ChannelConsumer implements ReplyProducer {
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(ChannelSyncConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChannelSyncConsumer.class);
 
     /** Reply channel store */
     private CorrelationManager<MessageChannel> correlationManager;
@@ -65,16 +65,16 @@ public class ChannelSyncConsumer extends ChannelConsumer implements ReplyProduce
 
     @Override
     public void send(Message message, TestContext context) {
-        Assert.notNull(message, "Can not send empty message");
+        ObjectHelper.assertNotNull(message, "Can not send empty message");
 
         String correlationKeyName = endpointConfiguration.getCorrelator().getCorrelationKeyName(getName());
         String correlationKey = correlationManager.getCorrelationKey(correlationKeyName, context);
         MessageChannel replyChannel = correlationManager.find(correlationKey, endpointConfiguration.getTimeout());
-        Assert.notNull(replyChannel, "Failed to find reply channel for message correlation key: " + correlationKey);
+        ObjectHelper.assertNotNull(replyChannel, "Failed to find reply channel for message correlation key: " + correlationKey);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending message to reply channel: '" + replyChannel + "'");
-            log.debug("Message to send is:\n" + message.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending message to reply channel: '" + replyChannel + "'");
+            logger.debug("Message to send is:\n" + message.toString());
         }
 
         try {
@@ -84,7 +84,7 @@ public class ChannelSyncConsumer extends ChannelConsumer implements ReplyProduce
             throw new CitrusRuntimeException("Failed to send message to channel: '" + replyChannel + "'", e);
         }
 
-        log.info("Message was sent to reply channel: '" + replyChannel + "'");
+        logger.info("Message was sent to reply channel: '" + replyChannel + "'");
     }
 
     /**
@@ -106,7 +106,7 @@ public class ChannelSyncConsumer extends ChannelConsumer implements ReplyProduce
             correlationManager.saveCorrelationKey(correlationKeyName, correlationKey, context);
             correlationManager.store(correlationKey, replyChannel);
         } else {
-            log.warn("Unable to retrieve reply message channel for message \n" +
+            logger.warn("Unable to retrieve reply message channel for message \n" +
                     receivedMessage + "\n - no reply channel found in message headers!");
         }
     }

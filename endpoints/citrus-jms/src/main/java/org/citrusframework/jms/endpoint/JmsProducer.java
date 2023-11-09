@@ -16,16 +16,15 @@
 
 package org.citrusframework.jms.endpoint;
 
+import jakarta.jms.Destination;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.Message;
 import org.citrusframework.messaging.Producer;
+import org.citrusframework.util.ObjectHelper;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
-
-import jakarta.jms.Destination;
 
 /**
  * @author Christoph Deppisch
@@ -34,7 +33,7 @@ import jakarta.jms.Destination;
 public class JmsProducer implements Producer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(JmsProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(JmsProducer.class);
 
     /** The producer name. */
     private final String name;
@@ -54,7 +53,7 @@ public class JmsProducer implements Producer {
 
     @Override
     public void send(final Message message, final TestContext context) {
-        Assert.notNull(message, "Message is empty - unable to send empty message");
+        ObjectHelper.assertNotNull(message, "Message is empty - unable to send empty message");
 
         if (endpointConfiguration.getDestination() != null) {
             send(message, endpointConfiguration.getDestination(), context);
@@ -82,8 +81,8 @@ public class JmsProducer implements Producer {
      * @param context
      */
     private void send(Message message, String destinationName, TestContext context) {
-        if (log.isDebugEnabled()) {
-            log.debug("Sending JMS message to destination: '" + destinationName + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending JMS message to destination: '" + destinationName + "'");
         }
 
         endpointConfiguration.getJmsTemplate().send(destinationName, session -> {
@@ -92,7 +91,7 @@ public class JmsProducer implements Producer {
             return jmsMessage;
         });
 
-        log.info("Message was sent to JMS destination: '" + destinationName + "'");
+        logger.info("Message was sent to JMS destination: '" + destinationName + "'");
     }
 
     /**
@@ -102,8 +101,8 @@ public class JmsProducer implements Producer {
      * @param context
      */
     private void send(Message message, Destination destination, TestContext context) {
-        if (log.isDebugEnabled()) {
-            log.debug("Sending JMS message to destination: '" + endpointConfiguration.getDestinationName(destination) + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending JMS message to destination: '" + endpointConfiguration.getDestinationName(destination) + "'");
         }
 
         endpointConfiguration.getJmsTemplate().send(destination, session -> {
@@ -112,7 +111,7 @@ public class JmsProducer implements Producer {
             return jmsMessage;
         });
 
-        log.info("Message was sent to JMS destination: '" + endpointConfiguration.getDestinationName(destination) + "'");
+        logger.info("Message was sent to JMS destination: '" + endpointConfiguration.getDestinationName(destination) + "'");
     }
 
     @Override

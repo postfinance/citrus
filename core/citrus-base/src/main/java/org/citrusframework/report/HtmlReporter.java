@@ -19,7 +19,6 @@ package org.citrusframework.report;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.HashMap;
@@ -27,16 +26,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.commons.codec.binary.Base64;
 import org.citrusframework.TestCase;
 import org.citrusframework.TestCaseMetaInfo;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.util.FileUtils;
 import org.citrusframework.util.PropertyUtils;
-import org.apache.commons.codec.binary.Base64;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.StringUtils;
 
 /**
  * Basic logging reporter generating a HTML report with detailed test results.
@@ -46,7 +45,7 @@ import org.springframework.util.StringUtils;
 public class HtmlReporter extends AbstractOutputFileReporter implements TestListener {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(HtmlReporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(HtmlReporter.class);
 
     /** Map holding additional information of test cases */
     private Map<String, ResultDetail> details = new HashMap<>();
@@ -58,7 +57,7 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
     private String testDetailTemplate = HtmlReporterSettings.getReportDetailTemplate();
 
     /** Output directory */
-    private String outputDirectory = HtmlReporterSettings.getReportDirectory();
+    private final String outputDirectory = HtmlReporterSettings.getReportDirectory();
 
     /** Resulting HTML test report file name */
     private String reportFileName = HtmlReporterSettings.getReportFile();
@@ -76,14 +75,14 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
     public String getReportContent(TestResults testResults) {
         final StringBuilder reportDetails = new StringBuilder();
 
-        log.debug("Generating HTML test report");
+        logger.debug("Generating HTML test report");
 
         try {
             final String testDetails = FileUtils.readToString(FileUtils.getFileResource(testDetailTemplate));
             final String emptyString = "";
 
             testResults.doWithResults(result -> {
-                ResultDetail detail = Optional.ofNullable(details.get(result.getTestName())).orElse(new ResultDetail());
+                ResultDetail detail = Optional.ofNullable(details.get(result.getTestName())).orElseGet(ResultDetail::new);
 
                 Properties detailProps = new Properties();
                 detailProps.put("test.style.class", result.getResult().toLowerCase());
@@ -136,20 +135,20 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
                 os.write(contents);
             }
         } catch(IOException e) {
-            log.warn("Failed to add logo image data to HTML report", e);
+            logger.warn("Failed to add logo image data to HTML report", e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch(IOException ex) {
-                    log.warn("Failed to close logo image resource for HTML report", ex);
+                    logger.warn("Failed to close logo image resource for HTML report", ex);
                 }
             }
 
             try {
                 os.flush();
             } catch(IOException ex) {
-                log.warn("Failed to flush logo image stream for HTML report", ex);
+                logger.warn("Failed to flush logo image stream for HTML report", ex);
             }
         }
 
@@ -172,8 +171,7 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
                 if (!ex.getFailureStack().isEmpty()) {
                     FailureStackElement stackElement = ex.getFailureStack().pop();
                     if (stackElement.getLineNumberStart() > 0) {
-                        reader = new BufferedReader(new FileReader(
-                                new ClassPathResource(stackElement.getTestFilePath() + FileUtils.FILE_EXTENSION_XML).getFile()));
+                        reader = new BufferedReader(Resources.fromClasspath(stackElement.getTestFilePath() + FileUtils.FILE_EXTENSION_XML).getReader());
 
                         codeSnippet.append("<div class=\"code-snippet\">");
                         codeSnippet.append("<h2 class=\"code-title\">" + stackElement.getTestFilePath() + ".xml</h2>");
@@ -209,13 +207,13 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
                 }
             }
         } catch (IOException e) {
-            log.error("Failed to construct HTML code snippet", e);
+            logger.error("Failed to construct HTML code snippet", e);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    log.warn("Failed to close test file", e);
+                    logger.warn("Failed to close test file", e);
                 }
             }
         }
@@ -275,17 +273,6 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
      */
     public void setLogo(String logo) {
         this.logo = logo;
-    }
-
-    /**
-     * Sets the outputDirectory property.
-     *
-     * @param outputDirectory
-     * @deprecated in favor of using {@link AbstractTestReporter#setReportDirectory}.
-     */
-    @Deprecated
-    public void setOutputDirectory(String outputDirectory) {
-        setReportDirectory(outputDirectory);
     }
 
     @Override

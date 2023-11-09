@@ -22,19 +22,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.MessageTimeoutException;
 import org.citrusframework.kafka.message.KafkaMessageHeaders;
 import org.citrusframework.message.Message;
 import org.citrusframework.messaging.AbstractMessageConsumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -43,7 +42,7 @@ import org.springframework.util.StringUtils;
 public class KafkaConsumer extends AbstractMessageConsumer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(KafkaConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumer.class);
 
     /** Endpoint configuration */
     protected final KafkaEndpointConfiguration endpointConfiguration;
@@ -67,12 +66,12 @@ public class KafkaConsumer extends AbstractMessageConsumer {
         String topic = context.replaceDynamicContentInString(Optional.ofNullable(endpointConfiguration.getTopic())
                                                                      .orElseThrow(() -> new CitrusRuntimeException("Missing Kafka topic to receive messages from - add topic to endpoint configuration")));
 
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving Kafka message on topic: '" + topic);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Receiving Kafka message on topic: '" + topic);
         }
 
-        if (CollectionUtils.isEmpty(consumer.subscription())) {
-            consumer.subscribe(Arrays.asList(StringUtils.commaDelimitedListToStringArray(topic)));
+        if (consumer.subscription() == null || consumer.subscription().isEmpty()) {
+            consumer.subscribe(Arrays.stream(topic.split(",")).collect(Collectors.toList()));
         }
 
         ConsumerRecords<Object, Object> records = consumer.poll(Duration.ofMillis(timeout));
@@ -81,8 +80,8 @@ public class KafkaConsumer extends AbstractMessageConsumer {
             throw new MessageTimeoutException(timeout, topic);
         }
 
-        if (log.isDebugEnabled()) {
-            records.forEach(record -> log.debug("Received message: (" + record.key() + ", " + record.value() + ") at offset " + record.offset()));
+        if (logger.isDebugEnabled()) {
+            records.forEach(record -> logger.debug("Received message: (" + record.key() + ", " + record.value() + ") at offset " + record.offset()));
         }
 
         Message received = endpointConfiguration.getMessageConverter()
@@ -91,7 +90,7 @@ public class KafkaConsumer extends AbstractMessageConsumer {
 
         consumer.commitSync(Duration.ofMillis(endpointConfiguration.getTimeout()));
 
-        log.info("Received Kafka message on topic: '" + topic);
+        logger.info("Received Kafka message on topic: '" + topic);
         return received;
     }
 
@@ -100,7 +99,7 @@ public class KafkaConsumer extends AbstractMessageConsumer {
      */
     public void stop() {
         try {
-            if (!CollectionUtils.isEmpty(consumer.subscription())) {
+            if (consumer.subscription() != null && !consumer.subscription().isEmpty()) {
                 consumer.unsubscribe();
             }
         } finally {
@@ -114,7 +113,7 @@ public class KafkaConsumer extends AbstractMessageConsumer {
      */
     private org.apache.kafka.clients.consumer.KafkaConsumer<Object, Object> createConsumer() {
         Map<String, Object> consumerProps = new HashMap<>();
-        consumerProps.put(ConsumerConfig.CLIENT_ID_CONFIG, Optional.ofNullable(endpointConfiguration.getClientId()).orElse(KafkaMessageHeaders.KAFKA_PREFIX + "consumer_" + UUID.randomUUID().toString()));
+        consumerProps.put(ConsumerConfig.CLIENT_ID_CONFIG, Optional.ofNullable(endpointConfiguration.getClientId()).orElseGet(()  -> KafkaMessageHeaders.KAFKA_PREFIX + "consumer_" + UUID.randomUUID().toString()));
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, endpointConfiguration.getConsumerGroup());
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, Optional.ofNullable(endpointConfiguration.getServer()).orElse("localhost:9092"));
         consumerProps.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);

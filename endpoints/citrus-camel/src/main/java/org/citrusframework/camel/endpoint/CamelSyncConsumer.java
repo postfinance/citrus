@@ -18,6 +18,7 @@ package org.citrusframework.camel.endpoint;
 
 import java.util.Map;
 
+import org.apache.camel.Exchange;
 import org.citrusframework.camel.message.CamelMessageHeaders;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
@@ -27,10 +28,9 @@ import org.citrusframework.message.MessageHeaders;
 import org.citrusframework.message.correlation.CorrelationManager;
 import org.citrusframework.message.correlation.PollingCorrelationManager;
 import org.citrusframework.messaging.ReplyProducer;
-import org.apache.camel.Exchange;
+import org.citrusframework.util.ObjectHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 /**
  * @author Christoph Deppisch
@@ -39,7 +39,7 @@ import org.springframework.util.Assert;
 public class CamelSyncConsumer extends CamelConsumer implements ReplyProducer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(CamelSyncConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(CamelSyncConsumer.class);
 
     /** Storage for in flight exchanges */
     private CorrelationManager<Exchange> correlationManager;
@@ -70,8 +70,8 @@ public class CamelSyncConsumer extends CamelConsumer implements ReplyProducer {
             throw new CitrusRuntimeException("Missing endpoint or endpointUri on Camel consumer");
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving message from camel endpoint: '" + endpointUri + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Receiving message from camel endpoint: '" + endpointUri + "'");
         }
 
         Exchange exchange;
@@ -85,7 +85,7 @@ public class CamelSyncConsumer extends CamelConsumer implements ReplyProducer {
             throw new MessageTimeoutException(timeout, endpointUri);
         }
 
-        log.info("Received message from camel endpoint: '" + endpointUri + "'");
+        logger.info("Received message from camel endpoint: '" + endpointUri + "'");
 
         Message message = endpointConfiguration.getMessageConverter().convertInbound(exchange, endpointConfiguration, context);
         context.onInboundMessage(message);
@@ -100,24 +100,24 @@ public class CamelSyncConsumer extends CamelConsumer implements ReplyProducer {
 
     @Override
     public void send(Message message, TestContext context) {
-        Assert.notNull(message, "Message is empty - unable to send empty message");
+        ObjectHelper.assertNotNull(message, "Message is empty - unable to send empty message");
 
         String correlationKeyName = endpointConfiguration.getCorrelator().getCorrelationKeyName(getName());
         String correlationKey = correlationManager.getCorrelationKey(correlationKeyName, context);
         Exchange exchange = correlationManager.find(correlationKey, endpointConfiguration.getTimeout());
-        Assert.notNull(exchange, "Failed to find camel exchange for message correlation key: '" + correlationKey + "'");
+        ObjectHelper.assertNotNull(exchange, "Failed to find camel exchange for message correlation key: '" + correlationKey + "'");
 
         buildOutMessage(exchange, message);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending reply message to camel endpoint: '" + exchange.getFromEndpoint() + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending reply message to camel endpoint: '" + exchange.getFromEndpoint() + "'");
         }
 
         getConsumerTemplate().doneUoW(exchange);
 
         context.onOutboundMessage(message);
 
-        log.info("Message was sent to camel endpoint: '" + exchange.getFromEndpoint() + "'");
+        logger.info("Message was sent to camel endpoint: '" + exchange.getFromEndpoint() + "'");
     }
 
     /**
@@ -150,7 +150,7 @@ public class CamelSyncConsumer extends CamelConsumer implements ReplyProducer {
                     exchange.setException((Throwable) exception.getDeclaredConstructor().newInstance());
                 }
             } catch (Exception e) {
-                log.warn("Unable to create proper exception instance for exchange!", e);
+                logger.warn("Unable to create proper exception instance for exchange!", e);
             }
         }
 

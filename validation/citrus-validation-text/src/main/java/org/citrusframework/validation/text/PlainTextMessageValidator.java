@@ -24,11 +24,10 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageType;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.DefaultMessageValidator;
 import org.citrusframework.validation.context.ValidationContext;
 import org.citrusframework.validation.matcher.ValidationMatcherUtils;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Plain text validator using simple String comparison.
@@ -51,11 +50,11 @@ public class PlainTextMessageValidator extends DefaultMessageValidator {
     public void validateMessage(Message receivedMessage, Message controlMessage,
                                 TestContext context, ValidationContext validationContext) throws ValidationException {
         if (controlMessage == null || controlMessage.getPayload() == null) {
-            log.debug("Skip message payload validation as no control message was defined");
+            logger.debug("Skip message payload validation as no control message was defined");
             return;
         }
 
-        log.debug("Start text message validation");
+        logger.debug("Start text message validation");
 
         try {
             String resultValue = normalizeWhitespace(receivedMessage.getPayload(String.class).trim());
@@ -74,7 +73,7 @@ public class PlainTextMessageValidator extends DefaultMessageValidator {
             throw new ValidationException("Failed to validate text content", e);
         }
 
-        log.info("Text validation successful: All values OK");
+        logger.info("Text validation successful: All values OK");
     }
 
     /**
@@ -162,15 +161,15 @@ public class PlainTextMessageValidator extends DefaultMessageValidator {
      */
     private void validateText(String receivedMessagePayload, String controlMessagePayload) {
         if (!StringUtils.hasText(controlMessagePayload)) {
-            log.debug("Skip message payload validation as no control message was defined");
+            logger.debug("Skip message payload validation as no control message was defined");
             return;
-        } else {
-            Assert.isTrue(StringUtils.hasText(receivedMessagePayload), "Validation failed - " +
+        } else if (!StringUtils.hasText(receivedMessagePayload)) {
+            throw new ValidationException("Validation failed - " +
                     "expected message contents, but received empty message!");
         }
 
         if (!receivedMessagePayload.equals(controlMessagePayload)) {
-            if (StringUtils.trimAllWhitespace(receivedMessagePayload).equals(StringUtils.trimAllWhitespace(controlMessagePayload))) {
+            if (receivedMessagePayload.replaceAll("\\s", "").equals(controlMessagePayload.replaceAll("\\s", ""))) {
                 throw new ValidationException("Text values not equal (only whitespaces!), expected '" + controlMessagePayload + "' " +
                         "but was '" + receivedMessagePayload + "'");
             } else {

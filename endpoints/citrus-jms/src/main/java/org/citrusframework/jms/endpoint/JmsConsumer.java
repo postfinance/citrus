@@ -17,15 +17,14 @@
 package org.citrusframework.jms.endpoint;
 
 import jakarta.jms.Destination;
-
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.MessageTimeoutException;
 import org.citrusframework.message.Message;
 import org.citrusframework.messaging.AbstractSelectiveMessageConsumer;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -34,7 +33,7 @@ import org.springframework.util.StringUtils;
 public class JmsConsumer extends AbstractSelectiveMessageConsumer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(JmsConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(JmsConsumer.class);
 
     /** Endpoint configuration */
     protected final JmsEndpointConfiguration endpointConfiguration;
@@ -81,8 +80,8 @@ public class JmsConsumer extends AbstractSelectiveMessageConsumer {
     private jakarta.jms.Message receive(String destinationName, String selector) {
         jakarta.jms.Message receivedJmsMessage;
 
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving JMS message on destination: '" + getDestinationNameWithSelector(destinationName, selector) + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Receiving JMS message on destination: '" + getDestinationNameWithSelector(destinationName, selector) + "'");
         }
 
         if (StringUtils.hasText(selector)) {
@@ -95,7 +94,7 @@ public class JmsConsumer extends AbstractSelectiveMessageConsumer {
             throw new MessageTimeoutException(endpointConfiguration.getTimeout(), getDestinationNameWithSelector(destinationName, selector));
         }
 
-        log.info("Received JMS message on destination: '" + getDestinationNameWithSelector(destinationName, selector) + "'");
+        logger.info("Received JMS message on destination: '" + getDestinationNameWithSelector(destinationName, selector) + "'");
 
         return receivedJmsMessage;
     }
@@ -109,8 +108,8 @@ public class JmsConsumer extends AbstractSelectiveMessageConsumer {
     private jakarta.jms.Message receive(Destination destination, String selector) {
         jakarta.jms.Message receivedJmsMessage;
 
-        if (log.isDebugEnabled()) {
-            log.debug("Receiving JMS message on destination: '" + getDestinationNameWithSelector(endpointConfiguration.getDestinationName(destination), selector) + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Receiving JMS message on destination: '" + getDestinationNameWithSelector(endpointConfiguration.getDestinationName(destination), selector) + "'");
         }
 
         if (StringUtils.hasText(selector)) {
@@ -123,7 +122,7 @@ public class JmsConsumer extends AbstractSelectiveMessageConsumer {
             throw new MessageTimeoutException(endpointConfiguration.getTimeout(), getDestinationNameWithSelector(endpointConfiguration.getDestinationName(destination), selector));
         }
 
-        log.info("Received JMS message on destination: '" + getDestinationNameWithSelector(endpointConfiguration.getDestinationName(destination), selector) + "'");
+        logger.info("Received JMS message on destination: '" + getDestinationNameWithSelector(endpointConfiguration.getDestinationName(destination), selector) + "'");
 
         return receivedJmsMessage;
     }

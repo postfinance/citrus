@@ -16,11 +16,14 @@
 
 package org.citrusframework.validation;
 
+import java.util.Optional;
+
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.message.Message;
 import org.citrusframework.validation.context.ValidationContext;
-import org.springframework.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basic message validator is able to verify empty message payloads. Both received and control message must have
@@ -30,24 +33,26 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultEmptyMessageValidator extends DefaultMessageValidator {
 
+    private static final Logger logger = LoggerFactory.getLogger(DefaultEmptyMessageValidator.class);
+
     @Override
     public void validateMessage(Message receivedMessage, Message controlMessage,
                                 TestContext context, ValidationContext validationContext) {
         if (controlMessage == null || controlMessage.getPayload() == null) {
-            log.debug("Skip message payload validation as no control message was defined");
+            logger.debug("Skip message payload validation as no control message was defined");
             return;
         }
 
-        if (StringUtils.hasText(controlMessage.getPayload(String.class))) {
+        if (!Optional.ofNullable(controlMessage.getPayload(String.class)).orElse("").isEmpty()) {
             throw new ValidationException("Empty message validation failed - control message is not empty!");
         }
 
-        log.debug("Start to verify empty message payload ...");
+        logger.debug("Start to verify empty message payload ...");
 
-        if (StringUtils.hasText(receivedMessage.getPayload(String.class))) {
+        if (!Optional.ofNullable(receivedMessage.getPayload(String.class)).orElse("").isEmpty()) {
             throw new ValidationException("Validation failed - received message content is not empty!") ;
         }
 
-        log.info("Message payload is empty as expected: All values OK");
+        logger.info("Message payload is empty as expected: All values OK");
     }
 }

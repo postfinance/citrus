@@ -1,9 +1,9 @@
 package org.citrusframework.validation;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.spi.ResourcePathTypeResolver;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public interface ValueMatcher {
 
     /** Logger */
-    Logger LOG = LoggerFactory.getLogger(MessageValidator.class);
+    Logger logger = LoggerFactory.getLogger(MessageValidator.class);
 
     /** Message validator resource lookup path */
     String RESOURCE_PATH = "META-INF/citrus/value/matcher";
@@ -25,7 +25,7 @@ public interface ValueMatcher {
     /** Type resolver to find custom message validators on classpath via resource path lookup */
     TypeResolver TYPE_RESOLVER = new ResourcePathTypeResolver(RESOURCE_PATH);
 
-    Map<String, ValueMatcher> validators = new HashMap<>();
+    Map<String, ValueMatcher> validators = new ConcurrentHashMap<>();
 
     /**
      * Resolves all available validators from resource path lookup. Scans classpath for validator meta information
@@ -36,8 +36,8 @@ public interface ValueMatcher {
         if (validators.isEmpty()) {
             validators.putAll(TYPE_RESOLVER.resolveAll());
 
-            if (LOG.isDebugEnabled()) {
-                validators.forEach((k, v) -> LOG.debug(String.format("Found value matcher '%s' as %s", k, v.getClass())));
+            if (logger.isDebugEnabled()) {
+                validators.forEach((k, v) -> logger.debug(String.format("Found validator '%s' as %s", k, v.getClass())));
             }
         }
         return validators;
@@ -55,7 +55,7 @@ public interface ValueMatcher {
             ValueMatcher instance = TYPE_RESOLVER.resolve(validator);
             return Optional.of(instance);
         } catch (CitrusRuntimeException e) {
-            LOG.warn(String.format("Failed to resolve value matcher from resource '%s/%s'", RESOURCE_PATH, validator));
+            logger.warn(String.format("Failed to resolve value matcher from resource '%s/%s'", RESOURCE_PATH, validator));
         }
 
         return Optional.empty();

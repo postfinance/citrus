@@ -39,7 +39,6 @@ import org.citrusframework.TestGroupAware;
 import org.citrusframework.annotations.CitrusAnnotations;
 import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.annotations.CitrusTestSource;
-import org.citrusframework.annotations.CitrusXmlTest;
 import org.citrusframework.common.DefaultTestLoader;
 import org.citrusframework.common.TestLoader;
 import org.citrusframework.common.TestSourceAware;
@@ -47,11 +46,9 @@ import org.citrusframework.config.CitrusSpringConfig;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.testng.TestNGHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.citrusframework.util.ObjectHelper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.util.Assert;
 import org.testng.IHookCallBack;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
@@ -74,9 +71,6 @@ import org.testng.annotations.Listeners;
 public class TestNGCitrusSpringSupport extends AbstractTestNGSpringContextTests
         implements GherkinTestActionRunner {
 
-    /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
     /** Citrus instance */
     protected Citrus citrus;
 
@@ -95,8 +89,7 @@ public class TestNGCitrusSpringSupport extends AbstractTestNGSpringContextTests
 
         List<TestLoader> methodTestLoaders = TestNGHelper.createMethodTestLoaders(method, this::createTestLoader);
         if (method.getAnnotation(CitrusTest.class) != null ||
-                method.getAnnotation(CitrusTestSource.class) != null ||
-                method.getAnnotation(CitrusXmlTest.class) != null) {
+                method.getAnnotation(CitrusTestSource.class) != null) {
             try {
                 run(testResult, method, methodTestLoaders, testResult.getMethod().getCurrentInvocationCount());
                 testResult.setStatus(ITestResult.SUCCESS);
@@ -132,60 +125,43 @@ public class TestNGCitrusSpringSupport extends AbstractTestNGSpringContextTests
             CitrusAnnotations.injectCitrusFramework(this, citrus);
         }
 
-        if (method.getAnnotation(CitrusXmlTest.class) != null) {
-            if (!methodTestLoaders.isEmpty()) {
-                TestContext ctx = prepareTestContext(citrus.getCitrusContext().createTestContext());
-                TestLoader testLoader = methodTestLoaders.get(invocationCount % methodTestLoaders.size());
-                CitrusAnnotations.injectAll(testLoader, citrus, ctx);
+        try {
+            TestContext ctx = prepareTestContext(citrus.getCitrusContext().createTestContext());
 
-                testLoader.configureTestCase(t -> {
-                    if (t instanceof TestGroupAware) {
-                        ((TestGroupAware) t).setGroups(testResult.getMethod().getGroups());
+            TestCaseRunner runner = TestNGHelper.createTestCaseRunner(this, method, ctx);
+            runner.groups(testResult.getMethod().getGroups());
+            testResult.setAttribute(TestNGHelper.BUILDER_ATTRIBUTE, runner);
+
+            delegate = runner;
+
+            CitrusAnnotations.injectAll(this, citrus, ctx);
+
+            TestLoader testLoader ;
+            if (method.getAnnotation(CitrusTestSource.class) != null && !methodTestLoaders.isEmpty()) {
+                testLoader = methodTestLoaders.get(invocationCount % methodTestLoaders.size());
+
+                if (testLoader instanceof TestSourceAware) {
+                    String[] sources = method.getAnnotation(CitrusTestSource.class).sources();
+                    if (sources.length > 0) {
+                        ((TestSourceAware) testLoader).setSource(sources[0]);
                     }
-                });
-                testLoader.configureTestCase(t -> testCase = t);
-
-                TestNGHelper.invokeTestMethod(this, testResult, method, testLoader, ctx, invocationCount);
-            }
-        } else {
-            try {
-                TestContext ctx = prepareTestContext(citrus.getCitrusContext().createTestContext());
-
-                TestCaseRunner runner = TestNGHelper.createTestCaseRunner(this, method, ctx);
-                runner.groups(testResult.getMethod().getGroups());
-                testResult.setAttribute(TestNGHelper.BUILDER_ATTRIBUTE, runner);
-
-                delegate = runner;
-
-                CitrusAnnotations.injectAll(this, citrus, ctx);
-
-                TestLoader testLoader ;
-                if (method.getAnnotation(CitrusTestSource.class) != null && !methodTestLoaders.isEmpty()) {
-                    testLoader = methodTestLoaders.get(invocationCount % methodTestLoaders.size());
-
-                    if (testLoader instanceof TestSourceAware) {
-                        String[] sources = method.getAnnotation(CitrusTestSource.class).sources();
-                        if (sources.length > 0) {
-                            ((TestSourceAware) testLoader).setSource(sources[0]);
-                        }
-                    }
-                } else {
-                    testLoader = new DefaultTestLoader();
                 }
-
-                CitrusAnnotations.injectAll(testLoader, citrus, ctx);
-                CitrusAnnotations.injectTestRunner(testLoader, runner);
-                testLoader.configureTestCase(t -> {
-                    if (t instanceof TestGroupAware) {
-                        ((TestGroupAware) t).setGroups(testResult.getMethod().getGroups());
-                    }
-                });
-                testLoader.configureTestCase(t -> testCase = t);
-
-                TestNGHelper.invokeTestMethod(this, testResult, method, testLoader, ctx, invocationCount);
-            } finally {
-                testResult.removeAttribute(TestNGHelper.BUILDER_ATTRIBUTE);
+            } else {
+                testLoader = new DefaultTestLoader();
             }
+
+            CitrusAnnotations.injectAll(testLoader, citrus, ctx);
+            CitrusAnnotations.injectTestRunner(testLoader, runner);
+            testLoader.configureTestCase(t -> {
+                if (t instanceof TestGroupAware) {
+                    ((TestGroupAware) t).setGroups(testResult.getMethod().getGroups());
+                }
+            });
+            testLoader.configureTestCase(t -> testCase = t);
+
+            TestNGHelper.invokeTestMethod(this, testResult, method, testLoader, ctx, invocationCount);
+        } finally {
+            testResult.removeAttribute(TestNGHelper.BUILDER_ATTRIBUTE);
         }
     }
 
@@ -227,7 +203,7 @@ public class TestNGCitrusSpringSupport extends AbstractTestNGSpringContextTests
         } catch (Exception e) {
             throw new CitrusRuntimeException("Failed to initialize Spring test context", e);
         }
-        Assert.notNull(applicationContext, "Missing proper application context in before suite initialization");
+        ObjectHelper.assertNotNull(applicationContext, "Missing proper application context in before suite initialization");
 
         citrus = Citrus.newInstance(new CitrusSpringContextProvider(applicationContext));
         CitrusAnnotations.injectCitrusFramework(this, citrus);

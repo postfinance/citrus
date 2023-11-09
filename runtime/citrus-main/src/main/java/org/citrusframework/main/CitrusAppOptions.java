@@ -21,14 +21,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.citrusframework.TestClass;
+import org.citrusframework.TestSource;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -37,7 +38,7 @@ import org.springframework.util.StringUtils;
 public class CitrusAppOptions<T extends CitrusAppConfiguration> {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(CitrusAppOptions.class);
+    private static final Logger logger = LoggerFactory.getLogger(CitrusAppOptions.class);
 
     protected final List<CliOption<T>> options = new ArrayList<>();
 
@@ -51,7 +52,7 @@ public class CitrusAppOptions<T extends CitrusAppConfiguration> {
                     builder.append(option.getInformation()).append(System.lineSeparator());
                 }
 
-                LOG.info(builder.toString());
+                logger.info(builder.toString());
                 configuration.setTimeToLive(1000);
                 configuration.setSkipTests(true);
             }
@@ -110,10 +111,16 @@ public class CitrusAppOptions<T extends CitrusAppConfiguration> {
             @Override
             protected void doProcess(T configuration, String arg, String value, LinkedList<String> remainingArgs) {
                 if (StringUtils.hasText(value)) {
-                    configuration.getDefaultProperties().putAll(StringUtils.commaDelimitedListToSet(value)
-                                                                            .stream()
-                                                                            .map(keyValue -> Optional.ofNullable(StringUtils.split(keyValue, "=")).orElse(new String[] {keyValue, ""}))
-                                                                            .collect(Collectors.toMap(keyValue -> keyValue[0], keyValue -> keyValue[1])));
+                    configuration.getDefaultProperties().putAll(Arrays.stream(value.split(","))
+                            .map(keyValue -> keyValue.split("="))
+                            .filter(keyValue -> StringUtils.hasText(keyValue[0]))
+                            .map(keyValue -> {
+                                if (keyValue.length < 2) {
+                                    return new String[]{keyValue[0], ""};
+                                }
+                                return keyValue;
+                            })
+                            .collect(Collectors.toMap(keyValue -> keyValue[0], keyValue -> keyValue[1])));
                 } else {
                     throw new CitrusRuntimeException("Missing parameter value for -D/--properties option");
                 }
@@ -147,19 +154,15 @@ public class CitrusAppOptions<T extends CitrusAppConfiguration> {
             protected void doProcess(T configuration, String arg, String value, LinkedList<String> remainingArgs) {
                 if (StringUtils.hasText(value)) {
 
-                    String className = value;
-                    String methodName = null;
-                    if (value.contains("#")) {
-                        className = value.substring(0, value.indexOf("#"));
-                        methodName = value.substring(value.indexOf("#") + 1);
+                    TestSource source;
+                    if (FileUtils.getFileExtension(value).isEmpty()) {
+                        // no file extension assume it is a Java class name
+                        source = TestClass.fromString(value);
+                    } else {
+                        source = FileUtils.getTestSource(value);
                     }
 
-                    TestClass testClass = new TestClass(className);
-                    if (StringUtils.hasText(methodName)) {
-                        testClass.setMethod(methodName);
-                    }
-
-                    configuration.getTestClasses().add(testClass);
+                    configuration.getTestSources().add(source);
                 } else {
                     throw new CitrusRuntimeException("Missing parameter value for -t/--test option");
                 }

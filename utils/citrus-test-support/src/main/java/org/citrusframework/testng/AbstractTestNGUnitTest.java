@@ -18,11 +18,9 @@ package org.citrusframework.testng;
 
 import org.citrusframework.context.TestContext;
 import org.citrusframework.context.TestContextFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.citrusframework.util.ObjectHelper;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.springframework.util.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
@@ -35,9 +33,6 @@ import org.testng.annotations.BeforeSuite;
  */
 @ContextConfiguration(classes = UnitTestConfig.class)
 public abstract class AbstractTestNGUnitTest extends AbstractTestNGSpringContextTests {
-
-    /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** Test context */
     protected TestContext context;
@@ -53,7 +48,7 @@ public abstract class AbstractTestNGUnitTest extends AbstractTestNGSpringContext
     @BeforeSuite(alwaysRun = true)
     public void beforeSuite(ITestContext testContext) throws Exception {
         springTestContextPrepareTestInstance();
-        Assert.notNull(applicationContext, "Missing proper application context in before suite initialization");
+        ObjectHelper.assertNotNull(applicationContext, "Missing proper application context in before suite initialization");
     }
 
     /**

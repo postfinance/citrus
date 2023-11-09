@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 
 import org.citrusframework.context.TestContext;
 import org.citrusframework.message.Message;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.json.JsonPathMessageProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Json data dictionary implementation maps elements via JsonPath expressions. When element is identified by some expression
@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
 public class JsonPathMappingDataDictionary extends AbstractJsonDataDictionary {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(JsonPathMappingDataDictionary.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonPathMappingDataDictionary.class);
 
     @Override
     protected void processMessage(Message message, TestContext context) {
@@ -61,7 +61,7 @@ public class JsonPathMappingDataDictionary extends AbstractJsonDataDictionary {
     public void initialize() {
         if (getPathMappingStrategy() != null &&
                 !getPathMappingStrategy().equals(PathMappingStrategy.EXACT)) {
-            log.warn(String.format("%s ignores path mapping strategy other than %s",
+            logger.warn(String.format("%s ignores path mapping strategy other than %s",
                     getClass().getSimpleName(), PathMappingStrategy.EXACT));
         }
 

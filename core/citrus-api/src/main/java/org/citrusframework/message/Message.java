@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.citrusframework.context.TestContext;
 import org.citrusframework.log.LogMessageModifier;
-import org.springframework.util.CollectionUtils;
 
 /**
  * @author Christoph Deppisch
@@ -47,7 +46,7 @@ public interface Message extends Serializable {
      * @return
      */
     default String print(String body, Map<String, Object> headers, List<String> headerData) {
-        if (CollectionUtils.isEmpty(headerData)) {
+        if (headerData == null || headerData.isEmpty()) {
             return getClass().getSimpleName().toUpperCase() + " [id: " + getId() + ", payload: " + MessagePayloadUtils.prettyPrint(body) + "][headers: " + Collections.unmodifiableMap(headers) + "]";
         } else {
             return getClass().getSimpleName().toUpperCase() + " [id: " + getId() + ", payload: " + MessagePayloadUtils.prettyPrint(body) + "][headers: " + Collections.unmodifiableMap(headers) + "][header-data: " + Collections.unmodifiableList(headerData) + "]";
@@ -55,7 +54,7 @@ public interface Message extends Serializable {
     }
 
     /**
-     * Prints message content and applies log modifier provided in given test context.
+     * Prints message content and applies logger modifier provided in given test context.
      * @return
      */
     default String print(TestContext context) {

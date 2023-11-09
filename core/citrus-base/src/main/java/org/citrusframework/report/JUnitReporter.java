@@ -37,7 +37,7 @@ import org.citrusframework.util.PropertyUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.citrusframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -46,7 +46,7 @@ import org.springframework.util.StringUtils;
 public class JUnitReporter extends AbstractTestReporter {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(JUnitReporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(JUnitReporter.class);
 
     /** Output directory */
     private String outputDirectory = JUnitReporterSettings.getReportDirectory();
@@ -74,7 +74,7 @@ public class JUnitReporter extends AbstractTestReporter {
         if (isEnabled()) {
             ReportTemplates reportTemplates = new ReportTemplates();
 
-            log.debug("Generating JUnit test report");
+            logger.debug("Generating JUnit test report");
 
             try {
                 List<TestResult> results = testResults.asList();
@@ -116,13 +116,13 @@ public class JUnitReporter extends AbstractTestReporter {
             detailProps.put("test.duration", "0.0");
 
             if (result.isFailed()) {
-                detailProps.put("test.error.cause", Optional.ofNullable(result.getCause()).map(Object::getClass).map(Class::getName).orElse(Objects.toString(result.getFailureType(), "")));
+                detailProps.put("test.error.cause", Optional.ofNullable(result.getCause()).map(Object::getClass).map(Class::getName).orElseGet(() -> Objects.toString(result.getFailureType(), "")));
                 detailProps.put("test.error.msg", StringEscapeUtils.escapeXml(result.getErrorMessage()));
                 detailProps.put("test.error.stackTrace", Optional.ofNullable(result.getCause()).map(cause -> {
                     StringWriter writer = new StringWriter();
                     cause.printStackTrace(new PrintWriter(writer));
                     return writer.toString();
-                }).orElse(Objects.toString(result.getFailureType(), "")));
+                }).orElseGet(() -> Objects.toString(result.getFailureType(), "")));
                 reportDetails.append(System.lineSeparator())
                         .append("    ")
                         .append(PropertyUtils.replacePropertiesInString(templates.getFailedTemplate(), detailProps));
@@ -161,7 +161,7 @@ public class JUnitReporter extends AbstractTestReporter {
             fileWriter.append(content);
             fileWriter.flush();
         } catch (IOException e) {
-            log.error("Failed to create test report", e);
+            logger.error("Failed to create test report", e);
         }
     }
 

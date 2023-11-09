@@ -31,13 +31,13 @@ import org.citrusframework.TestActionBuilder;
 import org.citrusframework.actions.AbstractTestAction;
 import org.citrusframework.actions.NoopTestAction;
 import org.citrusframework.context.TestContext;
+import org.citrusframework.context.TestContextFactory;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.functions.FunctionUtils;
 import org.citrusframework.spi.ReferenceResolver;
 import org.citrusframework.spi.ReferenceResolverAware;
 import org.citrusframework.spi.SimpleReferenceResolver;
 import org.citrusframework.util.FileUtils;
-import org.citrusframework.variable.GlobalVariables;
 import org.citrusframework.variable.VariableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ public class Template extends AbstractTestAction {
     private final boolean globalContext;
 
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(Template.class);
+    private static final Logger logger = LoggerFactory.getLogger(Template.class);
 
     /**
      * Default constructor
@@ -92,8 +92,8 @@ public class Template extends AbstractTestAction {
 
     @Override
     public void doExecute(TestContext context) {
-        if (log.isDebugEnabled()) {
-            log.debug("Executing template '" + getName() + "' with " + actions.size() + " embedded actions");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Executing template '" + getName() + "' with " + actions.size() + " embedded actions");
         }
 
         TestContext innerContext;
@@ -102,25 +102,7 @@ public class Template extends AbstractTestAction {
         if (globalContext) {
             innerContext = context;
         } else {
-            innerContext = new TestContext();
-            innerContext.setFunctionRegistry(context.getFunctionRegistry());
-
-            innerContext.setGlobalVariables(new GlobalVariables.Builder()
-                    .variables(context.getGlobalVariables())
-                    .build());
-            innerContext.getVariables().putAll(context.getVariables());
-
-            innerContext.setMessageStore(context.getMessageStore());
-            innerContext.setMessageValidatorRegistry(context.getMessageValidatorRegistry());
-            innerContext.setValidationMatcherRegistry(context.getValidationMatcherRegistry());
-            innerContext.setTestListeners(context.getTestListeners());
-            innerContext.setMessageListeners(context.getMessageListeners());
-            innerContext.setMessageProcessors(context.getMessageProcessors());
-            innerContext.setEndpointFactory(context.getEndpointFactory());
-            innerContext.setNamespaceContextBuilder(context.getNamespaceContextBuilder());
-            innerContext.setReferenceResolver(context.getReferenceResolver());
-            innerContext.setTypeConverter(context.getTypeConverter());
-            innerContext.setLogModifier(context.getLogModifier());
+            innerContext = TestContextFactory.copyOf(context);
         }
 
         for (Entry<String, String> entry : parameter.entrySet()) {
@@ -132,8 +114,8 @@ public class Template extends AbstractTestAction {
                 paramValue = FunctionUtils.resolveFunction(paramValue, context);
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("Setting parameter for template " + param + "=" + paramValue);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Setting parameter for template " + param + "=" + paramValue);
             }
 
             innerContext.setVariable(param, paramValue);
@@ -143,7 +125,7 @@ public class Template extends AbstractTestAction {
             action.build().execute(innerContext);
         }
 
-        log.info("Template was executed successfully");
+        logger.info("Template was executed successfully");
     }
 
     /**
@@ -359,7 +341,7 @@ public class Template extends AbstractTestAction {
             if (referenceResolver != null && templateName != null) {
                 Template rootTemplate = referenceResolver.resolve(templateName, Template.class);
                 globalContext(rootTemplate.isGlobalContext() && globalContext);
-                actor(Optional.ofNullable(getActor()).orElse(rootTemplate.getActor()));
+                actor(Optional.ofNullable(getActor()).orElseGet(rootTemplate::getActor));
                 Map<String, String> mergedParameters = new LinkedHashMap<>();
                 mergedParameters.putAll(rootTemplate.getParameter());
                 mergedParameters.putAll(parameter);

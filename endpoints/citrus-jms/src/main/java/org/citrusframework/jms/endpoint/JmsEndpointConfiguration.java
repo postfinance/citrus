@@ -24,6 +24,7 @@ import jakarta.jms.Topic;
 
 import org.citrusframework.endpoint.AbstractPollableEndpointConfiguration;
 import org.citrusframework.endpoint.resolver.EndpointUriResolver;
+import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.jms.endpoint.resolver.DynamicDestinationNameResolver;
 import org.citrusframework.jms.message.JmsMessageConverter;
 import org.citrusframework.jms.message.JmsMessageHeaderMapper;
@@ -32,7 +33,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.JmsHeaderMapper;
 import org.springframework.jms.support.destination.DestinationResolver;
-import org.springframework.util.Assert;
 
 /**
  * @author Christoph Deppisch
@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
 public class JmsEndpointConfiguration extends AbstractPollableEndpointConfiguration {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(JmsEndpointConfiguration.class);
+    private static final Logger logger = LoggerFactory.getLogger(JmsEndpointConfiguration.class);
 
     /** The connection factory */
     private ConnectionFactory connectionFactory;
@@ -98,7 +98,7 @@ public class JmsEndpointConfiguration extends AbstractPollableEndpointConfigurat
                 return destination.toString();
             }
         } catch (JMSException e) {
-            LOG.error("Unable to resolve destination name", e);
+            logger.error("Unable to resolve destination name", e);
             return "";
         }
     }
@@ -107,8 +107,9 @@ public class JmsEndpointConfiguration extends AbstractPollableEndpointConfigurat
      * Creates default JmsTemplate instance from connection factory and destination.
      */
     private void createJmsTemplate() {
-        Assert.isTrue(this.connectionFactory != null,
-                "Neither 'jmsTemplate' nor 'connectionFactory' is set correctly.");
+        if (this.connectionFactory == null) {
+            throw new CitrusRuntimeException("Neither 'jmsTemplate' nor 'connectionFactory' is set correctly.");
+        }
 
         jmsTemplate = new JmsTemplate();
 

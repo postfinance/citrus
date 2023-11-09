@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import org.citrusframework.CitrusSettings;
 
 /**
- * Default modifier implementation uses regular expressions to mask log output.
+ * Default modifier implementation uses regular expressions to mask logger output.
  * Regular expressions match on default keywords.
  *
  * @author Christoph Deppisch

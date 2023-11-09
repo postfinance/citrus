@@ -21,7 +21,7 @@
   <groupId>org.citrusframework</groupId>
   <artifactId>citrus</artifactId>
   <packaging>pom</packaging>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>4.1.0-SNAPSHOT</version>
   <name>Citrus</name>
   <description>Citrus Test Framework</description>
   <url>https://citrusframework.org</url>
@@ -134,7 +134,7 @@
     <project.docs.version>${project.version}</project.docs.version>
     <java.version>17</java.version>
 
-    <maven.version>3.8.4</maven.version>
+    <maven.version>3.9.5</maven.version>
     <maven.compiler.version>3.11.0</maven.compiler.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -154,10 +154,10 @@
     <maven.javadoc.plugin.version>3.5.0</maven.javadoc.plugin.version>
     <maven.nexus-staging.plugin.version>1.6.13</maven.nexus-staging.plugin.version>
     <maven.plugin.plugin.version>3.9.0</maven.plugin.plugin.version>
-    <maven.plugin.annotations.version>3.9.0</maven.plugin.annotations.version>
+    <maven.plugin.annotations.version>3.10.1</maven.plugin.annotations.version>
     <maven.release.plugin.version>3.0.1</maven.release.plugin.version>
     <maven.resource.plugin.version>3.3.1</maven.resource.plugin.version>
-    <maven.scm.plugin.version>1.11.1</maven.scm.plugin.version>
+    <maven.scm.plugin.version>1.11.2</maven.scm.plugin.version>
     <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
     <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
     <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
@@ -167,34 +167,32 @@
     <asciidoctor.maven.plugin.version>2.2.4</asciidoctor.maven.plugin.version>
     <jaxb.maven.plugin.version>3.1.0</jaxb.maven.plugin.version>
 
-    <activemq.artemis.version>2.30.0</activemq.artemis.version>
+    <activemq.artemis.version>2.31.0</activemq.artemis.version>
     <angus-mail.version>2.0.2</angus-mail.version>
-    <apache.ant.version>1.10.13</apache.ant.version>
-    <apache.camel.version>4.0.0</apache.camel.version>
-    <arquillian.version>1.7.0.Final</arquillian.version>
-    <bouncycastle.version>1.70</bouncycastle.version>
-    <byte.buddy.version>1.14.5</byte.buddy.version>
+    <apache.ant.version>1.10.14</apache.ant.version>
+    <apache.camel.version>4.1.0</apache.camel.version>
+    <ascii-table-version>1.8.0</ascii-table-version>
+    <bouncycastle.version>1.76</bouncycastle.version>
+    <byte.buddy.version>1.14.9</byte.buddy.version>
     <citrus.db.version>0.1.4</citrus.db.version>
-    <commons.dbcp2.version>2.9.0</commons.dbcp2.version>
+    <commons.dbcp2.version>2.10.0</commons.dbcp2.version>
     <commons.cli.version>1.5.0</commons.cli.version>
     <commons.codec.version>1.16.0</commons.codec.version>
-    <commons.io.version>2.13.0</commons.io.version>
+    <commons.io.version>2.14.0</commons.io.version>
     <commons.lang.version>2.6</commons.lang.version>
-    <commons.logging.api.version>1.1</commons.logging.api.version>
     <commons.logging.version>1.2</commons.logging.version>
-    <commons.net.version>3.9.0</commons.net.version>
-    <cucumber.version>7.13.0</cucumber.version>
-    <docker-java.version>3.3.2</docker-java.version>
-    <dropwizard.metrics.version>4.2.19</dropwizard.metrics.version>
+    <commons.net.version>3.10.0</commons.net.version>
+    <cucumber.version>7.14.0</cucumber.version>
+    <docker-java.version>3.3.3</docker-java.version>
+    <dropwizard.metrics.version>4.2.21</dropwizard.metrics.version>
     <ftpserver.version>1.2.0</ftpserver.version>
-    <groovy.version>3.0.18</groovy.version>
-    <google.guava.version>32.1.1-jre</google.guava.version>
+    <groovy.version>3.0.19</groovy.version>
     <greenmail.version>2.0.0</greenmail.version>
     <hamcrest.version>2.2</hamcrest.version>
-    <htmlunit.version>4.10.0</htmlunit.version>
+    <htmlunit.version>4.13.0</htmlunit.version>
     <httpclient.version>5.2.1</httpclient.version>
     <hsqldb.version>2.7.2</hsqldb.version>
-    <jackson.version>2.15.2</jackson.version>
+    <jackson.version>2.15.3</jackson.version>
     <jakarta.activation.api.version>2.1.2</jakarta.activation.api.version>
     <jakarta.activation.version>2.0.1</jakarta.activation.version>
     <jakarta.annotation-api.version>2.1.1</jakarta.annotation-api.version>
@@ -203,50 +201,52 @@
     <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
     <jakarta.validation.version>3.0.2</jakarta.validation.version>
     <jakarta.websocket-api.version>2.1.1</jakarta.websocket-api.version>
-    <jakarta.xml.bind-api.version>4.0.0</jakarta.xml.bind-api.version>
-    <jakarta.xml.soap-api.version>3.0.0</jakarta.xml.soap-api.version>
-    <javapoet.version>1.11.1</javapoet.version>
-    <jaxb.version>4.0.2</jaxb.version>
-    <jetty.version>11.0.15</jetty.version>
+    <jakarta.xml.bind-api.version>4.0.1</jakarta.xml.bind-api.version>
+    <jakarta.xml.soap-api.version>3.0.1</jakarta.xml.soap-api.version>
+    <jansi.version>2.4.0</jansi.version>
+    <javapoet.version>1.13.0</javapoet.version>
+    <jaxb.version>4.0.3</jaxb.version>
+    <jetty.version>11.0.17</jetty.version>
     <jetty.websocket-api.version>2.0.0</jetty.websocket-api.version>
     <jsch.version>0.1.55</jsch.version>
     <json-path.version>2.8.0</json-path.version>
-    <json-schema-validator.version>1.0.86</json-schema-validator.version>
+    <json-schema-validator.version>1.0.87</json-schema-validator.version>
     <json-smart.version>2.5.0</json-smart.version>
     <jtidy.version>r938</jtidy.version>
     <junit.jupiter.version>5.10.0</junit.jupiter.version>
+    <junit.platform.version>1.10.0</junit.platform.version>
     <junit.version>4.13.2</junit.version>
-    <junixsocket.version>2.6.2</junixsocket.version>
+    <junixsocket.version>2.8.1</junixsocket.version>
     <k8s.client.version>1.4.34</k8s.client.version>
     <k8s.model.version>1.0.65</k8s.model.version>
-    <kafka.version>3.5.1</kafka.version>
-    <log4j2.version>2.20.0</log4j2.version>
-    <mockito.version>5.4.0</mockito.version>
+    <kafka.version>3.6.0</kafka.version>
+    <log4j2.version>2.21.0</log4j2.version>
+    <mockito.version>5.6.0</mockito.version>
     <mockftpserver.version>3.1.0</mockftpserver.version>
-    <okhttp.version>4.10.0</okhttp.version>
-    <saaj.version>3.0.2</saaj.version>
-    <selenium.version>4.10.0</selenium.version>
-    <shrinkwrap.impl.version>1.2.6</shrinkwrap.impl.version>
-    <shrinkwrap.resolver.version>3.1.4</shrinkwrap.resolver.version>
-    <slf4j.version>2.0.7</slf4j.version>
-    <snappy.version>1.1.10.3</snappy.version>
-    <snakeyaml.version>2.0</snakeyaml.version>
-    <spring.version>6.0.11</spring.version>
-    <spring.ws.version>4.0.5</spring.ws.version>
-    <spring.integration.version>6.1.2</spring.integration.version>
+    <netty.version>4.1.100.Final</netty.version>
+    <okhttp.version>4.12.0</okhttp.version>
+    <picoli-version>4.7.5</picoli-version>
+    <saaj.version>3.0.3</saaj.version>
+    <selenium.version>4.14.1</selenium.version>
+    <slf4j.version>2.0.9</slf4j.version>
+    <snappy.version>1.1.10.5</snappy.version>
+    <snakeyaml.version>2.2</snakeyaml.version>
+    <spring.version>6.0.13</spring.version>
+    <spring.ws.version>4.0.7</spring.ws.version>
+    <spring.integration.version>6.1.4</spring.integration.version>
     <spring.restdocs.version>3.0.0</spring.restdocs.version>
     <sshd.version>2.10.0</sshd.version>
     <swagger.version>1.6.9</swagger.version>
     <swagger.parser.version>2.1.16</swagger.parser.version>
     <testng.version>7.8.0</testng.version>
-    <vertx.version>4.4.4</vertx.version>
+    <vertx.version>4.4.6</vertx.version>
     <wsdl4j.version>1.6.3</wsdl4j.version>
-    <xbean-spring.version>4.23</xbean-spring.version>
+    <xbean-spring.version>4.24</xbean-spring.version>
     <xmlbeans.version>3.0.0</xmlbeans.version>
     <xmlbeans-xpath.version>2.6.0</xmlbeans-xpath.version>
     <xerces.version>2.12.2</xerces.version>
     <xstream.version>1.4.20</xstream.version>
-    <zookeeper.version>3.8.2</zookeeper.version>
+    <zookeeper.version>3.9.1</zookeeper.version>
 
     <skip.integration.tests>false</skip.integration.tests>
     <skip.unit.tests>false</skip.unit.tests>
@@ -349,12 +349,12 @@
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk15on</artifactId>
+        <artifactId>bcprov-jdk18on</artifactId>
         <version>${bouncycastle.version}</version>
       </dependency>
       <dependency>
         <groupId>org.bouncycastle</groupId>
-        <artifactId>bcpkix-jdk15on</artifactId>
+        <artifactId>bcpkix-jdk18on</artifactId>
         <version>${bouncycastle.version}</version>
       </dependency>
       <dependency>
@@ -515,6 +515,31 @@
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
         <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.jupiter.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-engine</artifactId>
+        <version>${junit.platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-commons</artifactId>
+        <version>${junit.platform.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-launcher</artifactId>
+        <version>${junit.platform.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.vintage</groupId>
@@ -727,33 +752,6 @@
         <scope>test</scope>
       </dependency>
 
-      <!-- Citrus arquillian dependencies -->
-      <dependency>
-        <groupId>org.jboss.arquillian.junit</groupId>
-        <artifactId>arquillian-junit-core</artifactId>
-        <version>${arquillian.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.arquillian.config</groupId>
-        <artifactId>arquillian-config-api</artifactId>
-        <version>${arquillian.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.arquillian.container</groupId>
-        <artifactId>arquillian-container-test-spi</artifactId>
-        <version>${arquillian.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.shrinkwrap.resolver</groupId>
-        <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
-        <version>${shrinkwrap.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.shrinkwrap</groupId>
-        <artifactId>shrinkwrap-impl-base</artifactId>
-        <version>${shrinkwrap.impl.version}</version>
-      </dependency>
-
       <!-- Cucumber -->
       <dependency>
         <groupId>io.cucumber</groupId>
@@ -787,11 +785,6 @@
         <groupId>org.seleniumhq.selenium</groupId>
         <artifactId>htmlunit-driver</artifactId>
         <version>${htmlunit.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${google.guava.version}</version>
       </dependency>
       <dependency>
         <groupId>net.bytebuddy</groupId>
@@ -862,6 +855,18 @@
         <version>${json-schema-validator.version}</version>
       </dependency>
 
+      <!-- Citrus JBang -->
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>${picoli-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.freva</groupId>
+        <artifactId>ascii-table</artifactId>
+        <version>${ascii-table-version}</version>
+      </dependency>
+
       <!-- Logging -->
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -871,6 +876,11 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
       <dependency>
@@ -884,9 +894,9 @@
         <version>${log4j2.version}</version>
       </dependency>
       <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging-api</artifactId>
-        <version>${commons.logging.api.version}</version>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-logging</groupId>
@@ -895,9 +905,16 @@
         <scope>provided</scope>
       </dependency>
 
+      <!-- Color logging -->
+      <dependency>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>${jansi.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>com.github.docker-java</groupId>
-        <artifactId>docker-java</artifactId>
+        <artifactId>docker-java-core</artifactId>
         <version>${docker-java.version}</version>
         <exclusions>
           <exclusion>
@@ -913,6 +930,11 @@
       <dependency>
         <groupId>com.github.docker-java</groupId>
         <artifactId>docker-java-transport-okhttp</artifactId>
+        <version>${docker-java.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-transport-jersey</artifactId>
         <version>${docker-java.version}</version>
       </dependency>
       <dependency>
@@ -966,6 +988,17 @@
         <version>${jakarta.validation.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <classifier>linux-x86_64</classifier>
+        <version>${netty.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.zookeeper</groupId>
         <artifactId>zookeeper</artifactId>
@@ -1099,6 +1132,11 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>jcl-over-slf4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -1556,7 +1594,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-scm-plugin</artifactId>
-            <version>1.11.2</version>
+            <version>${maven.scm.plugin.version}</version>
             <configuration>
               <connectionUrl>scm:git:git@github.com:citrusframework/citrus.git</connectionUrl>
               <developerConnectionUrl>scm:git:git@github.com:citrusframework/citrus.git</developerConnectionUrl>

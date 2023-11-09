@@ -27,23 +27,22 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
+import jakarta.xml.soap.MimeHeaders;
 import org.citrusframework.endpoint.EndpointAdapter;
 import org.citrusframework.endpoint.adapter.EmptyResponseEndpointAdapter;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageHeaderUtils;
 import org.citrusframework.message.MessageHeaders;
+import org.citrusframework.util.ObjectHelper;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.ws.client.WebServiceEndpointConfiguration;
 import org.citrusframework.ws.message.SoapAttachment;
 import org.citrusframework.ws.message.SoapFault;
 import org.citrusframework.ws.message.SoapMessageHeaders;
 import org.citrusframework.xml.StringSource;
-import jakarta.xml.soap.MimeHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.mime.MimeMessage;
 import org.springframework.ws.server.endpoint.MessageEndpoint;
@@ -84,7 +83,7 @@ public class WebServiceEndpoint implements MessageEndpoint {
     private WebServiceEndpointConfiguration endpointConfiguration = new WebServiceEndpointConfiguration();
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(WebServiceEndpoint.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebServiceEndpoint.class);
 
     /** JMS headers begin with this prefix */
     private static final String DEFAULT_JMS_HEADER_PREFIX = "JMS";
@@ -94,12 +93,12 @@ public class WebServiceEndpoint implements MessageEndpoint {
      * @throws CitrusRuntimeException
      */
     public void invoke(final MessageContext messageContext) throws Exception {
-        Assert.notNull(messageContext.getRequest(), "Request must not be null - unable to send message");
+        ObjectHelper.assertNotNull(messageContext.getRequest(), "Request must not be null - unable to send message");
 
         Message requestMessage = endpointConfiguration.getMessageConverter().convertInbound(messageContext.getRequest(), messageContext, endpointConfiguration);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Received SOAP request:\n" + requestMessage.toString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received SOAP request:\n" + requestMessage.toString());
         }
 
         //delegate request processing to endpoint adapter
@@ -110,8 +109,8 @@ public class WebServiceEndpoint implements MessageEndpoint {
         }
 
         if (replyMessage != null && replyMessage.getPayload() != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Sending SOAP response:\n" + replyMessage.toString());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Sending SOAP response:\n" + replyMessage.toString());
             }
 
             SoapMessage response = (SoapMessage) messageContext.getResponse();
@@ -127,10 +126,10 @@ public class WebServiceEndpoint implements MessageEndpoint {
             addSoapHeaders(response, replyMessage);
             addMimeHeaders(response, replyMessage);
         } else {
-            if (log.isDebugEnabled()) {
-                log.debug("No reply message from endpoint adapter '" + endpointAdapter + "'");
+            if (logger.isDebugEnabled()) {
+                logger.debug("No reply message from endpoint adapter '" + endpointAdapter + "'");
             }
-            log.warn("No SOAP response for calling client");
+            logger.warn("No SOAP response for calling client");
         }
     }
 
@@ -158,7 +157,7 @@ public class WebServiceEndpoint implements MessageEndpoint {
      * @throws IOException
      */
     private boolean simulateHttpStatusCode(Message replyMessage) throws IOException {
-        if (replyMessage == null || CollectionUtils.isEmpty(replyMessage.getHeaders())) {
+        if (replyMessage == null || replyMessage.getHeaders() == null || replyMessage.getHeaders().isEmpty()) {
             return false;
         }
 
@@ -172,7 +171,7 @@ public class WebServiceEndpoint implements MessageEndpoint {
                     ((HttpServletConnection)connection).getHttpServletResponse().setStatus(statusCode);
                     return true;
                 } else {
-                    log.warn("Unable to set custom Http status code on connection other than HttpServletConnection (" + connection.getClass().getName() + ")");
+                    logger.warn("Unable to set custom Http status code on connection other than HttpServletConnection (" + connection.getClass().getName() + ")");
                 }
             }
         }
@@ -196,7 +195,7 @@ public class WebServiceEndpoint implements MessageEndpoint {
                     MimeHeaders headers = saajSoapMessage.getSaajMessage().getMimeHeaders();
                     headers.setHeader(headerName, headerEntry.getValue().toString());
                 } else {
-                    log.warn("Unsupported SOAP message implementation - unable to set mime message header '" + headerName + "'");
+                    logger.warn("Unsupported SOAP message implementation - unable to set mime message header '" + headerName + "'");
                 }
             }
         }

@@ -19,22 +19,27 @@ package org.citrusframework.selenium.actions;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.selenium.endpoint.SeleniumBrowser;
 import org.citrusframework.selenium.endpoint.SeleniumHeaders;
+import org.citrusframework.spi.Resources;
+import org.citrusframework.util.StringUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Tamer Erdogan, Christoph Deppisch
  * @since 2.7
  */
 public class MakeScreenshotAction extends AbstractSeleniumAction {
+
+    /** Logger */
+    private static final Logger logger = LoggerFactory.getLogger( MakeScreenshotAction.class);
 
     /** Storage to save screenshot to */
     private final String outputDir;
@@ -54,7 +59,7 @@ public class MakeScreenshotAction extends AbstractSeleniumAction {
         if (browser.getWebDriver() instanceof TakesScreenshot) {
             screenshot = ((TakesScreenshot) browser.getWebDriver()).getScreenshotAs(OutputType.FILE);
         } else {
-            log.warn("Skip screenshot action because web driver is missing screenshot features");
+            logger.warn("Skip screenshot action because web driver is missing screenshot features");
         }
 
         if (screenshot != null) {
@@ -74,12 +79,12 @@ public class MakeScreenshotAction extends AbstractSeleniumAction {
                         }
                     }
 
-                    FileCopyUtils.copy(screenshot, new File(targetDir, testName + "_" + screenshot.getName()));
+                    FileUtils.copyFile(screenshot, new File(targetDir, testName + "_" + screenshot.getName()));
                 } catch (IOException e) {
-                    log.error("Failed to save screenshot to target storage", e);
+                    logger.error("Failed to save screenshot to target storage", e);
                 }
             } else {
-                browser.storeFile(new FileSystemResource(screenshot));
+                browser.storeFile(Resources.create(screenshot));
             }
         }
     }

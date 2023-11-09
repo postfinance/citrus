@@ -27,10 +27,9 @@ import java.util.stream.Collectors;
 
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.message.Message;
-import org.springframework.util.CollectionUtils;
 
 /**
- * Special modifier adds message related modifications on log output on headers and body.
+ * Special modifier adds message related modifications on logger output on headers and body.
  *
  * @author Christoph Deppisch
  */
@@ -77,7 +76,7 @@ public interface LogMessageModifier extends LogModifier {
      * @return
      */
     default List<String> maskHeaderData(Message message) {
-        if (CollectionUtils.isEmpty(message.getHeaderData())) {
+        if (message.getHeaderData() == null || message.getHeaderData().isEmpty()) {
             return Collections.emptyList();
         }
 

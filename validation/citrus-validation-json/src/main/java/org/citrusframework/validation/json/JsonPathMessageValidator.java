@@ -21,22 +21,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.json.JsonPathUtils;
 import org.citrusframework.message.Message;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.AbstractMessageValidator;
 import org.citrusframework.validation.ValidationUtils;
 import org.citrusframework.validation.context.ValidationContext;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.ReadContext;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Message validator evaluates set of JSONPath expressions on message payload and checks that values are as expected.
@@ -45,17 +44,19 @@ import org.springframework.util.StringUtils;
  */
 public class JsonPathMessageValidator extends AbstractMessageValidator<JsonPathMessageValidationContext> {
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(JsonPathMessageValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(JsonPathMessageValidator.class);
 
     @Override
     public void validateMessage(Message receivedMessage, Message controlMessage, TestContext context, JsonPathMessageValidationContext validationContext) throws ValidationException {
-        if (CollectionUtils.isEmpty(validationContext.getJsonPathExpressions())) { return; }
+        if (validationContext.getJsonPathExpressions() == null || validationContext.getJsonPathExpressions().isEmpty()) {
+            return;
+        }
 
         if (receivedMessage.getPayload() == null || !StringUtils.hasText(receivedMessage.getPayload(String.class))) {
             throw new ValidationException("Unable to validate message elements - receive message payload was empty");
         }
 
-        log.debug("Start JSONPath element validation ...");
+        logger.debug("Start JSONPath element validation ...");
 
         String jsonPathExpression;
         try {
@@ -75,12 +76,12 @@ public class JsonPathMessageValidator extends AbstractMessageValidator<JsonPathM
                 //do the validation of actual and expected value for element
                 ValidationUtils.validateValues(jsonPathResult, expectedValue, jsonPathExpression, context);
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Validating element: " + jsonPathExpression + "='" + expectedValue + "': OK.");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Validating element: " + jsonPathExpression + "='" + expectedValue + "': OK.");
                 }
             }
 
-            log.info("JSONPath element validation successful: All values OK");
+            logger.info("JSONPath element validation successful: All values OK");
         } catch (ParseException e) {
             throw new CitrusRuntimeException("Failed to parse JSON text", e);
         }

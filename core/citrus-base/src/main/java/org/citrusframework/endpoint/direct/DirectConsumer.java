@@ -10,7 +10,7 @@ import org.citrusframework.message.selector.DelegatingMessageSelector;
 import org.citrusframework.messaging.AbstractSelectiveMessageConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.citrusframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
 public class DirectConsumer extends AbstractSelectiveMessageConsumer {
 
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(DirectConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DirectConsumer.class);
 
     /** Endpoint configuration */
     private final DirectEndpointConfiguration endpointConfiguration;
@@ -44,8 +44,8 @@ public class DirectConsumer extends AbstractSelectiveMessageConsumer {
             destinationQueueName = getDestinationQueueName();
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Receiving message from queue: '%s'", destinationQueueName));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Receiving message from queue: '%s'", destinationQueueName));
         }
 
         Message message;
@@ -69,7 +69,7 @@ public class DirectConsumer extends AbstractSelectiveMessageConsumer {
             throw new MessageTimeoutException(timeout, destinationQueueName);
         }
 
-        log.info(String.format("Received message from queue: '%s'", destinationQueueName));
+        logger.info(String.format("Received message from queue: '%s'", destinationQueueName));
         return message;
     }
 

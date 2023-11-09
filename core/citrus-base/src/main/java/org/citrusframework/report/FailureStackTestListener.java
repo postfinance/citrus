@@ -16,20 +16,20 @@
 
 package org.citrusframework.report;
 
-import javax.xml.parsers.SAXParserFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.citrusframework.TestAction;
 import org.citrusframework.TestCase;
 import org.citrusframework.container.TestActionContainer;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
@@ -43,7 +43,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class FailureStackTestListener extends AbstractTestListener {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(FailureStackTestListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(FailureStackTestListener.class);
 
     @Override
     public void onTestFailure(TestCase test, Throwable cause) {
@@ -63,7 +63,7 @@ public class FailureStackTestListener extends AbstractTestListener {
         try {
             final String testFilePath = test.getPackageName().replace('.', '/') + "/" + test.getName();
 
-            Resource testFileResource = new ClassPathResource(testFilePath + FileUtils.FILE_EXTENSION_XML);
+            Resource testFileResource = Resources.fromClasspath(testFilePath + FileUtils.FILE_EXTENSION_XML);
             if (!testFileResource.exists()) {
                 return failureStack;
             }
@@ -82,7 +82,7 @@ public class FailureStackTestListener extends AbstractTestListener {
 
             reader.parse(new InputSource(testFileResource.getInputStream()));
         } catch (Exception e) {
-            log.warn("Failed to locate line numbers for failure stack trace", e);
+            logger.warn("Failed to locate line numbers for failure stack trace", e);
         }
 
         return failureStack;

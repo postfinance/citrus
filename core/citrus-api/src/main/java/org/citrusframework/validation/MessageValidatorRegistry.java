@@ -16,6 +16,12 @@
 
 package org.citrusframework.validation;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.NoSuchMessageValidatorException;
 import org.citrusframework.message.Message;
@@ -26,9 +32,6 @@ import org.citrusframework.validation.context.SchemaValidationContext;
 import org.citrusframework.validation.context.ValidationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-
-import java.util.*;
 
 /**
  * Simple registry holding all available message validator implementations. Test context can ask this registry for
@@ -41,7 +44,7 @@ import java.util.*;
 public class MessageValidatorRegistry {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(MessageValidatorRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageValidatorRegistry.class);
 
     /** The default bean id in Spring application context*/
     public static final String BEAN_NAME = "citrusMessageValidatorRegistry";
@@ -77,7 +80,7 @@ public class MessageValidatorRegistry {
         if (isEmptyOrDefault(matchingValidators)) {
             // try to find fallback message validator for given message payload
             if (message.getPayload() instanceof String &&
-                    StringUtils.hasText(message.getPayload(String.class))) {
+                    !message.getPayload(String.class).isBlank()) {
                 String payload = message.getPayload(String.class).trim();
 
                 if (payload.startsWith("<") && !messageType.equals(MessageType.XML.name())) {
@@ -90,17 +93,18 @@ public class MessageValidatorRegistry {
             }
         }
 
-        if (isEmptyOrDefault(matchingValidators) && !StringUtils.hasText(message.getPayload(String.class))) {
+        if (isEmptyOrDefault(matchingValidators) &&
+                (message.getPayload(String.class) == null || message.getPayload(String.class).isBlank())) {
             matchingValidators.add(defaultEmptyMessageValidator);
         }
 
         if (isEmptyOrDefault(matchingValidators)) {
-            LOG.warn(String.format("Unable to find proper message validator. Message type is '%s' and message payload is '%s'", messageType, message.getPayload(String.class)));
+            logger.warn(String.format("Unable to find proper message validator. Message type is '%s' and message payload is '%s'", messageType, message.getPayload(String.class)));
             throw new CitrusRuntimeException("Failed to find proper message validator for message");
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Found %s message validators for message", matchingValidators.size()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Found %s message validators for message", matchingValidators.size()));
         }
 
         return matchingValidators;
@@ -185,8 +189,8 @@ public class MessageValidatorRegistry {
      * @param messageValidator
      */
     public void addMessageValidator(String name, MessageValidator<? extends ValidationContext> messageValidator) {
-        if (this.messageValidators.containsKey(name) && LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Overwriting message validator '%s' in registry", name));
+        if (this.messageValidators.containsKey(name) && logger.isDebugEnabled()) {
+            logger.debug(String.format("Overwriting message validator '%s' in registry", name));
         }
 
         this.messageValidators.put(name, messageValidator);
@@ -198,8 +202,8 @@ public class MessageValidatorRegistry {
      * @param schemaValidator
      */
     public void addSchemaValidator(String name, SchemaValidator<? extends SchemaValidationContext> schemaValidator) {
-        if (this.schemaValidators.containsKey(name) && LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Overwriting message validator '%s' in registry", name));
+        if (this.schemaValidators.containsKey(name) && logger.isDebugEnabled()) {
+            logger.debug(String.format("Overwriting message validator '%s' in registry", name));
         }
 
         this.schemaValidators.put(name, schemaValidator);
@@ -253,7 +257,7 @@ public class MessageValidatorRegistry {
         if (matchingSchemaValidators.isEmpty()) {
             // try to find fallback message validator for given message payload
             if (message.getPayload() instanceof String &&
-                    StringUtils.hasText(message.getPayload(String.class))) {
+                    !message.getPayload(String.class).isBlank()) {
                 String payload = message.getPayload(String.class).trim();
 
                 if (IsXmlPredicate.getInstance().test(payload) && !messageType.equals(MessageType.XML.name())) {

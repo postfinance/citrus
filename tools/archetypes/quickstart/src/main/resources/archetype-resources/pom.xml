@@ -11,13 +11,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>17</java.version>
 
-    <maven.version>3.8.4</maven.version>
+    <maven.version>3.9.5</maven.version>
     <maven.compiler.version>3.11.0</maven.compiler.version>
     <maven.compiler.release>${java.version}</maven.compiler.release>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
 
-    <citrus.version>4.0.0-SNAPSHOT</citrus.version>
+    <citrus.version>4.1.0-SNAPSHOT</citrus.version>
 
     <slf4j.version>2.0.6</slf4j.version>
     <log4j2.version>2.20.0</log4j2.version>

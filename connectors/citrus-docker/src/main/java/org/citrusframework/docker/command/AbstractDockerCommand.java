@@ -19,11 +19,12 @@ package org.citrusframework.docker.command;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
 
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import com.github.dockerjava.api.model.ResponseItem;
-import org.springframework.util.ReflectionUtils;
+import org.citrusframework.util.ReflectionHelper;
 
 /**
  * @author Christoph Deppisch
@@ -61,9 +62,8 @@ public abstract class AbstractDockerCommand<R> implements DockerCommand<R> {
     protected ResponseItem success() {
         ResponseItem response = new ResponseItem();
 
-        Field statusField = ReflectionUtils.findField(ResponseItem.class, "status");
-        ReflectionUtils.makeAccessible(statusField);
-        ReflectionUtils.setField(statusField, response, "success");
+        Field statusField = ReflectionHelper.findField(ResponseItem.class, "status");
+        ReflectionHelper.setField(statusField, response, "success");
         return response;
     }
 

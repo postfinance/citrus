@@ -25,14 +25,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import io.cucumber.core.backend.ObjectFactory;
 import io.cucumber.core.eventbus.RandomUuidGenerator;
 import io.cucumber.core.eventbus.UuidGenerator;
-import org.citrusframework.TestClass;
-import org.citrusframework.exceptions.CitrusRuntimeException;
-import org.citrusframework.main.AbstractTestEngine;
-import org.citrusframework.main.TestRunConfiguration;
-import io.cucumber.core.backend.ObjectFactory;
 import io.cucumber.core.options.CommandlineOptionsParser;
 import io.cucumber.core.options.CucumberOptionsAnnotationParser;
 import io.cucumber.core.options.CucumberProperties;
@@ -41,10 +39,14 @@ import io.cucumber.core.options.RuntimeOptions;
 import io.cucumber.core.resource.ClasspathSupport;
 import io.cucumber.core.runtime.Runtime;
 import io.cucumber.core.snippets.SnippetType;
+import org.citrusframework.TestSource;
+import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.main.AbstractTestEngine;
+import org.citrusframework.main.TestRunConfiguration;
+import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -52,7 +54,7 @@ import org.springframework.util.StringUtils;
 public class CucumberTestEngine extends AbstractTestEngine {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(CucumberTestEngine.class);
+    private static final Logger logger = LoggerFactory.getLogger(CucumberTestEngine.class);
 
     public CucumberTestEngine(TestRunConfiguration configuration) {
         super(configuration);
@@ -63,20 +65,40 @@ public class CucumberTestEngine extends AbstractTestEngine {
         RuntimeOptions propertiesFileOptions = new CucumberPropertiesParser().parse(CucumberProperties.fromPropertiesFile()).build();
 
         RuntimeOptions annotationOptions;
-        if (CollectionUtils.isEmpty(getConfiguration().getTestClasses())) {
+        Optional<TestSource> javaClass = getConfiguration().getTestSources()
+                .stream()
+                .filter(source -> "java".equals(source.getType()))
+                .findFirst();
+
+        if (javaClass.isEmpty()) {
             annotationOptions = propertiesFileOptions;
         } else {
-            TestClass testClass = getConfiguration().getTestClasses().get(0);
             try {
                 annotationOptions = new CucumberOptionsAnnotationParser()
                         .withOptionsProvider(GenericCucumberOptions::new)
-                        .parse(Class.forName(testClass.getName()))
+                        .parse(Class.forName(javaClass.get().getName()))
                         .setUuidGeneratorClass(RandomUuidGenerator.class)
                         .addDefaultGlueIfAbsent()
                         .build(propertiesFileOptions);
             } catch (ClassNotFoundException e) {
-                throw new CitrusRuntimeException("Unable to find test class in classpath: " + testClass.getName());
+                throw new CitrusRuntimeException("Unable to find test class in classpath: " + javaClass.get().getName());
             }
+        }
+
+        String features = getConfiguration().getTestSources()
+                .stream()
+                .peek(it -> logger.info(it.getName()))
+                .filter(source -> "cucumber".equals(source.getType()) ||
+                        Optional.ofNullable(source.getFilePath())
+                                .filter(it -> it.endsWith(".feature"))
+                                .isPresent() ||
+                        "feature".equals(FileUtils.getFileExtension(source.getName()))
+                )
+                .map(TestSource::getName)
+                .collect(Collectors.joining(","));
+
+        if (StringUtils.hasText(features)) {
+            System.setProperty("cucumber.features", features);
         }
 
         RuntimeOptions environmentOptions = new CucumberPropertiesParser().parse(CucumberProperties.fromEnvironment()).build(annotationOptions);
@@ -85,10 +107,10 @@ public class CucumberTestEngine extends AbstractTestEngine {
         List<String> args = new ArrayList<>();
 
         List<String> packagesToRun = getConfiguration().getPackages();
-        if (CollectionUtils.isEmpty(packagesToRun)) {
-            LOG.info("Running all tests in project");
+        if (packagesToRun == null || packagesToRun.isEmpty()) {
+            logger.info("Running all tests in project");
         } else if (StringUtils.hasText(packagesToRun.get(0))) {
-            LOG.info(String.format("Running tests in package %s", packagesToRun.get(0)));
+            logger.info(String.format("Running tests in package %s", packagesToRun.get(0)));
             args.add(ClasspathSupport.CLASSPATH_SCHEME_PREFIX + packagesToRun.get(0).replaceAll("\\.", "/"));
 
             args.add("--glue");

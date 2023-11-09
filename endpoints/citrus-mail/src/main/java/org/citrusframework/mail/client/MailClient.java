@@ -16,6 +16,9 @@
 
 package org.citrusframework.mail.client;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import jakarta.mail.Authenticator;
 import jakarta.mail.MessagingException;
 import jakarta.mail.PasswordAuthentication;
@@ -27,13 +30,10 @@ import org.citrusframework.message.Message;
 import org.citrusframework.message.RawMessage;
 import org.citrusframework.messaging.Consumer;
 import org.citrusframework.messaging.Producer;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.MimeMailMessage;
-import org.springframework.util.StringUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 /**
  * @author Christoph Deppisch
@@ -41,7 +41,7 @@ import java.io.IOException;
  */
 public class MailClient extends AbstractEndpoint implements Producer, InitializingPhase {
 
-    private static Logger log = LoggerFactory.getLogger(MailClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(MailClient.class);
 
     private MailSender mailSender = new MailSender();
 
@@ -66,8 +66,8 @@ public class MailClient extends AbstractEndpoint implements Producer, Initializi
 
     @Override
     public void send(Message message, TestContext context) {
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Sending mail message to host: '%s://%s:%s'", getEndpointConfiguration().getProtocol(), getEndpointConfiguration().getHost(), getEndpointConfiguration().getPort()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Sending mail message to host: '%s://%s:%s'", getEndpointConfiguration().getProtocol(), getEndpointConfiguration().getHost(), getEndpointConfiguration().getPort()));
         }
 
         MimeMailMessage mimeMessage = getEndpointConfiguration().getMessageConverter().convertOutbound(message, getEndpointConfiguration(), context);
@@ -89,13 +89,13 @@ public class MailClient extends AbstractEndpoint implements Producer, Initializi
             try {
                 bos.close();
             } catch (IOException e) {
-                log.warn("Failed to close output stream", e);
+                logger.warn("Failed to close output stream", e);
             }
         }
 
         context.onOutboundMessage(mailMessage);
 
-        log.info(String.format("Mail message was sent to host: '%s://%s:%s'", getEndpointConfiguration().getProtocol(), getEndpointConfiguration().getHost(), getEndpointConfiguration().getPort()));
+        logger.info(String.format("Mail message was sent to host: '%s://%s:%s'", getEndpointConfiguration().getProtocol(), getEndpointConfiguration().getHost(), getEndpointConfiguration().getPort()));
     }
 
     /**

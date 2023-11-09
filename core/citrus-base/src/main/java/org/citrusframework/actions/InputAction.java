@@ -29,7 +29,7 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.citrusframework.util.StringUtils;
 
 /**
  * Test action prompts user data from standard input stream. The input data is then stored as new
@@ -43,7 +43,7 @@ import org.springframework.util.StringUtils;
 public class InputAction extends AbstractTestAction {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(InputAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(InputAction.class);
 
     /** Prompted message displayed to the user before input */
     private final String message;
@@ -69,7 +69,7 @@ public class InputAction extends AbstractTestAction {
         this.message = builder.message;
         this.variable = builder.variable;
         this.validAnswers = builder.validAnswers;
-        this.inputReader = Optional.ofNullable(builder.inputReader).orElse(new BufferedReader(new InputStreamReader(System.in)));
+        this.inputReader = Optional.ofNullable(builder.inputReader).orElseGet(() -> new BufferedReader(new InputStreamReader(System.in)));
     }
 
     @Override
@@ -78,7 +78,7 @@ public class InputAction extends AbstractTestAction {
 
         if (context.getVariables().containsKey(variable)) {
             input = context.getVariable(variable);
-            log.info("Variable " + variable + " is already set (='" + input + "'). Skip waiting for user input");
+            logger.info("Variable " + variable + " is already set (='" + input + "'). Skip waiting for user input");
 
             return;
         }
@@ -91,11 +91,9 @@ public class InputAction extends AbstractTestAction {
         }
 
 
-        try {
+        try (BufferedReader stdin = getInputReader()) {
             do {
-                log.info(display);
-
-                BufferedReader stdin = getInputReader();
+                logger.info(display);
                 input = stdin.readLine();
             } while (validAnswers != null && !checkAnswer(input));
         } catch (IOException e) {
@@ -127,7 +125,7 @@ public class InputAction extends AbstractTestAction {
             }
         }
 
-        log.info("User input is not valid - must be one of " + validAnswers);
+        logger.info("User input is not valid - must be one of " + validAnswers);
 
         return false;
     }

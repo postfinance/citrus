@@ -24,6 +24,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSException;
+import jakarta.jms.Topic;
+import jakarta.jms.TopicConnection;
+import jakarta.jms.TopicConnectionFactory;
+import jakarta.jms.TopicSession;
+import jakarta.jms.TopicSubscriber;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.context.TestContextFactory;
 import org.citrusframework.endpoint.direct.DirectEndpoint;
@@ -32,16 +39,9 @@ import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.DefaultMessageQueue;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageQueue;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.Topic;
-import jakarta.jms.TopicConnection;
-import jakarta.jms.TopicConnectionFactory;
-import jakarta.jms.TopicSession;
-import jakarta.jms.TopicSubscriber;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -50,7 +50,7 @@ import org.springframework.util.StringUtils;
 public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(JmsConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(JmsConsumer.class);
 
     /** Boolean flag for continued message consumption, if false stop */
     private boolean running = true;
@@ -89,7 +89,7 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
      */
     public void run() {
         ConnectionFactory connectionFactory = Optional.ofNullable(endpointConfiguration.getConnectionFactory())
-                                                      .orElse(endpointConfiguration.getJmsTemplate().getConnectionFactory());
+                                                      .orElseGet(() -> endpointConfiguration.getJmsTemplate().getConnectionFactory());
 
         TopicConnection connection = null;
         try {
@@ -118,10 +118,10 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
 
             TopicSubscriber subscriber;
             if (endpointConfiguration.isDurableSubscription()) {
-                log.debug(String.format("Create JMS topic durable subscription '%s'", Optional.ofNullable(endpointConfiguration.getDurableSubscriberName()).orElse(getName())));
-                subscriber = session.createDurableSubscriber(topic, Optional.ofNullable(endpointConfiguration.getDurableSubscriberName()).orElse(getName()));
+                logger.debug(String.format("Create JMS topic durable subscription '%s'", Optional.ofNullable(endpointConfiguration.getDurableSubscriberName()).orElseGet(this::getName)));
+                subscriber = session.createDurableSubscriber(topic, Optional.ofNullable(endpointConfiguration.getDurableSubscriberName()).orElseGet(this::getName));
             } else {
-                log.debug("Create JMS topic subscription");
+                logger.debug("Create JMS topic subscription");
                 subscriber = session.createSubscriber(topic);
             }
 
@@ -136,19 +136,19 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
                     TestContext context = testContextFactory.getObject();
                     Message message = endpointConfiguration.getMessageConverter().convertInbound(event, endpointConfiguration, context);
 
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("Received topic event '%s'", message.getId()));
+                    if (logger.isDebugEnabled()) {
+                        logger.debug(String.format("Received topic event '%s'", message.getId()));
                     }
                     messageQueue.createProducer().send(message, context);
                 } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Topic subscriber received null message - continue after " + endpointConfiguration.getPollingInterval() + " milliseconds");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Topic subscriber received null message - continue after " + endpointConfiguration.getPollingInterval() + " milliseconds");
                     }
 
                     try {
                         Thread.sleep(endpointConfiguration.getPollingInterval());
                     } catch (InterruptedException e) {
-                        log.warn("Interrupted while waiting after null message", e);
+                        logger.warn("Interrupted while waiting after null message", e);
                     }
                 }
             }
@@ -162,7 +162,7 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
                 try {
                     connection.close();
                 } catch (JMSException e) {
-                    log.warn("Failed to close JMS topic connection", e);
+                    logger.warn("Failed to close JMS topic connection", e);
                 }
             }
 
@@ -175,10 +175,10 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
 
         try {
             if (started.get()) {
-                log.info("Started JMS topic subscription");
+                logger.info("Started JMS topic subscription");
             }
         } catch (InterruptedException | ExecutionException e) {
-            log.warn("Failed to wait for topic subscriber to start subscription", e);
+            logger.warn("Failed to wait for topic subscriber to start subscription", e);
         }
     }
 
@@ -188,9 +188,9 @@ public class JmsTopicSubscriber extends JmsConsumer implements Runnable {
         try {
             stopped.get(endpointConfiguration.getTimeout(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException e) {
-            log.warn("Failed to wait for topic subscriber to stop gracefully", e);
+            logger.warn("Failed to wait for topic subscriber to stop gracefully", e);
         } catch (TimeoutException e) {
-            log.warn("Timeout while waiting for topic subscriber to stop gracefully", e);
+            logger.warn("Timeout while waiting for topic subscriber to stop gracefully", e);
         }
     }
 

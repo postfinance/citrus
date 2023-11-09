@@ -16,7 +16,6 @@
 
 package org.citrusframework.rmi.server;
 
-import javax.xml.transform.Source;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -27,6 +26,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
+import javax.xml.transform.Source;
 
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.Message;
@@ -34,10 +34,9 @@ import org.citrusframework.rmi.endpoint.RmiEndpointConfiguration;
 import org.citrusframework.rmi.model.RmiServiceInvocation;
 import org.citrusframework.rmi.model.RmiServiceResult;
 import org.citrusframework.server.AbstractServer;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -46,7 +45,7 @@ import org.springframework.util.StringUtils;
 public class RmiServer extends AbstractServer implements InvocationHandler {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(RmiServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(RmiServer.class);
 
     /** Endpoint configuration */
     private final RmiEndpointConfiguration endpointConfiguration;
@@ -79,8 +78,8 @@ public class RmiServer extends AbstractServer implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        if (log.isDebugEnabled()) {
-            log.debug("Received message on RMI server: '" + endpointConfiguration.getBinding() + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received message on RMI server: '" + endpointConfiguration.getBinding() + "'");
         }
 
         Message response = getEndpointAdapter().handleMessage(endpointConfiguration.getMessageConverter()
@@ -116,7 +115,7 @@ public class RmiServer extends AbstractServer implements InvocationHandler {
      * @return
      */
     public ClassLoader getClassLoader() {
-        if (!CollectionUtils.isEmpty(remoteInterfaces)) {
+        if (remoteInterfaces != null && !remoteInterfaces.isEmpty()) {
             return remoteInterfaces.get(0).getClassLoader();
         } else {
             return this.getClassLoader();
@@ -155,7 +154,7 @@ public class RmiServer extends AbstractServer implements InvocationHandler {
             try {
                 registry.unbind(endpointConfiguration.getBinding());
             } catch (Exception e) {
-                log.warn("Failed to unbind from registry:" + e.getMessage());
+                logger.warn("Failed to unbind from registry:" + e.getMessage());
             }
         }
 
@@ -163,7 +162,7 @@ public class RmiServer extends AbstractServer implements InvocationHandler {
             try {
                 UnicastRemoteObject.unexportObject(proxy, true);
             } catch (Exception e) {
-                log.warn("Failed to unexport from remote object:" + e.getMessage());
+                logger.warn("Failed to unexport from remote object:" + e.getMessage());
             }
         }
 

@@ -22,7 +22,6 @@ import org.citrusframework.TestActionBuilder;
 import org.citrusframework.context.TestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 /**
  * Sequence of test actions executed after a test case. Container execution can be restricted according to test name ,
@@ -33,19 +32,19 @@ import org.springframework.util.CollectionUtils;
 public class SequenceAfterTest extends AbstractTestBoundaryActionContainer implements AfterTest {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(SequenceAfterTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(SequenceAfterTest.class);
 
     @Override
     public void doExecute(TestContext context) {
-        if (CollectionUtils.isEmpty(actions)) {
+        if (actions == null || actions.isEmpty()) {
             return;
         }
 
-        LOG.info("Entering after test block");
+        logger.info("Entering after test block");
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + actions.size() + " actions after test");
-            LOG.debug("");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Executing " + actions.size() + " actions after test");
+            logger.debug("");
         }
 
         for (TestActionBuilder<?> actionBuilder : actions)  {

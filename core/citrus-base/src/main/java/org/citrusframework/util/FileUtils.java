@@ -22,9 +22,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,16 +33,13 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.citrusframework.CitrusSettings;
+import org.citrusframework.TestSource;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ResourceUtils;
 
 /**
  * Class to provide general file utilities, such as listing all XML files in a directory,
@@ -54,11 +51,13 @@ import org.springframework.util.ResourceUtils;
 public abstract class FileUtils {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
     public static final String FILE_EXTENSION_JAVA = ".java";
     public static final String FILE_EXTENSION_XML = ".xml";
-    public static final String FILE_PATH_CHARSET_PARAMETER = ";charset=";
+    public static final String FILE_EXTENSION_GROOVY = ".groovy";
+    public static final String FILE_EXTENSION_YAML = ".yaml";
+    public static final String FILE_PATH_CHARSET_PARAMETER = CitrusSettings.getFilePathCharsetParameter();
 
     /** Simulation mode required for Citrus administration UI when loading test cases from Java DSL */
     private static boolean simulationMode = false;
@@ -116,17 +115,11 @@ public abstract class FileUtils {
      */
     public static String readToString(Resource resource, Charset charset) throws IOException {
         if (simulationMode) {
-            if (resource instanceof ClassPathResource) {
-                return ((ClassPathResource) resource).getPath();
-            } else if (resource instanceof FileSystemResource) {
-                return ((FileSystemResource) resource).getPath();
-            } else {
-                return resource.getFilename();
-            }
+            resource.getLocation();
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Reading file resource: '%s' (encoding is '%s')", resource.getFilename(), charset.displayName()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Reading file resource: '%s' (encoding is '%s')", resource.getLocation(), charset.displayName()));
         }
         return readToString(resource.getInputStream(), charset);
     }
@@ -139,7 +132,7 @@ public abstract class FileUtils {
      * @throws IOException
      */
     public static String readToString(InputStream inputStream, Charset charset) throws IOException {
-        return new String(FileCopyUtils.copyToByteArray(inputStream), charset);
+        return new String(inputStream.readAllBytes(), charset);
     }
 
     /**
@@ -148,8 +141,18 @@ public abstract class FileUtils {
      * @param file
      */
     public static void writeToFile(InputStream inputStream, File file) {
-        try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream)) {
-            writeToFile(FileCopyUtils.copyToString(inputStreamReader), file, getDefaultCharset());
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Writing file resource: '%s'", file.getName()));
+        }
+
+        if (!file.getParentFile().exists()) {
+            if (!file.getParentFile().mkdirs()) {
+                throw new CitrusRuntimeException("Unable to create folder structure for file: " + file.getPath());
+            }
+        }
+
+        try (inputStream) {
+            Files.copy(inputStream, file.toPath());
         } catch (IOException e) {
             throw new CitrusRuntimeException("Failed to write file", e);
         }
@@ -170,8 +173,8 @@ public abstract class FileUtils {
      * @param file
      */
     public static void writeToFile(String content, File file, Charset charset) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Writing file resource: '%s' (encoding is '%s')", file.getName(), charset.displayName()));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Writing file resource: '%s' (encoding is '%s')", file.getName(), charset.displayName()));
         }
 
         if (!file.getParentFile().exists()) {
@@ -198,10 +201,10 @@ public abstract class FileUtils {
      */
     public static List<File> findFiles(final String startDir, final Set<String> fileNamePatterns) {
         /* file names to be returned */
-        final List<File> files = new ArrayList<File>();
+        final List<File> files = new ArrayList<>();
 
-        /* Stack to hold potential sub directories */
-        final Stack<File> dirs = new Stack<File>();
+        /* Stack to hold potential subdirectories */
+        final Stack<File> dirs = new Stack<>();
         /* start directory */
         final File startdir = new File(startDir);
 
@@ -222,14 +225,9 @@ public abstract class FileUtils {
                 boolean accepted = tmp.isDirectory();
 
                 for (String fileNamePattern : fileNamePatterns) {
-                    if (fileNamePattern.contains("/")) {
-                        fileNamePattern = fileNamePattern.substring(fileNamePattern.lastIndexOf('/') + 1);
-                    }
-
-                    fileNamePattern = fileNamePattern.replace(".", "\\.").replace("*", ".*");
-
                     if (name.matches(fileNamePattern)) {
                         accepted = true;
+                        break;
                     }
                 }
 
@@ -237,7 +235,7 @@ public abstract class FileUtils {
                 return accepted && !name.startsWith("CVS") && !name.startsWith(".svn") && !name.startsWith(".git");
             });
 
-            for (File found : Optional.ofNullable(foundFiles).orElse(new File[] {})) {
+            for (File found : Optional.ofNullable(foundFiles).orElseGet(() -> new File[] {})) {
                 /* Subfolder support */
                 if (found.isDirectory()) {
                     dirs.push(found);
@@ -257,13 +255,7 @@ public abstract class FileUtils {
      * @return
      */
     public static Resource getFileResource(String filePath, TestContext context) {
-        if (filePath.contains(FILE_PATH_CHARSET_PARAMETER)) {
-            return new PathMatchingResourcePatternResolver().getResource(
-                    context.replaceDynamicContentInString(filePath.substring(0, filePath.indexOf(FileUtils.FILE_PATH_CHARSET_PARAMETER))));
-        } else {
-            return new PathMatchingResourcePatternResolver().getResource(
-                    context.replaceDynamicContentInString(filePath));
-        }
+        return getFileResource(context.replaceDynamicContentInString(filePath));
     }
 
     /**
@@ -273,25 +265,13 @@ public abstract class FileUtils {
      */
     public static Resource getFileResource(String filePath) {
         String path;
-
-        if (filePath.contains(FILE_PATH_CHARSET_PARAMETER)) {
+        if (filePath.contains(FileUtils.FILE_PATH_CHARSET_PARAMETER)) {
             path = filePath.substring(0, filePath.indexOf(FileUtils.FILE_PATH_CHARSET_PARAMETER));
         } else {
             path = filePath;
         }
 
-        if (path.startsWith(ResourceUtils.FILE_URL_PREFIX)) {
-            return new FileSystemResource(path.substring(ResourceUtils.FILE_URL_PREFIX.length()));
-        } else if (path.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
-            return new PathMatchingResourcePatternResolver().getResource(path);
-        }
-
-        Resource file = new FileSystemResource(path);
-        if (!file.exists()) {
-            return  new PathMatchingResourcePatternResolver().getResource(path);
-        }
-
-        return file;
+        return Resources.create(path);
     }
 
     /**
@@ -318,7 +298,7 @@ public abstract class FileUtils {
     }
 
     /**
-     * Extract file extension form given path.
+     * Extract file extension from given path.
      * @param path
      * @return
      */
@@ -338,7 +318,7 @@ public abstract class FileUtils {
     public static Properties loadAsProperties(Resource resource) {
         Properties properties = new Properties();
         try (InputStream is = resource.getInputStream()) {
-            String filename = resource.getFilename();
+            String filename = getFileName(resource.getLocation());
             if (filename != null && filename.endsWith(FILE_EXTENSION_XML)) {
                 properties.loadFromXML(is);
             } else {
@@ -349,6 +329,20 @@ public abstract class FileUtils {
         }
 
         return properties;
+    }
+
+    /**
+     * Gets the file name from given file path.
+     * @param path
+     * @return
+     */
+    public static String getFileName(String path) {
+        if (path == null || path.isBlank()) {
+            return "";
+        }
+
+        int separatorIndex = path.replace("\\", "/").lastIndexOf("/");
+        return (separatorIndex != -1 ? path.substring(separatorIndex + 1) : path);
     }
 
     /**
@@ -378,10 +372,73 @@ public abstract class FileUtils {
             return null;
         }
 
-        if (filePath.contains(File.separator)) {
-            return filePath.substring(0, filePath.lastIndexOf(File.separator));
+        String fileSeparator;
+        if (filePath.contains("/")) {
+            fileSeparator = "/";
+        } else if (filePath.contains("\\")) {
+            fileSeparator = "\\";
+        } else {
+            fileSeparator = File.separator;
+        }
+
+        if (filePath.contains(fileSeparator)) {
+            return filePath.substring(0, filePath.lastIndexOf(fileSeparator));
         }
 
         return filePath;
+    }
+
+    public static byte[] copyToByteArray(File file) {
+        if (file == null) {
+            return new byte[0];
+        }
+
+        try (InputStream in = Files.newInputStream(file.toPath())) {
+            return in.readAllBytes();
+        } catch (IOException e) {
+            throw new CitrusRuntimeException("Failed to read file content", e);
+        }
+    }
+
+    public static byte[] copyToByteArray(Resource resource) {
+        try (InputStream in = resource.getInputStream()) {
+            if (in == null) {
+                throw new CitrusRuntimeException(String.format("Unable to access input stream of resource %s", resource.getLocation()));
+            }
+            return in.readAllBytes();
+        } catch (IOException e) {
+            throw new CitrusRuntimeException("Failed to read resource", e);
+        }
+    }
+
+    public static byte[] copyToByteArray(InputStream inputStream) {
+        try (inputStream) {
+            return inputStream.readAllBytes();
+        } catch (IOException e) {
+            throw new CitrusRuntimeException("Failed to read input stream", e);
+        }
+    }
+
+    /**
+     * Construct content type information with given charset parameter.
+     * @param contentType
+     * @param charset
+     * @return
+     */
+    public static String constructContentType(String contentType, Charset charset) {
+        return contentType + FILE_PATH_CHARSET_PARAMETER + charset;
+    }
+
+    /**
+     * Read String representation and construct proper test source instance.
+     * Extract source type from give file extension and try to set proper test source name from given file name.
+     *
+     * @param sourceFile
+     * @return
+     */
+    public static TestSource getTestSource(String sourceFile) {
+        String ext = getFileExtension(sourceFile);
+        String name = getFileName(sourceFile);
+        return new TestSource(ext, name, sourceFile);
     }
 }

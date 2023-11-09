@@ -16,12 +16,12 @@
 
 package org.citrusframework.actions;
 
-import java.util.List;
-import javax.sql.DataSource;
-
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * Test action execute SQL statements. Use this action when executing
@@ -58,8 +58,8 @@ public class ExecuteSQLAction extends AbstractDatabaseConnectingTestAction {
         }
 
         if (getTransactionManager() != null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Using transaction manager: " + getTransactionManager().getClass().getName());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Using transaction manager: " + getTransactionManager().getClass().getName());
             }
 
             TransactionTemplate transactionTemplate = new TransactionTemplate(getTransactionManager());
@@ -80,26 +80,30 @@ public class ExecuteSQLAction extends AbstractDatabaseConnectingTestAction {
      * @param context
      */
     protected void executeStatements(List<String> statements, TestContext context) {
-        for (String stmt : statements)  {
+        if (getJdbcTemplate() == null) {
+            throw new CitrusRuntimeException("No JdbcTemplate configured for sql execution!");
+        }
+
+        for (String statement : statements) {
             try {
                 final String toExecute;
 
-                if (stmt.trim().endsWith(";")) {
-                    toExecute = context.replaceDynamicContentInString(stmt.trim().substring(0, stmt.trim().length()-1));
+                if (statement.trim().endsWith(";")) {
+                    toExecute = context.replaceDynamicContentInString(statement.trim().substring(0, statement.trim().length() - 1));
                 } else {
-                    toExecute = context.replaceDynamicContentInString(stmt.trim());
+                    toExecute = context.replaceDynamicContentInString(statement.trim());
                 }
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Executing SQL statement: " + toExecute);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Executing SQL statement: " + toExecute);
                 }
 
                 getJdbcTemplate().execute(toExecute);
 
-                log.info("SQL statement execution successful");
+                logger.info("SQL statement execution successful");
             } catch (Exception e) {
                 if (ignoreErrors) {
-                    log.error("Ignoring error while executing SQL statement: " + e.getLocalizedMessage());
+                    logger.error("Ignoring error while executing SQL statement: " + e.getLocalizedMessage());
                 } else {
                     throw new CitrusRuntimeException(e);
                 }

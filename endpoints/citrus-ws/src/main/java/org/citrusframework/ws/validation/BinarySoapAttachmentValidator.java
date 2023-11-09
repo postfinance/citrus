@@ -16,15 +16,15 @@
 
 package org.citrusframework.ws.validation;
 
-import org.citrusframework.exceptions.CitrusRuntimeException;
-import org.citrusframework.ws.message.SoapAttachment;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
 import java.util.Optional;
+
+import org.apache.commons.io.IOUtils;
+import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.exceptions.ValidationException;
+import org.citrusframework.ws.message.SoapAttachment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Soap attachment validator performs binary content validation by comparing attachment content binary input streams.
@@ -35,24 +35,25 @@ import java.util.Optional;
 public class BinarySoapAttachmentValidator extends AbstractSoapAttachmentValidator {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(BinarySoapAttachmentValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinarySoapAttachmentValidator.class);
 
     @Override
     protected void validateAttachmentContent(SoapAttachment receivedAttachment, SoapAttachment controlAttachment) {
-        if (log.isDebugEnabled()) {
-            log.debug("Validating binary SOAP attachment content ...");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Validating binary SOAP attachment content ...");
         }
 
         try {
-            Assert.isTrue(IOUtils.contentEquals(receivedAttachment.getInputStream(), controlAttachment.getInputStream()),
-                    "Values not equal for binary attachment content '"
+            if (!IOUtils.contentEquals(receivedAttachment.getInputStream(), controlAttachment.getInputStream())) {
+                throw new ValidationException("Values not equal for binary attachment content '"
                             + Optional.ofNullable(controlAttachment.getContentId()).orElse(Optional.ofNullable(receivedAttachment.getContentId()).orElse("unknown")) + "'");
+            }
         } catch(IOException e) {
             throw new CitrusRuntimeException("Binary SOAP attachment validation failed", e);
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Validating binary SOAP attachment content: OK");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Validating binary SOAP attachment content: OK");
         }
     }
 }

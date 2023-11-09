@@ -27,6 +27,7 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.UnknownElementException;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.message.Message;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.util.XMLUtils;
 import org.citrusframework.validation.AbstractMessageValidator;
 import org.citrusframework.validation.ValidationUtils;
@@ -36,8 +37,6 @@ import org.citrusframework.xml.xpath.XPathExpressionResult;
 import org.citrusframework.xml.xpath.XPathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -49,20 +48,22 @@ import org.w3c.dom.Node;
 public class XpathMessageValidator extends AbstractMessageValidator<XpathMessageValidationContext> {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(XpathMessageValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(XpathMessageValidator.class);
 
     private NamespaceContextBuilder namespaceContextBuilder;
 
     @Override
     public void validateMessage(Message receivedMessage, Message controlMessage,
                                 TestContext context, XpathMessageValidationContext validationContext) throws ValidationException {
-        if (CollectionUtils.isEmpty(validationContext.getXpathExpressions())) { return; }
+        if (validationContext.getXpathExpressions().isEmpty()) {
+            return;
+        }
 
         if (receivedMessage.getPayload() == null || !StringUtils.hasText(receivedMessage.getPayload(String.class))) {
             throw new ValidationException("Unable to validate message elements - receive message payload was empty");
         }
 
-        LOG.debug("Start XPath element validation ...");
+        logger.debug("Start XPath element validation ...");
 
         Document received = XMLUtils.parseMessagePayload(receivedMessage.getPayload(String.class));
         NamespaceContext namespaceContext = getNamespaceContextBuilder(context)
@@ -115,12 +116,12 @@ public class XpathMessageValidator extends AbstractMessageValidator<XpathMessage
             //do the validation of actual and expected value for element
             ValidationUtils.validateValues(xPathResult, expectedValue, xPathExpression, context);
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Validating element: " + xPathExpression + "='" + expectedValue + "': OK.");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Validating element: " + xPathExpression + "='" + expectedValue + "': OK.");
             }
         }
 
-        LOG.info("XPath element validation successful: All elements OK");
+        logger.info("XPath element validation successful: All elements OK");
     }
 
     @Override

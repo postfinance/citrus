@@ -23,6 +23,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.gargoylesoftware.htmlunit.BrowserVersion;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.endpoint.AbstractEndpoint;
 import org.citrusframework.exceptions.CitrusRuntimeException;
@@ -30,8 +31,10 @@ import org.citrusframework.message.Message;
 import org.citrusframework.messaging.Consumer;
 import org.citrusframework.messaging.Producer;
 import org.citrusframework.selenium.actions.SeleniumAction;
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import org.apache.commons.io.FileUtils;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
+import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
@@ -54,10 +57,6 @@ import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.events.WebDriverListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * Selenium browser provides access to web driver and initializes Selenium environment from endpoint configuration.
@@ -68,7 +67,7 @@ import org.springframework.util.StringUtils;
 public class SeleniumBrowser extends AbstractEndpoint implements Producer {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(SeleniumBrowser.class);
+    private static final Logger logger = LoggerFactory.getLogger(SeleniumBrowser.class);
 
     /** Selenium web driver */
     private WebDriver webDriver;
@@ -98,7 +97,7 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
         SeleniumAction action = message.getPayload(SeleniumAction.class);
         action.execute(context);
 
-        LOG.info("Selenium action successfully executed");
+        logger.info("Selenium action successfully executed");
     }
 
     /**
@@ -114,12 +113,13 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
                 webDriver = createLocalWebDriver(getEndpointConfiguration().getBrowserType());
             }
 
-            if (!CollectionUtils.isEmpty(getEndpointConfiguration().getEventListeners())) {
-                LOG.info("Add event listeners to web driver: " + getEndpointConfiguration().getEventListeners().size());
+            if (getEndpointConfiguration().getEventListeners() != null &&
+                    !getEndpointConfiguration().getEventListeners().isEmpty()) {
+                logger.info("Add event listeners to web driver: " + getEndpointConfiguration().getEventListeners().size());
                 webDriver = new EventFiringDecorator(getEndpointConfiguration().getEventListeners().toArray(new WebDriverListener[0])).decorate(webDriver);
             }
         } else {
-            LOG.debug("Browser already started");
+            logger.debug("Browser already started");
         }
     }
 
@@ -128,21 +128,21 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
      */
     public void stop() {
         if (isStarted()) {
-            LOG.info("Stopping browser " + webDriver.getCurrentUrl());
+            logger.info("Stopping browser " + webDriver.getCurrentUrl());
 
             try {
-                LOG.info("Trying to close the browser " + webDriver + " ...");
+                logger.info("Trying to close the browser " + webDriver + " ...");
                 webDriver.quit();
             } catch (UnreachableBrowserException e) {
                 // It happens for Firefox. It's ok: browser is already closed.
-                LOG.warn("Browser is unreachable", e);
+                logger.warn("Browser is unreachable", e);
             } catch (WebDriverException e) {
-                LOG.error("Failed to close browser", e);
+                logger.error("Failed to close browser", e);
             }
 
             webDriver = null;
         } else {
-            LOG.warn("Browser already stopped");
+            logger.warn("Browser already stopped");
         }
     }
 
@@ -154,7 +154,7 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
      * @return String containing the filename to which the file is uploaded to.
      */
     public String storeFile(String fileLocation) {
-        return storeFile(new PathMatchingResourcePatternResolver().getResource(fileLocation));
+        return storeFile(Resources.create(fileLocation));
     }
 
     /**
@@ -166,11 +166,11 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
      */
     public String storeFile(Resource file) {
         try {
-            File newFile = new File(temporaryStorage.toFile(), file.getFilename());
+            File newFile = new File(temporaryStorage.toFile(), FileUtils.getFileName(file.getLocation()));
 
-            LOG.info("Store file " + file + " to " + newFile);
+            logger.info("Store file " + file + " to " + newFile);
 
-            FileUtils.copyFile(file.getFile(), newFile);
+            org.apache.commons.io.FileUtils.copyFile(file.getFile(), newFile);
 
             return newFile.getCanonicalPath();
         } catch (IOException e) {
@@ -291,7 +291,7 @@ public class SeleniumBrowser extends AbstractEndpoint implements Producer {
             Path tempDir = Files.createTempDirectory("selenium");
             tempDir.toFile().deleteOnExit();
 
-            LOG.info("Download storage location is: " + tempDir);
+            logger.info("Download storage location is: " + tempDir);
             return tempDir;
         } catch (IOException e) {
             throw new CitrusRuntimeException("Could not create temporary storage", e);

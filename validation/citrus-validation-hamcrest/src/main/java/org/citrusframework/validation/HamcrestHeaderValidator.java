@@ -23,7 +23,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.core.IsEqual;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 /**
  * @author Christoph Deppisch
@@ -32,27 +31,25 @@ import org.springframework.util.Assert;
 public class HamcrestHeaderValidator implements HeaderValidator {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(HamcrestHeaderValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(HamcrestHeaderValidator.class);
 
     @Override
     public void validateHeader(String headerName, Object receivedValue, Object controlValue, TestContext context, HeaderValidationContext validationContext) {
-        try {
-            if (controlValue instanceof Matcher) {
-                Assert.isTrue(((Matcher<?>) controlValue).matches(receivedValue),
-                        ValidationUtils.buildValueMismatchErrorMessage(
-                                "Values not matching for header '" + headerName + "'", controlValue, receivedValue));
-            } else {
-                IsEqual<Object> equalMatcher = new IsEqual<>(controlValue);
-                Assert.isTrue(equalMatcher.matches(receivedValue),
-                        ValidationUtils.buildValueMismatchErrorMessage(
-                                "Values not equal for header '" + headerName + "'", controlValue, receivedValue));
+        if (controlValue instanceof Matcher) {
+            if (!((Matcher<?>) controlValue).matches(receivedValue)) {
+                throw new ValidationException(ValidationUtils.buildValueMismatchErrorMessage(
+                        "Header validation failed: Values not matching for header '" + headerName + "'", controlValue, receivedValue));
             }
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException("Validation failed:", e);
+        } else {
+            IsEqual<Object> equalMatcher = new IsEqual<>(controlValue);
+            if (!equalMatcher.matches(receivedValue)) {
+               throw new ValidationException(ValidationUtils.buildValueMismatchErrorMessage(
+                        "Header validation failed: Values not equal for header '" + headerName + "'", controlValue, receivedValue));
+            }
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Validating header element: " + headerName + "='" + controlValue + "': OK.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Header validation: " + headerName + "='" + controlValue + "': OK.");
         }
     }
 

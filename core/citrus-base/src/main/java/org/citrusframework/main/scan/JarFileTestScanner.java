@@ -26,10 +26,9 @@ import java.util.jar.JarFile;
 
 import org.citrusframework.TestClass;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -38,7 +37,7 @@ import org.springframework.util.StringUtils;
 public class JarFileTestScanner extends AbstractTestScanner {
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(JarFileTestScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(JarFileTestScanner.class);
 
     /** Jar file resource to search in */
     private final File artifact;
@@ -55,10 +54,10 @@ public class JarFileTestScanner extends AbstractTestScanner {
             try (JarFile jar = new JarFile(artifact)) {
                 for (Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements();) {
                     JarEntry entry = entries.nextElement();
-                    String className = StringUtils.stripFilenameExtension(entry.getName()).replace( "/", "." );
-                    if (new AntPathMatcher().matchStart(packageToScan.replace( ".", "/" ), entry.getName()) && isIncluded(className)) {
-                        LOG.info("Found test class candidate in test jar file: " +  entry.getName());
-                        testClasses.add(new TestClass(className));
+                    String className = FileUtils.getBaseName(entry.getName()).replace( "/", "." );
+                    if (packageToScan.replace( ".", "/" ).startsWith(entry.getName()) && isIncluded(className)) {
+                        logger.info("Found test class candidate in test jar file: " +  entry.getName());
+                        testClasses.add(TestClass.fromString(className));
                     }
                 }
             } catch (IOException e) {

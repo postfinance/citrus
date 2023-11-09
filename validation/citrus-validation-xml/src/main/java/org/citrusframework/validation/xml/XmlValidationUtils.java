@@ -16,16 +16,15 @@
 
 package org.citrusframework.validation.xml;
 
-import javax.xml.namespace.NamespaceContext;
 import java.util.Set;
+import javax.xml.namespace.NamespaceContext;
 
 import org.citrusframework.CitrusSettings;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.util.XMLUtils;
 import org.citrusframework.xml.xpath.XPathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -36,7 +35,7 @@ import org.w3c.dom.NodeList;
 public abstract class XmlValidationUtils {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(XmlValidationUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(XmlValidationUtils.class);
 
     /**
      * Prevent instantiation.
@@ -56,15 +55,15 @@ public abstract class XmlValidationUtils {
      */
     public static boolean isElementIgnored(Node source, Node received, Set<String> ignoreExpressions, NamespaceContext namespaceContext) {
         if (isElementIgnored(received, ignoreExpressions, namespaceContext)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Element: '" + received.getLocalName() + "' is on ignore list - skipped validation");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Element: '" + received.getLocalName() + "' is on ignore list - skipped validation");
             }
             return true;
         } else if (source.getFirstChild() != null &&
                 StringUtils.hasText(source.getFirstChild().getNodeValue()) &&
                 source.getFirstChild().getNodeValue().trim().equals(CitrusSettings.IGNORE_PLACEHOLDER)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Element: '" + received.getLocalName() + "' is ignored by placeholder '" +
+            if (logger.isDebugEnabled()) {
+                logger.debug("Element: '" + received.getLocalName() + "' is ignored by placeholder '" +
                         CitrusSettings.IGNORE_PLACEHOLDER + "'");
             }
             return true;
@@ -80,7 +79,7 @@ public abstract class XmlValidationUtils {
      * @return
      */
     public static boolean isElementIgnored(final Node received, Set<String> ignoreExpressions, NamespaceContext namespaceContext) {
-        if (CollectionUtils.isEmpty(ignoreExpressions)) {
+        if (ignoreExpressions == null || ignoreExpressions.isEmpty()) {
             return false;
         }
 
@@ -141,15 +140,15 @@ public abstract class XmlValidationUtils {
     public static boolean isAttributeIgnored(Node receivedElement, Node receivedAttribute, Node sourceAttribute,
                                              Set<String> ignoreMessageElements, NamespaceContext namespaceContext) {
         if (isAttributeIgnored(receivedElement, receivedAttribute, ignoreMessageElements, namespaceContext)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Attribute '" + receivedAttribute.getLocalName() + "' is on ignore list - skipped value validation");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Attribute '" + receivedAttribute.getLocalName() + "' is on ignore list - skipped value validation");
             }
 
             return true;
         } else if ((StringUtils.hasText(sourceAttribute.getNodeValue()) &&
                 sourceAttribute.getNodeValue().trim().equals(CitrusSettings.IGNORE_PLACEHOLDER))) {
-            if (log.isDebugEnabled()) {
-                log.debug("Attribute: '" + receivedAttribute.getLocalName() + "' is ignored by placeholder '" +
+            if (logger.isDebugEnabled()) {
+                logger.debug("Attribute: '" + receivedAttribute.getLocalName() + "' is ignored by placeholder '" +
                         CitrusSettings.IGNORE_PLACEHOLDER + "'");
             }
 
@@ -168,7 +167,7 @@ public abstract class XmlValidationUtils {
      */
     private static boolean isAttributeIgnored(Node receivedElement, Node receivedAttribute,
                                              Set<String> ignoreMessageElements, NamespaceContext namespaceContext) {
-        if (CollectionUtils.isEmpty(ignoreMessageElements)) {
+        if (ignoreMessageElements == null || ignoreMessageElements.isEmpty()) {
             return false;
         }
 

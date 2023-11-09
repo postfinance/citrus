@@ -40,11 +40,11 @@ import org.citrusframework.rmi.endpoint.RmiEndpointConfiguration;
 import org.citrusframework.rmi.message.RmiMessageHeaders;
 import org.citrusframework.rmi.model.RmiServiceInvocation;
 import org.citrusframework.rmi.model.RmiServiceResult;
+import org.citrusframework.util.ReflectionHelper;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.xml.StringResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -53,7 +53,7 @@ import org.springframework.util.StringUtils;
 public class RmiClient extends AbstractEndpoint implements Producer, ReplyConsumer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(RmiClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(RmiClient.class);
 
     /** Store of reply messages */
     private CorrelationManager<Message> correlationManager;
@@ -94,23 +94,27 @@ public class RmiClient extends AbstractEndpoint implements Producer, ReplyConsum
 
             final Method[] method = new Method[1];
             if (StringUtils.hasText(invocation.getMethod())) {
-                method[0] = ReflectionUtils.findMethod(remoteTarget.getClass(), invocation.getMethod(), invocation.getArgTypes());
+                method[0] = ReflectionHelper.findMethod(remoteTarget.getClass(), invocation.getMethod(), invocation.getArgTypes());
             } else {
-                ReflectionUtils.doWithMethods(remoteTarget.getClass(), declaredMethod -> {
+                ReflectionHelper.doWithMethods(remoteTarget.getClass(), declaredMethod -> {
+                    if (!Arrays.asList(declaredMethod.getExceptionTypes()).contains(RemoteException.class) ||
+                            !declaredMethod.getDeclaringClass().equals(remoteTarget.getClass())) {
+                        return;
+                    }
+
                     if (method[0] == null) {
                         method[0] = declaredMethod;
                     }
-                }, declaredMethod -> Arrays.asList(declaredMethod.getExceptionTypes()).contains(RemoteException.class) &&
-                        declaredMethod.getDeclaringClass().equals(remoteTarget.getClass()));
+                });
             }
 
             if (method[0] == null) {
                 throw new CitrusRuntimeException("Unable to find proper method declaration on remote target object");
             }
 
-            if (log.isDebugEnabled()) {
-                log.debug("Sending message to RMI server: '" + binding + "'");
-                log.debug("Message to send:\n" + message.getPayload(String.class));
+            if (logger.isDebugEnabled()) {
+                logger.debug("Sending message to RMI server: '" + binding + "'");
+                logger.debug("Message to send:\n" + message.getPayload(String.class));
             }
             context.onOutboundMessage(message);
 
@@ -129,7 +133,7 @@ public class RmiClient extends AbstractEndpoint implements Producer, ReplyConsum
             Message response = new DefaultMessage(payload.toString());
             correlationManager.store(correlationKey, response);
 
-            log.info("Message was sent to RMI server: '" + binding + "'");
+            logger.info("Message was sent to RMI server: '" + binding + "'");
             if (result != null) {
                 context.onInboundMessage(response);
             }
@@ -143,7 +147,7 @@ public class RmiClient extends AbstractEndpoint implements Producer, ReplyConsum
             throw new CitrusRuntimeException("Failed to invoke method on remote target, because remote method not accessible", e);
         }
 
-        log.info("Message was sent to RMI server: '" + binding + "'");
+        logger.info("Message was sent to RMI server: '" + binding + "'");
     }
 
     @Override

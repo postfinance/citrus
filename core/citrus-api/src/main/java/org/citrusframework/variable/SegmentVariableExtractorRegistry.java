@@ -1,16 +1,20 @@
 package org.citrusframework.variable;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.spi.ResourcePathTypeResolver;
 import org.citrusframework.spi.TypeResolver;
+import org.citrusframework.util.ReflectionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.*;
 
 /**
  * Simple registry holding all available segment variable extractor implementations. Test context can ask this registry for
@@ -23,7 +27,7 @@ import java.util.*;
 public class SegmentVariableExtractorRegistry {
 
     /** Logger */
-    private static final Logger log = LoggerFactory.getLogger(SegmentVariableExtractor.class);
+    private static final Logger logger = LoggerFactory.getLogger(SegmentVariableExtractor.class);
 
     /** Segment variable extractor resource lookup path */
     private static final String RESOURCE_PATH = "META-INF/citrus/variable/extractor/segment";
@@ -42,7 +46,7 @@ public class SegmentVariableExtractorRegistry {
             Map<String, SegmentVariableExtractor> extractors = TYPE_RESOLVER.resolveAll();
             return extractors.values();
         } catch (CitrusRuntimeException e) {
-            log.warn(String.format("Failed to resolve segment variable extractor from resource '%s'", RESOURCE_PATH));
+            logger.warn(String.format("Failed to resolve segment variable extractor from resource '%s'", RESOURCE_PATH));
         }
 
         return Collections.emptyList();
@@ -163,14 +167,13 @@ public class SegmentVariableExtractorRegistry {
 
         @Override
         protected Object doExtractIndexedValue(TestContext testContext, Object parentObject, VariableExpressionSegmentMatcher matcher) {
-            Field field = ReflectionUtils.findField(parentObject.getClass(), matcher.getSegmentExpression());
+            Field field = ReflectionHelper.findField(parentObject.getClass(), matcher.getSegmentExpression());
             if (field == null) {
                 throw new CitrusRuntimeException(String.format("Failed to get variable - unknown field '%s' on type %s",
                         matcher.getSegmentExpression(), parentObject.getClass().getName()));
             }
 
-            ReflectionUtils.makeAccessible(field);
-            return ReflectionUtils.getField(field, parentObject);
+            return ReflectionHelper.getField(field, parentObject);
         }
 
         @Override

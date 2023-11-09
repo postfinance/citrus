@@ -16,6 +16,7 @@
 
 package org.citrusframework.mail.config.annotation;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.citrusframework.TestActor;
@@ -26,7 +27,7 @@ import org.citrusframework.mail.model.MailMarshaller;
 import org.citrusframework.mail.server.MailServer;
 import org.citrusframework.mail.server.MailServerBuilder;
 import org.citrusframework.spi.ReferenceResolver;
-import org.springframework.util.StringUtils;
+import org.citrusframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -52,11 +53,16 @@ public class MailServerConfigParser implements AnnotationConfigParser<MailServer
 
         builder.port(annotation.port());
 
+        builder.authRequired(annotation.authRequired());
         builder.autoAccept(annotation.autoAccept());
         builder.splitMultipart(annotation.splitMultipart());
 
         if (StringUtils.hasText(annotation.messageConverter())) {
             builder.messageConverter(referenceResolver.resolve(annotation.messageConverter(), MailMessageConverter.class));
+        }
+
+        if (annotation.knownUsers().length > 0) {
+            builder.knownUsers(Arrays.asList(annotation.knownUsers()));
         }
 
         if (StringUtils.hasText(annotation.marshaller())) {

@@ -16,12 +16,6 @@
 
 package org.citrusframework.mail.message;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimePart;
-import javax.xml.transform.Source;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,29 +23,38 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import javax.xml.transform.Source;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimePart;
+import org.apache.commons.codec.binary.Base64;
 import org.citrusframework.CitrusSettings;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.mail.client.MailEndpointConfiguration;
 import org.citrusframework.mail.model.AttachmentPart;
 import org.citrusframework.mail.model.BodyPart;
+import org.citrusframework.mail.model.MailMarshaller;
 import org.citrusframework.mail.model.MailRequest;
 import org.citrusframework.message.DefaultMessage;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageConverter;
 import org.citrusframework.util.FileUtils;
-import org.apache.commons.codec.binary.Base64;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.MimeMailMessage;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.util.FileCopyUtils;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -61,10 +64,10 @@ import org.springframework.util.StringUtils;
 public class MailMessageConverter implements MessageConverter<MimeMailMessage, MimeMailMessage, MailEndpointConfiguration> {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(MailMessageConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(MailMessageConverter.class);
 
     /** Mail delivery date format */
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
     @Override
     public MimeMailMessage convertOutbound(Message message, MailEndpointConfiguration endpointConfiguration, TestContext context) {
@@ -72,7 +75,7 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
 
         try {
             Session session = Session.getInstance(endpointConfiguration.getJavaMailProperties(), endpointConfiguration.getAuthenticator());
-            session.setDebug(log.isDebugEnabled());
+            session.setDebug(logger.isDebugEnabled());
 
             MimeMessage mimeMessage = new MimeMessage(session);
             MimeMailMessage mimeMailMessage = new MimeMailMessage(new MimeMessageHelper(mimeMessage,
@@ -93,14 +96,14 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
 
         try {
             mimeMailMessage.setFrom(mailRequest.getFrom());
-            mimeMailMessage.setTo(StringUtils.commaDelimitedListToStringArray(mailRequest.getTo()));
+            mimeMailMessage.setTo(mailRequest.getTo().split(","));
 
             if (StringUtils.hasText(mailRequest.getCc())) {
-                mimeMailMessage.setCc(StringUtils.commaDelimitedListToStringArray(mailRequest.getCc()));
+                mimeMailMessage.setCc(mailRequest.getCc().split(","));
             }
 
             if (StringUtils.hasText(mailRequest.getBcc())) {
-                mimeMailMessage.setBcc(StringUtils.commaDelimitedListToStringArray(mailRequest.getBcc()));
+                mimeMailMessage.setBcc(mailRequest.getBcc().split(","));
             }
 
             mimeMailMessage.setReplyTo(mailRequest.getReplyTo() != null ? mailRequest.getReplyTo() : mailRequest.getFrom());
@@ -110,8 +113,8 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
 
             if (mailRequest.getBody().hasAttachments()) {
                 for (AttachmentPart attachmentPart : mailRequest.getBody().getAttachments().getAttachments()) {
-                    ByteArrayResource inputStreamSource = new ByteArrayResource(attachmentPart.getContent().getBytes(Charset.forName(parseCharsetFromContentType(attachmentPart.getContentType()))));
-                    mimeMailMessage.getMimeMessageHelper().addAttachment(attachmentPart.getFileName(), inputStreamSource,
+                    Resource attachmentSource = new ByteArrayResource(attachmentPart.getContent().getBytes(Charset.forName(parseCharsetFromContentType(attachmentPart.getContentType()))));
+                    mimeMailMessage.getMimeMessageHelper().addAttachment(attachmentPart.getFileName(), attachmentSource,
                             attachmentPart.getContentType());
                 }
             }
@@ -124,7 +127,7 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
     public MailMessage convertInbound(MimeMailMessage message, MailEndpointConfiguration endpointConfiguration, TestContext context) {
         try {
             Map<String, Object> messageHeaders = createMessageHeaders(message);
-            return createMailRequest(messageHeaders, handlePart(message.getMimeMessage()), endpointConfiguration);
+            return createMailRequest(messageHeaders, handlePart(message.getMimeMessage()), endpointConfiguration.getMarshaller());
         } catch (MessagingException | IOException e) {
             throw new CitrusRuntimeException("Failed to convert mail mime message", e);
         }
@@ -134,18 +137,26 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
      * Creates a new mail message model object from message headers.
      * @param messageHeaders
      * @param bodyPart
-     * @param endpointConfiguration
+     * @param marshaller
      * @return
      */
-    protected MailMessage createMailRequest(Map<String, Object> messageHeaders, BodyPart bodyPart, MailEndpointConfiguration endpointConfiguration) {
-        return MailMessage.request(messageHeaders)
-                        .marshaller(endpointConfiguration.getMarshaller())
+    public MailMessage createMailRequest(Map<String, Object> messageHeaders, BodyPart bodyPart, MailMarshaller marshaller) {
+        MailMessage message = MailMessage.request(messageHeaders)
+                        .marshaller(marshaller)
                         .from(messageHeaders.get(CitrusMailMessageHeaders.MAIL_FROM).toString())
                         .to(messageHeaders.get(CitrusMailMessageHeaders.MAIL_TO).toString())
-                        .cc(messageHeaders.get(CitrusMailMessageHeaders.MAIL_CC).toString())
-                        .bcc(messageHeaders.get(CitrusMailMessageHeaders.MAIL_BCC).toString())
                         .subject(messageHeaders.get(CitrusMailMessageHeaders.MAIL_SUBJECT).toString())
                         .body(bodyPart);
+
+        if (StringUtils.hasText(messageHeaders.get(CitrusMailMessageHeaders.MAIL_CC).toString())) {
+            message.cc(messageHeaders.get(CitrusMailMessageHeaders.MAIL_CC).toString());
+        }
+
+        if (StringUtils.hasText(messageHeaders.get(CitrusMailMessageHeaders.MAIL_BCC).toString())) {
+            message.bcc(messageHeaders.get(CitrusMailMessageHeaders.MAIL_BCC).toString());
+        }
+
+        return message;
     }
 
     /**
@@ -156,11 +167,11 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
     protected Map<String,Object> createMessageHeaders(MimeMailMessage msg) throws MessagingException, IOException {
         Map<String, Object> headers = new HashMap<>();
         headers.put(CitrusMailMessageHeaders.MAIL_MESSAGE_ID, msg.getMimeMessage().getMessageID());
-        headers.put(CitrusMailMessageHeaders.MAIL_FROM, StringUtils.arrayToCommaDelimitedString(msg.getMimeMessage().getFrom()));
-        headers.put(CitrusMailMessageHeaders.MAIL_TO, StringUtils.arrayToCommaDelimitedString((msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.TO))));
-        headers.put(CitrusMailMessageHeaders.MAIL_CC, StringUtils.arrayToCommaDelimitedString((msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.CC))));
-        headers.put(CitrusMailMessageHeaders.MAIL_BCC, StringUtils.arrayToCommaDelimitedString((msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.BCC))));
-        headers.put(CitrusMailMessageHeaders.MAIL_REPLY_TO, StringUtils.arrayToCommaDelimitedString((msg.getMimeMessage().getReplyTo())));
+        headers.put(CitrusMailMessageHeaders.MAIL_FROM, String.join(",", Optional.ofNullable(msg.getMimeMessage().getFrom()).stream().flatMap(Arrays::stream).map(Object::toString).toList()));
+        headers.put(CitrusMailMessageHeaders.MAIL_TO, String.join(",", Optional.ofNullable(msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.TO)).stream().flatMap(Arrays::stream).map(Object::toString).toList()));
+        headers.put(CitrusMailMessageHeaders.MAIL_CC, String.join(",", Optional.ofNullable(msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.CC)).stream().flatMap(Arrays::stream).map(Object::toString).toList()));
+        headers.put(CitrusMailMessageHeaders.MAIL_BCC, String.join(",", Optional.ofNullable(msg.getMimeMessage().getRecipients(jakarta.mail.Message.RecipientType.BCC)).stream().flatMap(Arrays::stream).map(Object::toString).toList()));
+        headers.put(CitrusMailMessageHeaders.MAIL_REPLY_TO, String.join(",", Optional.ofNullable(msg.getMimeMessage().getReplyTo()).stream().flatMap(Arrays::stream).map(Object::toString).toList()));
         headers.put(CitrusMailMessageHeaders.MAIL_DATE, msg.getMimeMessage().getSentDate() != null ? dateFormat.format(msg.getMimeMessage().getSentDate()) : null);
         headers.put(CitrusMailMessageHeaders.MAIL_SUBJECT, msg.getMimeMessage().getSubject());
         headers.put(CitrusMailMessageHeaders.MAIL_CONTENT_TYPE, parseContentType(msg.getMimeMessage().getContentType()));
@@ -249,7 +260,10 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
      */
     protected BodyPart handleImageBinaryPart(MimePart image, String contentType) throws IOException, MessagingException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        FileCopyUtils.copy(image.getInputStream(), bos);
+        try (InputStream in = image.getInputStream()) {
+            bos.write(in.readAllBytes());
+            bos.flush();
+        }
         String base64 = Base64.encodeBase64String(bos.toByteArray());
         return new BodyPart(base64, contentType);
     }
@@ -311,7 +325,7 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    log.warn("Failed to close reader", e);
+                    logger.warn("Failed to close reader", e);
                 }
             }
         }
@@ -369,7 +383,7 @@ public class MailMessageConverter implements MessageConverter<MimeMailMessage, M
                 try {
                     reader.close();
                 } catch (IOException e) {
-                    log.warn("Failed to close reader", e);
+                    logger.warn("Failed to close reader", e);
                 }
             }
         }

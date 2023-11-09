@@ -33,7 +33,9 @@ import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.message.builder.MessageBuilderSupport;
 import org.citrusframework.spi.ReferenceResolver;
 import org.citrusframework.spi.ReferenceResolverAware;
+import org.citrusframework.spi.Resource;
 import org.citrusframework.util.FileUtils;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.ws.message.SoapFault;
 import org.citrusframework.ws.validation.SimpleSoapFaultValidator;
 import org.citrusframework.ws.validation.SoapFaultDetailValidationContext;
@@ -41,8 +43,6 @@ import org.citrusframework.ws.validation.SoapFaultValidationContext;
 import org.citrusframework.ws.validation.SoapFaultValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.util.StringUtils;
 import org.springframework.ws.soap.client.SoapFaultClientException;
 
 /**
@@ -80,7 +80,7 @@ public class AssertSoapFault extends AbstractActionContainer {
     private final SoapFaultValidationContext validationContext;
 
     /** Logger */
-    private static Logger LOG = LoggerFactory.getLogger(AssertSoapFault.class);
+    private static final Logger logger = LoggerFactory.getLogger(AssertSoapFault.class);
 
     /**
      * Default constructor.
@@ -101,19 +101,19 @@ public class AssertSoapFault extends AbstractActionContainer {
 
     @Override
     public void doExecute(TestContext context) {
-        LOG.debug("Asserting SOAP fault ...");
+        logger.debug("Asserting SOAP fault ...");
 
         try {
             executeAction(action, context);
         } catch (SoapFaultClientException soapFaultException) {
-            LOG.debug("Validating SOAP fault ...");
+            logger.debug("Validating SOAP fault ...");
 
             SoapFault controlFault = constructControlFault(context);
 
             validator.validateSoapFault(SoapFault.from(soapFaultException.getSoapFault()), controlFault, context, validationContext);
 
-            LOG.debug("Asserted SOAP fault as expected: " + soapFaultException.getFaultCode() + ": " + soapFaultException.getFaultStringOrReason());
-            LOG.info("Assert SOAP fault validation successful");
+            logger.debug("Asserted SOAP fault as expected: " + soapFaultException.getFaultCode() + ": " + soapFaultException.getFaultStringOrReason());
+            logger.info("Assert SOAP fault validation successful");
 
             return;
         } catch (Exception e) {

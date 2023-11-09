@@ -16,14 +16,13 @@
 
 package org.citrusframework.validation.matcher.core;
 
+import java.util.List;
+
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.validation.matcher.ValidationMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * Creates new variables from given field. Either uses field name or control value as variable name.
@@ -34,7 +33,7 @@ import java.util.List;
 public class CreateVariableValidationMatcher implements ValidationMatcher {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(CreateVariableValidationMatcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(CreateVariableValidationMatcher.class);
 
     @Override
     public void validate(String fieldName, String value, List<String> controlParameters, TestContext context) throws ValidationException {
@@ -44,7 +43,7 @@ public class CreateVariableValidationMatcher implements ValidationMatcher {
             name = controlParameters.get(0);
         }
 
-        log.info("Setting variable: " + name + " to value: " + value);
+        logger.info("Setting variable: " + name + " to value: " + value);
 
         context.setVariable(name, value);
     }

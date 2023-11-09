@@ -21,7 +21,6 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Simple soap fault validator implementation just performing String equals on soap fault detail
@@ -32,20 +31,20 @@ import org.springframework.util.StringUtils;
 public class SimpleSoapFaultValidator extends AbstractFaultDetailValidator {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(SimpleSoapFaultValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(SimpleSoapFaultValidator.class);
 
     @Override
     protected void validateFaultDetailString(String received, String control,
             TestContext context, SoapFaultDetailValidationContext validationContext) throws ValidationException {
 
-        log.debug("Validating SOAP fault detail ...");
+        logger.debug("Validating SOAP fault detail ...");
 
-        String receivedDetail = StringUtils.trimAllWhitespace(received);
-        String controlDetail = StringUtils.trimAllWhitespace(control);
+        String receivedDetail = received.replaceAll("\\s", "");
+        String controlDetail = control.replaceAll("\\s", "");
 
-        if (log.isDebugEnabled()) {
-            log.debug("Received fault detail:\n" + StringUtils.trimWhitespace(received));
-            log.debug("Control fault detail:\n" + StringUtils.trimWhitespace(control));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Received fault detail:\n" + received.strip());
+            logger.debug("Control fault detail:\n" + control.strip());
         }
 
         if (!receivedDetail.equals(controlDetail)) {
@@ -53,6 +52,6 @@ public class SimpleSoapFaultValidator extends AbstractFaultDetailValidator {
                     controlDetail + "' \n received \n'" + receivedDetail + "'");
         }
 
-        log.info("SOAP fault detail validation successful: All values OK");
+        logger.info("SOAP fault detail validation successful: All values OK");
     }
 }

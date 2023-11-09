@@ -16,22 +16,12 @@
 
 package org.citrusframework.generate.javadsl;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
-import org.citrusframework.context.TestContext;
-import org.citrusframework.exceptions.CitrusRuntimeException;
-import org.citrusframework.generate.WsdlTestGenerator;
-import org.citrusframework.generate.dictionary.InboundXmlDataDictionary;
-import org.citrusframework.generate.dictionary.OutboundXmlDataDictionary;
-import org.citrusframework.message.Message;
-import org.citrusframework.util.XMLUtils;
-import org.citrusframework.ws.message.SoapMessage;
-import org.citrusframework.xml.XmlConfigurer;
 import org.apache.xmlbeans.SchemaType;
 import org.apache.xmlbeans.SchemaTypeSystem;
 import org.apache.xmlbeans.XmlBeans;
@@ -40,8 +30,20 @@ import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.apache.xmlbeans.impl.xsd2inst.SampleXmlUtil;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.StringUtils;
+import org.citrusframework.context.TestContext;
+import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.generate.WsdlTestGenerator;
+import org.citrusframework.generate.dictionary.InboundXmlDataDictionary;
+import org.citrusframework.generate.dictionary.OutboundXmlDataDictionary;
+import org.citrusframework.message.Message;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
+import org.citrusframework.util.StringUtils;
+import org.citrusframework.util.XMLUtils;
+import org.citrusframework.ws.message.SoapMessage;
+import org.citrusframework.xml.XmlConfigurer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test generator creates one to many test cases based on operations defined in a XML schema XSD.
@@ -50,14 +52,19 @@ import org.springframework.util.StringUtils;
  */
 public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTestGenerator> implements WsdlTestGenerator<WsdlJavaTestGenerator> {
 
+    /** Logger */
+    private static final Logger logger = LoggerFactory.getLogger(WsdlJavaTestGenerator.class);
+
+    private final static Pattern COUNT_NS = Pattern.compile("xmlns:");
+
     private String wsdl;
 
     private String operation;
     private String namePrefix;
     private String nameSuffix = "_IT";
 
-    private InboundXmlDataDictionary inboundDataDictionary = new InboundXmlDataDictionary();
-    private OutboundXmlDataDictionary outboundDataDictionary = new OutboundXmlDataDictionary();
+    private final InboundXmlDataDictionary inboundDataDictionary = new InboundXmlDataDictionary();
+    private final OutboundXmlDataDictionary outboundDataDictionary = new OutboundXmlDataDictionary();
 
     @Override
     public void create() {
@@ -68,21 +75,21 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
         XmlObject wsdlObject = compileWsdl(wsdl);
         SchemaTypeSystem schemaTypeSystem = compileXsd(wsdlObject);
 
-        log.info("WSDL compilation successful");
+        logger.info("WSDL compilation successful");
         String serviceName = evaluateAsString(wsdlObject, wsdlNsDelaration + ".//wsdl:portType/@name");
-        log.info("Found service: " + serviceName);
+        logger.info("Found service: " + serviceName);
 
         if (!StringUtils.hasText(namePrefix)) {
             withNamePrefix(serviceName + "_");
         }
 
-        log.info("Found service operations:");
+        logger.info("Found service operations:");
         XmlObject[] messages = wsdlObject.selectPath(wsdlNsDelaration + ".//wsdl:message");
         XmlObject[] operations = wsdlObject.selectPath(wsdlNsDelaration + ".//wsdl:portType/wsdl:operation");
         for (XmlObject operation : operations) {
-            log.info(evaluateAsString(operation, wsdlNsDelaration + "./@name"));
+            logger.info(evaluateAsString(operation, wsdlNsDelaration + "./@name"));
         }
-        log.info("Generating test cases for service operations ...");
+        logger.info("Generating test cases for service operations ...");
 
         for (XmlObject operation : operations) {
             SoapMessage request = new SoapMessage();
@@ -139,7 +146,7 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
 
             super.create();
 
-            log.info("Successfully created new test case " + getTargetPackage() + "." + getName());
+            logger.info("Successfully created new test case " + getTargetPackage() + "." + getName());
         }
     }
 
@@ -161,26 +168,16 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
      * @return
      */
     private XmlObject compileWsdl(String wsdl) {
-        File wsdlFile;
-        try {
-            wsdlFile = new PathMatchingResourcePatternResolver().getResource(wsdl).getFile();
-        } catch (IOException e) {
-            wsdlFile = new File(wsdl);
-        }
-
+        Resource wsdlFile = Resources.create(wsdl);
         if (!wsdlFile.exists()) {
-            throw new CitrusRuntimeException("Unable to read WSDL - does not exist in " + wsdlFile.getAbsolutePath());
-        }
-
-        if (!wsdlFile.canRead()) {
-            throw new CitrusRuntimeException("Unable to read WSDL - could not open in read mode");
+            throw new CitrusRuntimeException("Unable to read WSDL - does not exist in " + wsdlFile.getLocation());
         }
 
         try {
-            return XmlObject.Factory.parse(wsdlFile, (new XmlOptions()).setLoadLineNumbers().setLoadMessageDigest().setCompileDownloadUrls());
+            return XmlObject.Factory.parse(wsdlFile.getFile(), (new XmlOptions()).setLoadLineNumbers().setLoadMessageDigest().setCompileDownloadUrls());
         } catch (XmlException e) {
             for (Object error : e.getErrors()) {
-                log.error(((XmlError)error).getLine() + "" + error.toString());
+                logger.error(((XmlError)error).getLine() + "" + error.toString());
             }
             throw new CitrusRuntimeException("WSDL could not be parsed", e);
         } catch (Exception e) {
@@ -217,7 +214,7 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
             schemaTypeSystem = XmlBeans.compileXsd(xsd, XmlBeans.getContextTypeLoader(), new XmlOptions());
         } catch (XmlException e) {
             for (Object error : e.getErrors()) {
-                log.error("Line " + ((XmlError)error).getLine() + ": " + error.toString());
+                logger.error("Line " + ((XmlError)error).getLine() + ": " + error.toString());
             }
             throw new CitrusRuntimeException("Failed to compile XSD schema", e);
         } catch (Exception e) {
@@ -317,7 +314,7 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
     private String[] extractNamespacesOnWsdlLevel(XmlObject wsdl) {
         int cursor = wsdl.xmlText().indexOf(":") + ":definitions ".length();
         String nsWsdlOrig = wsdl.xmlText().substring(cursor, wsdl.xmlText().indexOf(">", cursor));
-        int noNs = StringUtils.countOccurrencesOf(nsWsdlOrig, "xmlns:");
+        int noNs = (int) COUNT_NS.matcher(nsWsdlOrig).results().count();
         String[] namespacesWsdl = new String[noNs];
         cursor = 0;
         for (int i=0; i<noNs; i++) {
@@ -414,7 +411,7 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
      * @return
      */
     public WsdlJavaTestGenerator withInboundMappingFile(String mappingFile) {
-        this.inboundDataDictionary.setMappingFile(new PathMatchingResourcePatternResolver().getResource(mappingFile));
+        this.inboundDataDictionary.setMappingFile(Resources.create(mappingFile));
         this.inboundDataDictionary.initialize();
         return this;
     }
@@ -425,7 +422,7 @@ public class WsdlJavaTestGenerator extends MessagingJavaTestGenerator<WsdlJavaTe
      * @return
      */
     public WsdlJavaTestGenerator withOutboundMappingFile(String mappingFile) {
-        this.outboundDataDictionary.setMappingFile(new PathMatchingResourcePatternResolver().getResource(mappingFile));
+        this.outboundDataDictionary.setMappingFile(Resources.create(mappingFile));
         this.outboundDataDictionary.initialize();
         return this;
     }

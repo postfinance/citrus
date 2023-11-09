@@ -28,10 +28,10 @@ import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.spi.ReferenceResolver;
 import org.citrusframework.spi.ResourcePathTypeResolver;
 import org.citrusframework.spi.TypeResolver;
+import org.citrusframework.util.ReflectionHelper;
 import org.citrusframework.util.TypeConversionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Endpoint builder interface. All endpoint builder implementations do implement this interface
@@ -43,7 +43,7 @@ import org.springframework.util.ReflectionUtils;
 public interface EndpointBuilder<T extends Endpoint> {
 
     /** Logger */
-    Logger LOG = LoggerFactory.getLogger(EndpointBuilder.class);
+    Logger logger = LoggerFactory.getLogger(EndpointBuilder.class);
 
     /** Endpoint builder resource lookup path */
     String RESOURCE_PATH = "META-INF/citrus/endpoint/builder";
@@ -71,19 +71,19 @@ public interface EndpointBuilder<T extends Endpoint> {
      * @return
      */
     default T build(CitrusEndpoint endpointAnnotation, ReferenceResolver referenceResolver) {
-        Method nameSetter = ReflectionUtils.findMethod(this.getClass(), "name", String.class);
+        Method nameSetter = ReflectionHelper.findMethod(this.getClass(), "name", String.class);
         if (nameSetter != null) {
-            ReflectionUtils.invokeMethod(nameSetter, this, endpointAnnotation.name());
+            ReflectionHelper.invokeMethod(nameSetter, this, endpointAnnotation.name());
         }
 
         for (CitrusEndpointProperty endpointProperty : endpointAnnotation.properties()) {
-            Method propertyMethod = ReflectionUtils.findMethod(this.getClass(), endpointProperty.name(), endpointProperty.type());
+            Method propertyMethod = ReflectionHelper.findMethod(this.getClass(), endpointProperty.name(), endpointProperty.type());
             if (propertyMethod != null) {
                 if (!endpointProperty.type().equals(String.class)
                         && referenceResolver.isResolvable(endpointProperty.value())) {
-                    ReflectionUtils.invokeMethod(propertyMethod, this, referenceResolver.resolve(endpointProperty.value(), endpointProperty.type()));
+                    ReflectionHelper.invokeMethod(propertyMethod, this, referenceResolver.resolve(endpointProperty.value(), endpointProperty.type()));
                 } else {
-                    ReflectionUtils.invokeMethod(propertyMethod, this, TypeConversionUtils.convertStringToType(endpointProperty.value(), endpointProperty.type()));
+                    ReflectionHelper.invokeMethod(propertyMethod, this, TypeConversionUtils.convertStringToType(endpointProperty.value(), endpointProperty.type()));
                 }
             }
         }
@@ -99,9 +99,9 @@ public interface EndpointBuilder<T extends Endpoint> {
      */
     default T build(Properties endpointProperties, ReferenceResolver referenceResolver) {
         for (Map.Entry<Object, Object> endpointProperty : endpointProperties.entrySet()) {
-            Method propertyMethod = ReflectionUtils.findMethod(this.getClass(), endpointProperty.getKey().toString(), endpointProperty.getValue().getClass());
+            Method propertyMethod = ReflectionHelper.findMethod(this.getClass(), endpointProperty.getKey().toString(), endpointProperty.getValue().getClass());
             if (propertyMethod != null) {
-                ReflectionUtils.invokeMethod(propertyMethod, this, endpointProperty.getValue());
+                ReflectionHelper.invokeMethod(propertyMethod, this, endpointProperty.getValue());
             }
         }
 
@@ -116,8 +116,8 @@ public interface EndpointBuilder<T extends Endpoint> {
     static Map<String, EndpointBuilder<?>> lookup() {
         Map<String, EndpointBuilder<?>> builders = new HashMap<>(TYPE_RESOLVER.resolveAll("", TypeResolver.TYPE_PROPERTY_WILDCARD));
 
-        if (LOG.isDebugEnabled()) {
-            builders.forEach((k, v) -> LOG.debug(String.format("Found endpoint builder '%s' as %s", k, v.getClass())));
+        if (logger.isDebugEnabled()) {
+            builders.forEach((k, v) -> logger.debug(String.format("Found endpoint builder '%s' as %s", k, v.getClass())));
         }
         return builders;
     }
@@ -143,7 +143,7 @@ public interface EndpointBuilder<T extends Endpoint> {
 
             return Optional.of(instance);
         } catch (CitrusRuntimeException e) {
-            LOG.warn(String.format("Failed to resolve endpoint builder from resource '%s/%s'", RESOURCE_PATH, builder));
+            logger.warn(String.format("Failed to resolve endpoint builder from resource '%s/%s'", RESOURCE_PATH, builder));
         }
 
         return Optional.empty();

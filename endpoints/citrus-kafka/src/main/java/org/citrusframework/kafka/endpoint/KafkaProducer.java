@@ -24,17 +24,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.kafka.message.KafkaMessageHeaders;
 import org.citrusframework.message.Message;
 import org.citrusframework.messaging.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Christoph Deppisch
@@ -43,7 +42,7 @@ import org.springframework.util.StringUtils;
 public class KafkaProducer implements Producer {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(KafkaProducer.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaProducer.class);
 
     /** The producer name. */
     private final String name;
@@ -67,25 +66,27 @@ public class KafkaProducer implements Producer {
 
     @Override
     public void send(final Message message, final TestContext context) {
-        Assert.notNull(message, "Message is empty - unable to send empty message");
+        if (message == null) {
+            throw new CitrusRuntimeException("Message is empty - unable to send empty message");
+        }
 
         String topic = Optional.ofNullable(message.getHeader(KafkaMessageHeaders.TOPIC))
                 .map(Object::toString)
                 .map(context::replaceDynamicContentInString)
-                .orElse(context.replaceDynamicContentInString(endpointConfiguration.getTopic()));
+                .orElseGet(() -> context.replaceDynamicContentInString(endpointConfiguration.getTopic()));
 
         if (!StringUtils.hasText(topic)) {
             throw new CitrusRuntimeException(String.format("Invalid Kafka stream topic header %s - must not be empty or null", KafkaMessageHeaders.TOPIC));
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("Sending Kafka stream message to topic: '" + topic + "'");
+        if (logger.isDebugEnabled()) {
+            logger.debug("Sending Kafka stream message to topic: '" + topic + "'");
         }
 
         try {
             ProducerRecord<Object, Object> producerRecord = endpointConfiguration.getMessageConverter().convertOutbound(message, endpointConfiguration, context);
             producer.send(producerRecord).get(endpointConfiguration.getTimeout(), TimeUnit.MILLISECONDS);
-            log.info("Message was sent to Kafka stream topic: '" + topic + "'");
+            logger.info("Message was sent to Kafka stream topic: '" + topic + "'");
         } catch (InterruptedException | ExecutionException e) {
             throw new CitrusRuntimeException(String.format("Failed to send message to Kafka topic '%s'", topic), e);
         } catch (TimeoutException e) {
@@ -101,11 +102,11 @@ public class KafkaProducer implements Producer {
     private org.apache.kafka.clients.producer.KafkaProducer<Object, Object> createKafkaProducer() {
         Map<String, Object> producerProps = new HashMap<>();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, endpointConfiguration.getServer());
-        producerProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, new Long(endpointConfiguration.getTimeout()).intValue());
+        producerProps.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, Long.valueOf(endpointConfiguration.getTimeout()).intValue());
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, endpointConfiguration.getKeySerializer());
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, endpointConfiguration.getValueSerializer());
 
-        producerProps.put(ProducerConfig.CLIENT_ID_CONFIG, Optional.ofNullable(endpointConfiguration.getClientId()).orElse(KafkaMessageHeaders.KAFKA_PREFIX + "producer_" + UUID.randomUUID().toString()));
+        producerProps.put(ProducerConfig.CLIENT_ID_CONFIG, Optional.ofNullable(endpointConfiguration.getClientId()).orElseGet(()  -> KafkaMessageHeaders.KAFKA_PREFIX + "producer_" + UUID.randomUUID()));
 
         producerProps.putAll(endpointConfiguration.getProducerProperties());
 

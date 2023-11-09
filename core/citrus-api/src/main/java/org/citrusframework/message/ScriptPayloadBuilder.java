@@ -26,7 +26,6 @@ import org.citrusframework.spi.ResourcePathTypeResolver;
 import org.citrusframework.spi.TypeResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 
 /**
  * @author Christoph Deppisch
@@ -34,7 +33,7 @@ import org.springframework.core.io.Resource;
 public interface ScriptPayloadBuilder extends MessagePayloadBuilder {
 
     /** Logger */
-    Logger LOG = LoggerFactory.getLogger(ScriptPayloadBuilder.class);
+    Logger logger = LoggerFactory.getLogger(ScriptPayloadBuilder.class);
 
     /** Message processor resource lookup path */
     String RESOURCE_PATH = "META-INF/citrus/script/message/builder";
@@ -54,7 +53,7 @@ public interface ScriptPayloadBuilder extends MessagePayloadBuilder {
             T instance = TYPE_RESOLVER.resolve(type);
             return Optional.of(instance);
         } catch (CitrusRuntimeException e) {
-            LOG.warn(String.format("Failed to resolve script payload builder from resource '%s/%s'", RESOURCE_PATH, type));
+            logger.warn(String.format("Failed to resolve script payload builder from resource '%s/%s'", RESOURCE_PATH, type));
         }
 
         return Optional.empty();
@@ -62,5 +61,7 @@ public interface ScriptPayloadBuilder extends MessagePayloadBuilder {
 
     void setScript(String script);
 
-    void setFile(Resource file);
+    void setFile(String file);
+
+    void setFile(String file, String charset);
 }

@@ -24,15 +24,14 @@ import java.util.Properties;
 import org.citrusframework.AbstractTestActionBuilder;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.spi.Resource;
 import org.citrusframework.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
 
 /**
  * Action reads property files and creates test variables for every property entry. File
- * resource path can define a {@link org.springframework.core.io.ClassPathResource} or
- * a {@link org.springframework.core.io.FileSystemResource}.
+ * resource path can define a resource located on classpath or file system.
  *
  * @author Christoph Deppisch
  */
@@ -42,7 +41,7 @@ public class LoadPropertiesAction extends AbstractTestAction {
     private final String filePath;
 
     /** Logger */
-    private static final Logger LOG = LoggerFactory.getLogger(LoadPropertiesAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoadPropertiesAction.class);
 
     /**
      * Default constructor.
@@ -57,8 +56,8 @@ public class LoadPropertiesAction extends AbstractTestAction {
     public void doExecute(TestContext context) {
         Resource resource = FileUtils.getFileResource(filePath, context);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Reading property file " + resource.getFilename());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Reading property file " + FileUtils.getFileName(resource.getLocation()));
         }
 
         Properties props = FileUtils.loadAsProperties(resource);
@@ -67,12 +66,12 @@ public class LoadPropertiesAction extends AbstractTestAction {
         for (Entry<Object, Object> entry : props.entrySet()) {
             String key = entry.getKey().toString();
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Loading property: " + key + "=" + props.getProperty(key) + " into variables");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Loading property: " + key + "=" + props.getProperty(key) + " into variables");
             }
 
-            if (LOG.isDebugEnabled() && context.getVariables().containsKey(key)) {
-                LOG.debug("Overwriting property " + key + " old value:" + context.getVariable(key)
+            if (logger.isDebugEnabled() && context.getVariables().containsKey(key)) {
+                logger.debug("Overwriting property " + key + " old value:" + context.getVariable(key)
                         + " new value:" + props.getProperty(key));
             }
 
@@ -85,7 +84,7 @@ public class LoadPropertiesAction extends AbstractTestAction {
 
         context.resolveDynamicValuesInMap(unresolved).forEach(context::setVariable);
 
-        LOG.info("Loaded property file " + resource.getFilename());
+        logger.info("Loaded property file " + FileUtils.getFileName(resource.getLocation()));
     }
 
     /**

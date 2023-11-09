@@ -16,17 +16,16 @@
 
 package org.citrusframework.functions.core;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.InvalidFunctionUsageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
 
 /**
  * Function changes given date value by adding/subtracting day/month/year/hour/minute
@@ -38,14 +37,14 @@ import java.util.List;
 public class ChangeDateFunction extends AbstractDateFunction {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(ChangeDateFunction.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChangeDateFunction.class);
 
     /**
      * @see org.citrusframework.functions.Function#execute(java.util.List, org.citrusframework.context.TestContext)
      * @throws CitrusRuntimeException
      */
     public String execute(List<String> parameterList, TestContext context) {
-        if (CollectionUtils.isEmpty(parameterList)) {
+        if (parameterList == null || parameterList.isEmpty()) {
             throw new InvalidFunctionUsageException("Function parameters must not be empty");
         }
 
@@ -73,7 +72,7 @@ public class ChangeDateFunction extends AbstractDateFunction {
         try {
             result = dateFormat.format(calendar.getTime());
         } catch (RuntimeException e) {
-            log.error("Error while formatting dateParameter value ", e);
+            logger.error("Error while formatting dateParameter value ", e);
             throw new CitrusRuntimeException(e);
         }
 

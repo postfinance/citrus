@@ -17,6 +17,7 @@
 package org.citrusframework.variable.dictionary;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -24,10 +25,9 @@ import java.util.Properties;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.message.AbstractMessageProcessor;
+import org.citrusframework.spi.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 /**
  * Abstract data dictionary implementation provides global scope handling.
@@ -36,7 +36,7 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 public abstract class AbstractDataDictionary<T> extends AbstractMessageProcessor implements DataDictionary<T> {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(AbstractDataDictionary.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDataDictionary.class);
 
     /** Data dictionary name */
     private String name = getClass().getSimpleName();
@@ -73,14 +73,15 @@ public abstract class AbstractDataDictionary<T> extends AbstractMessageProcessor
     @Override
     public void initialize() {
         if (mappingFile != null) {
+            logger.debug("Reading data dictionary mapping: {}", mappingFile.getLocation());
 
-            if (log.isDebugEnabled()) {
-                log.debug("Reading data dictionary mapping " + mappingFile.getFilename());
-            }
-
-            Properties props;
-            try {
-                props = PropertiesLoaderUtils.loadProperties(mappingFile);
+            Properties props = new Properties();
+            try (InputStream inputStream = mappingFile.getInputStream()) {
+                if (mappingFile.getFile().getName().endsWith(".xml")) {
+                    props.loadFromXML(inputStream);
+                } else {
+                    props.load(inputStream);
+                }
             } catch (IOException e) {
                 throw new CitrusRuntimeException(e);
             }
@@ -88,19 +89,16 @@ public abstract class AbstractDataDictionary<T> extends AbstractMessageProcessor
             for (Map.Entry<Object, Object> entry : props.entrySet()) {
                 String key = entry.getKey().toString();
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Loading data dictionary mapping: " + key + "=" + props.getProperty(key));
-                }
+                logger.debug("Loading data dictionary mapping: {}={}", key, props.getProperty(key));
 
-                if (log.isDebugEnabled() && mappings.containsKey(key)) {
-                    log.debug("Overwriting data dictionary mapping " + key + " old value:" + mappings.get(key)
-                            + " new value:" + props.getProperty(key));
+                if (logger.isDebugEnabled() && mappings.containsKey(key)) {
+                    logger.warn("Overwriting data dictionary mapping '{}'; old value: {} new value: {}", key, mappings.get(key), props.getProperty(key));
                 }
 
                 mappings.put(key, props.getProperty(key));
             }
 
-            log.debug("Loaded data dictionary mapping " + mappingFile.getFilename());
+            logger.info("Loaded data dictionary mapping: {}", mappingFile.getLocation());
         }
     }
 

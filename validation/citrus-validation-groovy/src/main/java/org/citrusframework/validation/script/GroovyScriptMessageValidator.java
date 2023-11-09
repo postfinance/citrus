@@ -20,22 +20,22 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyObject;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.exceptions.ValidationException;
 import org.citrusframework.message.Message;
 import org.citrusframework.message.MessageType;
 import org.citrusframework.script.ScriptTypes;
+import org.citrusframework.spi.Resource;
+import org.citrusframework.spi.Resources;
+import org.citrusframework.util.StringUtils;
 import org.citrusframework.validation.AbstractMessageValidator;
 import org.citrusframework.validation.context.ValidationContext;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.util.StringUtils;
 
 /**
  * Groovy script message validator passing the message to a validation script.
@@ -49,7 +49,7 @@ import org.springframework.util.StringUtils;
 public class GroovyScriptMessageValidator extends AbstractMessageValidator<ScriptValidationContext> {
 
     /** Logger */
-    private static Logger log = LoggerFactory.getLogger(GroovyScriptMessageValidator.class);
+    private static final Logger logger = LoggerFactory.getLogger(GroovyScriptMessageValidator.class);
 
     /** Static code snippet for groovy script validation */
     private final Resource scriptTemplateResource;
@@ -58,14 +58,14 @@ public class GroovyScriptMessageValidator extends AbstractMessageValidator<Scrip
      * Default constructor using default script template.
      */
     public GroovyScriptMessageValidator() {
-        this(new ClassPathResource("org/citrusframework/validation/script-validation-template.groovy"));
+        this(Resources.fromClasspath("org/citrusframework/validation/script-validation-template.groovy"));
     }
 
     /**
      * Constructor setting the script template for this validator.
      * @param scriptTemplateResource the script template to use in this validator.
      */
-    public GroovyScriptMessageValidator(ClassPathResource scriptTemplateResource) {
+    public GroovyScriptMessageValidator(Resource scriptTemplateResource) {
         this.scriptTemplateResource = scriptTemplateResource;
     }
 
@@ -76,7 +76,7 @@ public class GroovyScriptMessageValidator extends AbstractMessageValidator<Scrip
             String validationScript = validationContext.getValidationScript(context);
 
             if (StringUtils.hasText(validationScript)) {
-                log.debug("Start groovy message validation ...");
+                logger.debug("Start groovy message validation ...");
 
                 GroovyClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<GroovyClassLoader>() {
                     public GroovyClassLoader run() {
@@ -94,7 +94,7 @@ public class GroovyScriptMessageValidator extends AbstractMessageValidator<Scrip
                 GroovyObject groovyObject = (GroovyObject) groovyClass.newInstance();
                 ((GroovyScriptExecutor) groovyObject).validate(receivedMessage, context);
 
-                log.info("Groovy message validation successful: All values OK");
+                logger.info("Groovy message validation successful: All values OK");
             }
         } catch (CompilationFailedException | InstantiationException | IllegalAccessException e) {
             throw new CitrusRuntimeException(e);
