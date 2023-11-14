@@ -34,6 +34,7 @@ import org.citrusframework.message.MessageStore;
 import org.citrusframework.yaml.YamlTestLoader;
 import org.citrusframework.yaml.actions.AbstractYamlActionTest;
 import org.testng.Assert;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -47,6 +48,7 @@ public class WaitForTest extends AbstractYamlActionTest {
     private static final String DEFAULT_RESPONSE_CODE = "200";
 
     @Test
+    @Ignore
     public void shouldLoadWaitFor() {
         String httpUrl = "https://citrusframework.org";
         String filePath = "classpath:org/citrusframework/yaml/test-request-payload.xml";

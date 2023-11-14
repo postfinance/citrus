@@ -20,7 +20,7 @@
 
   <groupId>org.citrusframework</groupId>
   <artifactId>citrus-bom</artifactId>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.0-PF2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Citrus :: Catalog :: BOM</name>
   <description>This Bill of Materials POM can be used to ease dependency management when referencing multiple Citrus artifacts using Gradle or Maven</description>
@@ -437,4 +437,17 @@
       </build>
     </profile>
   </profiles>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>snapshots</id>
+      <name>sir-maven-snapshots-local</name>
+      <url>https://repo.pnet.ch/artifactory/sir-maven-snapshots-local</url>
+    </snapshotRepository>
+    <repository>
+      <id>releases</id>
+      <name>sir-maven-releases-local</name>
+      <url>https://repo.pnet.ch/artifactory/sir-maven-releases-local</url>
+    </repository>
+  </distributionManagement>
 </project>

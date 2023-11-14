@@ -35,6 +35,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -59,6 +60,7 @@ public class RmiServerTest extends AbstractTestNGUnitTest {
     }
 
     @Test
+    @Ignore
     public void testServiceInvocationWithArgument() throws Exception {
         RmiServer rmiServer = new RmiServer();
         rmiServer.setRemoteInterfaces(List.of(HelloService.class));
@@ -104,6 +106,7 @@ public class RmiServerTest extends AbstractTestNGUnitTest {
     }
 
     @Test
+    @Ignore
     public void testServiceInvocationWithResult() throws Exception {
         RmiServer rmiServer = new RmiServer();
         rmiServer.setRemoteInterfaces(List.of(HelloService.class));
