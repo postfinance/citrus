@@ -191,8 +191,13 @@ public class ResourcePathTypeResolver implements TypeResolver {
 
     private Stream<Path> resolveAllFromJar(String path) {
         String rootAsString = ResourcePathTypeResolver.class.getProtectionDomain().getCodeSource().getLocation().toString();
+
+        if (rootAsString.endsWith("/")) {
+            rootAsString = rootAsString.substring(0, rootAsString.length() - 1);
+        }
+
         ClassLoader classLoader = ObjectHelper.assertNotNull(ResourcePathTypeResolver.class.getClassLoader());
-        if (rootAsString.endsWith(".jar") && !rootAsString.matches(".*" + File.separator + "citrus-api-\\d+\\.\\d+\\.\\d+(-.*)?\\.jar")) {
+        if ((rootAsString.startsWith("jar:") || rootAsString.endsWith(".jar")) && !rootAsString.matches(".*" + File.separator + "citrus-api-\\d+\\.\\d+\\.\\d+(-.*)?\\.jar")) {
             return getZipEntries().stream()
                     .filter(entry -> entry.startsWith(path))
                     .map(classLoader::getResource)
