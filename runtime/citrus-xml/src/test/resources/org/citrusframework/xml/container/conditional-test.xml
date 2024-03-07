@@ -16,13 +16,13 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <test name="ConditionalTest" author="Christoph" status="FINAL">
   <description>Sample test in XML</description>
   <variables>
     <variable name="shouldRun" value="true"/>
     <variable name="shouldNotRun" value="false"/>
   </variables>
+
   <actions>
     <conditional when="${shouldRun}">
       <actions>

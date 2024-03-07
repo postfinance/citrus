@@ -144,8 +144,7 @@ public class CamelSupport {
      * Route processor delegating to given Apache Camel processor.
      * @return
      */
-    public CamelRouteProcessor.Builder route(
-            Function<OutputDefinition<CamelRouteProcessor.Builder>, ProcessorDefinition<?>> configurer) {
+    public CamelRouteProcessor.Builder route(Function<OutputDefinition<CamelRouteProcessor.Builder>, ProcessorDefinition<?>> configurer) {
         CamelRouteProcessor.Builder builder = CamelRouteProcessor.Builder.route()
                 .camelContext(camelContext);
 

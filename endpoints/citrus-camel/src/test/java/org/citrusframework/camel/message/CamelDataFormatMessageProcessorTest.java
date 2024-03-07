@@ -19,22 +19,23 @@
 
 package org.citrusframework.camel.message;
 
-import java.util.Base64;
+import static java.lang.System.setProperty;
+import static org.citrusframework.CitrusSettings.TYPE_CONVERTER_DEFAULT;
+import static org.citrusframework.CitrusSettings.TYPE_CONVERTER_PROPERTY;
+import static org.citrusframework.camel.message.CamelDataFormatMessageProcessor.Builder.marshal;
+import static org.citrusframework.camel.message.CamelDataFormatMessageProcessor.Builder.unmarshal;
+import static org.testng.Assert.assertEquals;
 
-import org.citrusframework.CitrusSettings;
+import java.util.Base64;
+import org.apache.camel.CamelContext;
+import org.apache.camel.impl.DefaultCamelContext;
 import org.citrusframework.message.DefaultMessage;
 import org.citrusframework.message.Message;
 import org.citrusframework.testng.AbstractTestNGUnitTest;
 import org.citrusframework.util.TypeConversionUtils;
-import org.apache.camel.CamelContext;
-import org.apache.camel.impl.DefaultCamelContext;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import static org.citrusframework.camel.message.CamelDataFormatMessageProcessor.Builder.marshal;
-import static org.citrusframework.camel.message.CamelDataFormatMessageProcessor.Builder.unmarshal;
 
 /**
  * @author Christoph Deppisch
@@ -45,13 +46,13 @@ public class CamelDataFormatMessageProcessorTest extends AbstractTestNGUnitTest 
 
     @BeforeClass
     public void setupTypeConverter() {
-        System.setProperty(CitrusSettings.TYPE_CONVERTER_PROPERTY, "camel");
+        setProperty(TYPE_CONVERTER_PROPERTY, "camel");
         TypeConversionUtils.loadDefaultConverter();
     }
 
     @AfterClass(alwaysRun = true)
     public void restoreTypeConverterDefault() {
-        System.setProperty(CitrusSettings.TYPE_CONVERTER_PROPERTY, CitrusSettings.TYPE_CONVERTER_DEFAULT);
+        setProperty(TYPE_CONVERTER_PROPERTY, TYPE_CONVERTER_DEFAULT);
         TypeConversionUtils.loadDefaultConverter();
     }
 
@@ -66,9 +67,9 @@ public class CamelDataFormatMessageProcessorTest extends AbstractTestNGUnitTest 
                 .setHeader("operation", "sayHello");
         messageProcessor.process(in, context);
 
-        Assert.assertEquals(new String(in.getPayload(byte[].class)).trim(),
+        assertEquals(new String(in.getPayload(byte[].class)).trim(),
                 new String(Base64.getEncoder().encode("Hello from Citrus!".getBytes())));
-        Assert.assertEquals(in.getHeader("operation"), "sayHello");
+        assertEquals(in.getHeader("operation"), "sayHello");
     }
 
     @Test
@@ -82,7 +83,7 @@ public class CamelDataFormatMessageProcessorTest extends AbstractTestNGUnitTest 
                 .setHeader("operation", "sayHello");
         messageProcessor.process(in, context);
 
-        Assert.assertEquals(in.getPayload(String.class), "Hello from Citrus!");
-        Assert.assertEquals(in.getHeader("operation"), "sayHello");
+        assertEquals(in.getPayload(String.class), "Hello from Citrus!");
+        assertEquals(in.getHeader("operation"), "sayHello");
     }
 }

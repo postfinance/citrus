@@ -320,8 +320,8 @@ public class SoapMessageConverter implements WebServiceMessageConverter {
         if (message instanceof SaajSoapMessage soapMsg) {
             final MimeHeaders headers = soapMsg.getSaajMessage().getMimeHeaders();
             headers.setHeader(name, value.toString());
-        } else {
-            logger.warn("Unsupported SOAP message implementation - unable to set mime message header '" + name + "'");
+        } else if (logger.isDebugEnabled()) {
+            logger.warn("Unsupported SOAP message implementation - unable to set mime message header '{}'", name);
         }
     }
 

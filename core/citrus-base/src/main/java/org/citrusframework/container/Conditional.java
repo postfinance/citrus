@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2011 the original author or authors.
+ * Copyright 2006-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 package org.citrusframework.container;
 
+import static org.citrusframework.util.BooleanExpressionParser.evaluate;
+import static org.citrusframework.validation.matcher.ValidationMatcherUtils.isValidationMatcherExpression;
+import static org.citrusframework.validation.matcher.ValidationMatcherUtils.resolveValidationMatcher;
+
 import org.citrusframework.AbstractTestContainerBuilder;
 import org.citrusframework.TestActionBuilder;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.ValidationException;
-import org.citrusframework.util.BooleanExpressionParser;
-import org.citrusframework.validation.matcher.ValidationMatcherUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,13 +35,16 @@ import org.slf4j.LoggerFactory;
  */
 public class Conditional extends AbstractActionContainer {
 
-    /** Logger */
     private static final Logger logger = LoggerFactory.getLogger(Conditional.class);
 
-    /** Boolean condition expression string */
+    /**
+     * Boolean condition expression string
+     */
     private final String condition;
 
-    /** Optional condition expression evaluates to true or false */
+    /**
+     * Optional condition expression evaluates to true or false
+     */
     private final ConditionExpression conditionExpression;
 
     /**
@@ -61,14 +66,13 @@ public class Conditional extends AbstractActionContainer {
                 executeAction(actionBuilder.build(), context);
             }
         } else {
-            logger.debug("Condition [ {} ] evaluates to false, not executing nested actions", condition);
+            logger.debug("Condition [ {} ] evaluates to false, not executing nested actions",
+                condition);
         }
     }
 
     /**
      * Evaluates condition expression and returns boolean representation.
-     * @param context
-     * @return
      */
     private boolean checkCondition(TestContext context) {
         if (conditionExpression != null) {
@@ -77,16 +81,16 @@ public class Conditional extends AbstractActionContainer {
 
         // replace dynamic content with each iteration
         String conditionString = context.replaceDynamicContentInString(condition);
-        if (ValidationMatcherUtils.isValidationMatcherExpression(conditionString)) {
+        if (isValidationMatcherExpression(conditionString)) {
             try {
-                ValidationMatcherUtils.resolveValidationMatcher("iteratingCondition", "", conditionString, context);
+                resolveValidationMatcher("iteratingCondition", "", conditionString, context);
                 return true;
             } catch (AssertionError | ValidationException e) {
                 return false;
             }
         }
 
-        return BooleanExpressionParser.evaluate(conditionString);
+        return evaluate(conditionString);
     }
 
     @Override
@@ -96,7 +100,6 @@ public class Conditional extends AbstractActionContainer {
 
     /**
      * Gets the condition expression.
-     * @return the expression
      */
     public String getCondition() {
         return this.condition;
@@ -104,7 +107,6 @@ public class Conditional extends AbstractActionContainer {
 
     /**
      * Gets the condition expression.
-     * @return the conditionExpression
      */
     public ConditionExpression getConditionExpression() {
         return conditionExpression;
@@ -121,7 +123,6 @@ public class Conditional extends AbstractActionContainer {
 
         /**
          * Fluent API action building entry method used in Java DSL.
-         * @return
          */
         public static Builder conditional() {
             return new Builder();
@@ -129,7 +130,6 @@ public class Conditional extends AbstractActionContainer {
 
         /**
          * Condition which allows execution if true.
-         * @param expression
          */
         public Builder when(String expression) {
             this.condition = expression;
@@ -138,7 +138,6 @@ public class Conditional extends AbstractActionContainer {
 
         /**
          * Condition which allows execution if evaluates to true.
-         * @param expression
          */
         public Builder when(ConditionExpression expression) {
             this.conditionExpression = expression;

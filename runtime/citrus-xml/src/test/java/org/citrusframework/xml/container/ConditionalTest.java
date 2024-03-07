@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2022-2024 the original author or authors.
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -19,14 +19,14 @@
 
 package org.citrusframework.xml.container;
 
-import org.citrusframework.TestCase;
+import static org.testng.Assert.assertEquals;
+
 import org.citrusframework.TestCaseMetaInfo;
 import org.citrusframework.actions.EchoAction;
 import org.citrusframework.actions.FailAction;
 import org.citrusframework.container.Conditional;
 import org.citrusframework.xml.XmlTestLoader;
 import org.citrusframework.xml.actions.AbstractXmlActionTest;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 /**
@@ -37,22 +37,22 @@ public class ConditionalTest extends AbstractXmlActionTest {
     @Test
     public void shouldLoadConditional() {
         XmlTestLoader testLoader = createTestLoader("classpath:org/citrusframework/xml/container/conditional-test.xml");
-
         testLoader.load();
-        TestCase result = testLoader.getTestCase();
-        Assert.assertEquals(result.getName(), "ConditionalTest");
-        Assert.assertEquals(result.getMetaInfo().getAuthor(), "Christoph");
-        Assert.assertEquals(result.getMetaInfo().getStatus(), TestCaseMetaInfo.Status.FINAL);
-        Assert.assertEquals(result.getActionCount(), 2L);
-        Assert.assertEquals(result.getTestAction(0).getClass(), Conditional.class);
-        Assert.assertEquals(((Conditional) result.getTestAction(0)).getCondition(), "${shouldRun}");
-        Assert.assertEquals(((Conditional) result.getTestAction(0)).getActionCount(), 1L);
-        Assert.assertEquals(((Conditional) result.getTestAction(0)).getTestAction(0).getClass(), EchoAction.class);
 
-        Assert.assertEquals(result.getTestAction(1).getClass(), Conditional.class);
-        Assert.assertEquals(((Conditional) result.getTestAction(1)).getCondition(), "${shouldNotRun}");
-        Assert.assertEquals(((Conditional) result.getTestAction(1)).getActionCount(), 1L);
-        Assert.assertEquals(((Conditional) result.getTestAction(1)).getTestAction(0).getClass(), FailAction.class);
+        var result = testLoader.getTestCase();
+
+        assertEquals(result.getName(), "ConditionalTest");
+        assertEquals(result.getMetaInfo().getAuthor(), "Christoph");
+        assertEquals(result.getMetaInfo().getStatus(), TestCaseMetaInfo.Status.FINAL);
+        assertEquals(result.getActionCount(), 2L);
+        assertEquals(result.getTestAction(0).getClass(), Conditional.class);
+        assertEquals(((Conditional) result.getTestAction(0)).getCondition(), "${shouldRun}");
+        assertEquals(((Conditional) result.getTestAction(0)).getActionCount(), 1L);
+        assertEquals(((Conditional) result.getTestAction(0)).getTestAction(0).getClass(), EchoAction.class);
+
+        assertEquals(result.getTestAction(1).getClass(), Conditional.class);
+        assertEquals(((Conditional) result.getTestAction(1)).getCondition(), "${shouldNotRun}");
+        assertEquals(((Conditional) result.getTestAction(1)).getActionCount(), 1L);
+        assertEquals(((Conditional) result.getTestAction(1)).getTestAction(0).getClass(), FailAction.class);
     }
-
 }

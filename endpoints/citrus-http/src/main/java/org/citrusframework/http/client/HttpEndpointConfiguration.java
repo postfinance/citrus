@@ -16,10 +16,10 @@
 
 package org.citrusframework.http.client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import static java.util.Arrays.asList;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.citrusframework.endpoint.AbstractPollableEndpointConfiguration;
 import org.citrusframework.endpoint.resolver.DynamicEndpointUriResolver;
@@ -48,185 +48,166 @@ import org.springframework.web.client.RestTemplate;
  */
 public class HttpEndpointConfiguration extends AbstractPollableEndpointConfiguration {
 
-    /** Http url as service destination */
+    /**
+     * Http url as service destination
+     */
     private String requestUrl;
 
-    /** Request method */
+    /**
+     * Request method
+     */
     private RequestMethod requestMethod = RequestMethod.POST;
 
-    /** The request charset */
+    /**
+     * The request charset
+     */
     private String charset = "UTF-8";
 
-    /** Default content type */
+    /**
+     * Default content type
+     */
     private String contentType = "text/plain";
 
-    /** The rest template */
+    /**
+     * The rest template
+     */
     private RestTemplate restTemplate;
 
-    /** Http client builder */
+    /**
+     * Http client builder
+     */
     private HttpClientBuilder httpClient;
 
-    /** Request factory */
+    /**
+     * Request factory
+     */
     private ClientHttpRequestFactory requestFactory;
 
-    /** Resolves dynamic endpoint uri */
+    /**
+     * Resolves dynamic endpoint uri
+     */
     private EndpointUriResolver endpointUriResolver = new DynamicEndpointUriResolver();
 
-    /** Header mapper */
+    /**
+     * Header mapper
+     */
     private HeaderMapper<HttpHeaders> headerMapper = DefaultHttpHeaderMapper.outboundMapper();
 
-    /** The message converter */
+    /**
+     * The message converter
+     */
     private HttpMessageConverter messageConverter = new HttpMessageConverter();
 
-    /** Endpoint clientInterceptors */
+    /**
+     * Endpoint clientInterceptors
+     */
     private List<ClientHttpRequestInterceptor> clientInterceptors = new ArrayList<>();
 
-    /** Should http errors be handled within endpoint consumer or simply throw exception */
+    /**
+     * Should http errors be handled within endpoint consumer or simply throw exception
+     */
     private ErrorHandlingStrategy errorHandlingStrategy = ErrorHandlingStrategy.PROPAGATE;
 
-    /** Response error handler */
+    /**
+     * Response error handler
+     */
     private ResponseErrorHandler errorHandler;
 
-    /** Reply message correlator */
+    /**
+     * Reply message correlator
+     */
     private MessageCorrelator correlator = new DefaultMessageCorrelator();
 
-    /** Auto add default accept header with os supported content-types */
+    /**
+     * Auto add default accept header with os supported content-types
+     */
     private boolean defaultAcceptHeader = true;
 
-    /** Should handle http attributes */
+    /**
+     * Should handle http attributes
+     */
     private boolean handleAttributeHeaders = false;
 
-    /** Should handle http cookies */
+    /**
+     * Should handle http cookies
+     */
     private boolean handleCookies = false;
 
-    /** Default status code returned by http server */
+    /**
+     * Default status code returned by http server
+     */
     private int defaultStatusCode = HttpStatus.OK.value();
 
-    /** List of media types that should be handled with binary content processing */
-    private List<MediaType> binaryMediaTypes = Arrays.asList(MediaType.APPLICATION_OCTET_STREAM,
-                                                                MediaType.APPLICATION_PDF,
-                                                                MediaType.IMAGE_GIF,
-                                                                MediaType.IMAGE_JPEG,
-                                                                MediaType.IMAGE_PNG,
-                                                                MediaType.valueOf("application/zip"));
-
     /**
-     * Default constructor initializes with default logging interceptor.
+     * List of media types that should be handled with binary content processing
      */
+    private List<MediaType> binaryMediaTypes = asList(
+        MediaType.APPLICATION_OCTET_STREAM,
+        MediaType.APPLICATION_PDF,
+        MediaType.IMAGE_GIF,
+        MediaType.IMAGE_JPEG,
+        MediaType.IMAGE_PNG,
+        MediaType.valueOf("application/zip")
+    );
+
     public HttpEndpointConfiguration() {
         clientInterceptors.add(new LoggingClientInterceptor());
     }
 
-    /**
-     * Get the complete request URL.
-     * @return the urlPath
-     */
     public String getRequestUrl() {
         return requestUrl;
     }
 
-    /**
-     * Set the complete request URL.
-     * @param url the url to set
-     */
     public void setRequestUrl(String url) {
         this.requestUrl = url;
     }
 
-    /**
-     * Sets the endpoint uri resolver.
-     * @param endpointUriResolver the endpointUriResolver to set
-     */
     public void setEndpointUriResolver(EndpointUriResolver endpointUriResolver) {
         this.endpointUriResolver = endpointUriResolver;
     }
 
-    /**
-     * Sets the restTemplate.
-     * @param restTemplate the restTemplate to set
-     */
     public void setRestTemplate(RestTemplate restTemplate) {
         clientInterceptors.addAll(restTemplate.getInterceptors());
         restTemplate.setInterceptors(clientInterceptors);
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Sets the requestMethod.
-     * @param requestMethod the requestMethod to set
-     */
     public void setRequestMethod(RequestMethod requestMethod) {
         this.requestMethod = requestMethod;
     }
 
-    /**
-     * Sets the charset.
-     * @param charset the charset to set
-     */
     public void setCharset(String charset) {
         this.charset = charset;
     }
 
-    /**
-     * Sets the headerMapper.
-     * @param headerMapper the headerMapper to set
-     */
     public void setHeaderMapper(HeaderMapper<HttpHeaders> headerMapper) {
         this.headerMapper = headerMapper;
     }
 
-    /**
-     * Sets the contentType.
-     * @param contentType the contentType to set
-     */
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
 
-    /**
-     * Gets the errorHandlingStrategy.
-     * @return the errorHandlingStrategy
-     */
     public ErrorHandlingStrategy getErrorHandlingStrategy() {
         return errorHandlingStrategy;
     }
 
-    /**
-     * Sets the errorHandlingStrategy.
-     * @param errorHandlingStrategy the errorHandlingStrategy to set
-     */
     public void setErrorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
         this.errorHandlingStrategy = errorHandlingStrategy;
     }
 
-    /**
-     * Gets the requestMethod.
-     * @return the requestMethod
-     */
     public RequestMethod getRequestMethod() {
         return requestMethod;
     }
 
-    /**
-     * Gets the charset.
-     * @return the charset
-     */
     public String getCharset() {
         return charset;
     }
 
-    /**
-     * Gets the contentType.
-     * @return the contentType
-     */
     public String getContentType() {
         return contentType;
     }
 
-    /**
-     * Gets the restTemplate.
-     * @return the restTemplate
-     */
     public RestTemplate getRestTemplate() {
         if (restTemplate == null) {
             restTemplate = new RestTemplate();
@@ -238,67 +219,39 @@ public class HttpEndpointConfiguration extends AbstractPollableEndpointConfigura
 
         if (!defaultAcceptHeader) {
             restTemplate.getMessageConverters().stream()
-                    .filter(StringHttpMessageConverter.class::isInstance)
-                    .map(StringHttpMessageConverter.class::cast)
-                    .forEach(converter -> converter.setWriteAcceptCharset(defaultAcceptHeader));
+                .filter(StringHttpMessageConverter.class::isInstance)
+                .map(StringHttpMessageConverter.class::cast)
+                .forEach(converter -> converter.setWriteAcceptCharset(defaultAcceptHeader));
         }
 
         return restTemplate;
     }
 
-    /**
-     * Gets the endpointUriResolver.
-     * @return the endpointUriResolver
-     */
     public EndpointUriResolver getEndpointUriResolver() {
         return endpointUriResolver;
     }
 
-    /**
-     * Gets the headerMapper.
-     * @return the headerMapper
-     */
     public HeaderMapper<HttpHeaders> getHeaderMapper() {
         return headerMapper;
     }
 
-    /**
-     * Gets the list of endpoint clientInterceptors.
-     * @return
-     */
     public List<ClientHttpRequestInterceptor> getClientInterceptors() {
         return clientInterceptors;
     }
 
-    /**
-     * Sets the clientInterceptors on this implementation's rest template.
-     * @param clientInterceptors the clientInterceptors to set
-     */
     public void setClientInterceptors(List<ClientHttpRequestInterceptor> clientInterceptors) {
         this.clientInterceptors = clientInterceptors;
         getRestTemplate().setInterceptors(clientInterceptors);
     }
 
-    /**
-     * Set the reply message correlator.
-     * @param correlator the correlator to set
-     */
     public void setCorrelator(MessageCorrelator correlator) {
         this.correlator = correlator;
     }
 
-    /**
-     * Gets the correlator.
-     * @return the correlator
-     */
     public MessageCorrelator getCorrelator() {
         return correlator;
     }
 
-    /**
-     * Gets the client request factory.
-     * @return
-     */
     public ClientHttpRequestFactory getRequestFactory() {
         if (requestFactory == null) {
             requestFactory = new HttpComponentsClientHttpRequestFactory(getHttpClient().build());
@@ -307,10 +260,6 @@ public class HttpEndpointConfiguration extends AbstractPollableEndpointConfigura
         return requestFactory;
     }
 
-    /**
-     * Sets the client request factory.
-     * @param requestFactory
-     */
     public void setRequestFactory(ClientHttpRequestFactory requestFactory) {
         this.requestFactory = requestFactory;
     }
@@ -327,81 +276,38 @@ public class HttpEndpointConfiguration extends AbstractPollableEndpointConfigura
         this.httpClient = httpClient;
     }
 
-    /**
-     * Gets the message converter.
-     * @return
-     */
     public HttpMessageConverter getMessageConverter() {
         return messageConverter;
     }
 
-    /**
-     * Sets the message converter.
-     * @param messageConverter
-     */
     public void setMessageConverter(HttpMessageConverter messageConverter) {
         this.messageConverter = messageConverter;
     }
 
-    /**
-     * Sets the defaultAcceptHeader property.
-     *
-     * @param defaultAcceptHeader
-     */
     public void setDefaultAcceptHeader(boolean defaultAcceptHeader) {
         this.defaultAcceptHeader = defaultAcceptHeader;
     }
 
-    /**
-     * Gets the value of the defaultAcceptHeader property.
-     *
-     * @return the defaultAcceptHeader
-     */
     public boolean isDefaultAcceptHeader() {
         return defaultAcceptHeader;
     }
 
-    /**
-     * Gets the handleAttributeHeaders.
-     *
-     * @return
-     */
     public boolean isHandleAttributeHeaders() {
         return handleAttributeHeaders;
     }
 
-    /**
-     * Sets the handleAttributeHeaders.
-     *
-     * @param handleAttributeHeaders
-     */
     public void setHandleAttributeHeaders(boolean handleAttributeHeaders) {
         this.handleAttributeHeaders = handleAttributeHeaders;
     }
 
-    /**
-     * Gets the handleCookies.
-     *
-     * @return
-     */
     public boolean isHandleCookies() {
         return handleCookies;
     }
 
-    /**
-     * Sets the handleCookies.
-     *
-     * @param handleCookies
-     */
     public void setHandleCookies(boolean handleCookies) {
         this.handleCookies = handleCookies;
     }
 
-    /**
-     * Gets the errorHandler.
-     *
-     * @return
-     */
     public ResponseErrorHandler getErrorHandler() {
         if (errorHandler == null) {
             errorHandler = new HttpResponseErrorHandler(errorHandlingStrategy);
@@ -410,48 +316,131 @@ public class HttpEndpointConfiguration extends AbstractPollableEndpointConfigura
         return errorHandler;
     }
 
-    /**
-     * Sets the errorHandler.
-     *
-     * @param errorHandler
-     */
     public void setErrorHandler(ResponseErrorHandler errorHandler) {
         this.errorHandler = errorHandler;
     }
 
-    /**
-     * Gets the defaultStatusCode.
-     *
-     * @return
-     */
     public int getDefaultStatusCode() {
         return defaultStatusCode;
     }
 
-    /**
-     * Sets the defaultStatusCode.
-     *
-     * @param defaultStatusCode
-     */
     public void setDefaultStatusCode(int defaultStatusCode) {
         this.defaultStatusCode = defaultStatusCode;
     }
 
-    /**
-     * Gets the binaryMediaTypes.
-     *
-     * @return
-     */
     public List<MediaType> getBinaryMediaTypes() {
         return binaryMediaTypes;
     }
 
-    /**
-     * Sets the binaryMediaTypes.
-     *
-     * @param binaryMediaTypes
-     */
     public void setBinaryMediaTypes(List<MediaType> binaryMediaTypes) {
         this.binaryMediaTypes = binaryMediaTypes;
+    }
+
+    public static class Builder {
+
+        private HttpEndpointConfiguration config;
+
+        public Builder() {
+            config = new HttpEndpointConfiguration();
+        }
+
+        public Builder requestUrl(String requestUrl) {
+            config.requestUrl = requestUrl;
+            return this;
+        }
+
+        public Builder requestMethod(RequestMethod requestMethod) {
+            config.requestMethod = requestMethod;
+            return this;
+        }
+
+        public Builder charset(String charset) {
+            config.charset = charset;
+            return this;
+        }
+
+        public Builder contentType(String contentType) {
+            config.contentType = contentType;
+            return this;
+        }
+
+        public Builder restTemplate(RestTemplate restTemplate) {
+            config.restTemplate = restTemplate;
+            return this;
+        }
+
+        public Builder httpClient(HttpClientBuilder httpClient) {
+            config.httpClient = httpClient;
+            return this;
+        }
+
+        public Builder requestFactory(ClientHttpRequestFactory requestFactory) {
+            config.requestFactory = requestFactory;
+            return this;
+        }
+
+        public Builder endpointUriResolver(EndpointUriResolver endpointUriResolver) {
+            config.endpointUriResolver = endpointUriResolver;
+            return this;
+        }
+
+        public Builder headerMapper(HeaderMapper<HttpHeaders> headerMapper) {
+            config.headerMapper = headerMapper;
+            return this;
+        }
+
+        public Builder messageConverter(HttpMessageConverter messageConverter) {
+            config.messageConverter = messageConverter;
+            return this;
+        }
+
+        public Builder clientInterceptors(List<ClientHttpRequestInterceptor> clientInterceptors) {
+            config.clientInterceptors = clientInterceptors;
+            return this;
+        }
+
+        public Builder errorHandlingStrategy(ErrorHandlingStrategy errorHandlingStrategy) {
+            config.errorHandlingStrategy = errorHandlingStrategy;
+            return this;
+        }
+
+        public Builder errorHandler(ResponseErrorHandler errorHandler) {
+            config.errorHandler = errorHandler;
+            return this;
+        }
+
+        public Builder correlator(MessageCorrelator correlator) {
+            config.correlator = correlator;
+            return this;
+        }
+
+        public Builder defaultAcceptHeader(boolean defaultAcceptHeader) {
+            config.defaultAcceptHeader = defaultAcceptHeader;
+            return this;
+        }
+
+        public Builder handleAttributeHeaders(boolean handleAttributeHeaders) {
+            config.handleAttributeHeaders = handleAttributeHeaders;
+            return this;
+        }
+
+        public Builder handleCookies(boolean handleCookies) {
+            config.handleCookies = handleCookies;
+            return this;
+        }
+
+        public Builder defaultStatusCode(int defaultStatusCode) {
+            config.defaultStatusCode = defaultStatusCode;
+            return this;
+        }
+
+        public Builder binaryMediaTypes(List<MediaType> binaryMediaTypes) {
+            config.binaryMediaTypes = binaryMediaTypes;
+            return this;
+        }
+
+        public HttpEndpointConfiguration build() {
+            return config;
+        }
     }
 }
