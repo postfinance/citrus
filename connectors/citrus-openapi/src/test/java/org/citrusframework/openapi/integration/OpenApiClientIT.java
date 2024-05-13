@@ -27,10 +27,13 @@ import org.citrusframework.spi.Resources;
 import org.citrusframework.testng.spring.TestNGCitrusSpringSupport;
 import org.citrusframework.util.SocketUtils;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
+import static org.citrusframework.message.MessageType.XML;
 import static org.citrusframework.openapi.actions.OpenApiActionBuilder.openapi;
+import static org.citrusframework.openapi.actions.OpenApiClientActionBuilder.OpenApiOperationBuilder.operation;
 
 /**
  * @author Christoph Deppisch
@@ -59,16 +62,81 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void getPetById() {
         variable("petId", "1001");
+        variable("verbose", "true");
+        variable("correlationIds", "1234abcd");
 
         when(openapi(petstoreSpec)
                 .client(httpClient)
                 .send("getPetById")
+                .fork(true)
+                .message()
+        );
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/1001")
+                .queryParam("verbose", "true")
+                .message()
+                .header("correlationIds", "1234abcd")
+                .accept("@contains('application/json')@")
+        );
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void getPetById_requiredParamsShouldBeGeneratedIfNotProvided() {
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .fork(true)
+        );
+
+        then(http().server(httpServer)
+                        .receive()
+                        .get("@matches('/pet/\\d+')@")
+                        .message()
+        );
+
+        variable("petId", "1001");
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void getPetById_setParameterExplicitly() {
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send(operation("getPetById")
+                        .withParameter("petId", "1001")
+                        .withParameter("correlationIds", "5599")
+                        .withParameter("verbose", "true"))
                 .fork(true));
 
         then(http().server(httpServer)
                 .receive()
-                .get("/pet/${petId}")
+                .get("/pet/1001")
                 .message()
+                .queryParam("verbose", "true")
+                .header("correlationIds", "5599")
                 .accept("@contains('application/json')@"));
 
         then(http().server(httpServer)
@@ -84,7 +152,37 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     }
 
     @CitrusTest
-    public void getAddPet() {
+    public void getPetById_generated() {
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send(operation("getPetById")
+                        .withParameter("petId", "1001")
+                        .withParameter("correlationIds", "5599")
+                        .withParameter("verbose", "true"))
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/1001")
+                .message()
+                .queryParam("verbose", "true")
+                .header("correlationIds", "5599")
+                .accept("@contains('application/json')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void postAddPet() {
         variable("petId", "1001");
 
         when(openapi(petstoreSpec)
@@ -97,18 +195,18 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .post("/pet")
                 .message()
                 .body("""
-                        {
-                          "id": "@isNumber()@",
-                          "name": "@notEmpty()@",
-                          "category": {
-                            "id": "@isNumber()@",
-                            "name": "@notEmpty()@"
-                          },
-                          "photoUrls": "@notEmpty()@",
-                          "tags":  "@ignore@",
-                          "status": "@matches(sold|pending|available)@"
-                        }
-                """)
+                                {
+                                  "id": "@isNumber()@",
+                                  "name": "@notEmpty()@",
+                                  "category": {
+                                    "id": "@isNumber()@",
+                                    "name": "@notEmpty()@"
+                                  },
+                                  "photoUrls": "@notEmpty()@",
+                                  "tags":  "@ignore@",
+                                  "status": "@matches(sold|pending|available)@"
+                                }
+                        """)
                 .contentType("application/json;charset=UTF-8"));
 
         then(http().server(httpServer)

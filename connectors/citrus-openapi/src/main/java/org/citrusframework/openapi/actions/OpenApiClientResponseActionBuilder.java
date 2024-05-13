@@ -44,6 +44,8 @@ import org.springframework.http.HttpStatus;
  */
 public class OpenApiClientResponseActionBuilder extends HttpClientResponseActionBuilder {
 
+    protected final OpenApiClientResponseMessageBuilder messageBuilder;
+
     /**
      * Default constructor initializes http response message builder.
      */
@@ -53,10 +55,22 @@ public class OpenApiClientResponseActionBuilder extends HttpClientResponseAction
 
     public OpenApiClientResponseActionBuilder(HttpMessage httpMessage, OpenApiSpecification openApiSpec,
                                               String operationId, String statusCode) {
-        super(new OpenApiClientResponseMessageBuilder(httpMessage, openApiSpec, operationId, statusCode), httpMessage);
+        this(new OpenApiClientResponseMessageBuilder(httpMessage, openApiSpec, operationId, statusCode));
     }
 
-    private static class OpenApiClientResponseMessageBuilder extends HttpMessageBuilder {
+    protected OpenApiClientResponseActionBuilder(OpenApiClientResponseMessageBuilder messageBuilder) {
+        super(new OpenApiClientResponseMessageBuilder(
+                        messageBuilder.httpMessage,
+                        messageBuilder.openApiSpec,
+                        messageBuilder.operationId,
+                        messageBuilder.statusCode
+                ),
+                messageBuilder.httpMessage
+        );
+        this.messageBuilder = messageBuilder;
+    }
+
+    protected static class OpenApiClientResponseMessageBuilder extends HttpMessageBuilder {
 
         private final OpenApiSpecification openApiSpec;
         private final String operationId;
