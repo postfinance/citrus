@@ -196,11 +196,9 @@ class JavaCitrusCodegenTest {
         List<String> lines = Files.readAllLines(file.get().toPath(), StandardCharsets.UTF_8);
 
         // "name" is a reserved word, so it should be escaped with an underline for the second parameter
-        assertThat(
-            lines.stream()
-                .filter(x -> x.contains("@Value(\"${\" + \"apiEndpoint.basic.username:#{null}}\")"))
-                .count())
-            .isEqualTo(1L);
+        assertThat(lines.stream()
+            .filter(x -> x.contains("@Value(\"${\" + \"apiEndpoint.basic.username:#{null}}\")"))
+            .count()).isEqualTo(1L);
         assertThat(
             lines.stream()
                 .filter(x -> x.contains("private String basicUsername;"))

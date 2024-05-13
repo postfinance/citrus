@@ -192,7 +192,6 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         additionalProperties.put(API_ENDPOINT, httpClient);
 
         if (additionalProperties.containsKey(GENERATED_SCHEMA_FOLDER)) {
-            this.setGeneratedSchemaFolder(additionalProperties.get(GENERATED_SCHEMA_FOLDER).toString());
         }
         additionalProperties.put(GENERATED_SCHEMA_FOLDER, generatedSchemaFolder);
 
@@ -229,14 +228,11 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         additionalProperties.put(RESOURCE_FOLDER, resourceFolder);
 
         if (additionalProperties.containsKey(TARGET_XMLNS_NAMESPACE)) {
-            this.setTargetXmlnsNamespace(additionalProperties.get(TARGET_XMLNS_NAMESPACE).toString());
         } else {
-            this.targetXmlnsNamespace = format("http://www.citrusframework.org/citrus-test-schema/%s-api", apiPrefix.toLowerCase());
         }
         additionalProperties.put(TARGET_XMLNS_NAMESPACE, targetXmlnsNamespace);
 
         // define different folders where the files will be emitted
-        final String invokerFolder = (sourceFolder + File.separator + invokerPackage).replace(".", File.separator);
         final String citrusFolder = invokerFolder + File.separator + "citrus";
         final String extensionFolder = citrusFolder + File.separator + "extension";
         final String springFolder = invokerFolder + File.separator + "spring";
@@ -248,7 +244,6 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         } else if (API_TYPE_SOAP.equals(apiType)) {
             addSoapSupportingFiles(citrusFolder, schemaFolder);
         } else {
-            throw new IllegalArgumentException(format("Unknown API_TYPE: '%s'", apiType));
         }
 
         addDefaultSupportingFiles(citrusFolder, extensionFolder, springFolder);
@@ -264,10 +259,65 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
             additionalProperties.putAll(extensions);
 
             Map<String, Object> infoExtensions = extensions.entrySet().stream()
-                .filter(entry -> entry.getKey().toUpperCase().startsWith("X-"))
                 .collect(toMap(Entry::getKey, Entry::getValue));
             additionalProperties.put("infoExtensions", infoExtensions);
         }
+    }
+
+    public void setApiPrefix(String apiPrefix) {
+        this.apiPrefix = apiPrefix;
+    }
+
+    public String getHttpClient() {
+        return httpClient;
+    }
+
+    public void setHttpClient(String httpClient) {
+        this.httpClient = httpClient;
+    }
+
+    public String getHttpPathPrefix() {
+        return httpPathPrefix;
+    }
+
+    public void setHttpPathPrefix(String httpPathPrefix) {
+        this.httpPathPrefix = httpPathPrefix;
+    }
+
+    public String getOpenapiSchema() {
+        return openapiSchema;
+    }
+
+    public void setOpenapiSchema(String openapiSchema) {
+        this.openapiSchema = openapiSchema;
+    }
+
+    public String getResourceFolder() {
+        return resourceFolder;
+    }
+
+    public void setResourceFolder(String resourceFolder) {
+        this.resourceFolder = resourceFolder;
+    }
+
+    public String getGeneratedSchemaFolder() {
+        return generatedSchemaFolder;
+    }
+
+    public void setGeneratedSchemaFolder(String generatedSchemaFolder) {
+        this.generatedSchemaFolder = generatedSchemaFolder;
+    }
+
+    public String getTargetXmlnsNamespace() {
+        return targetXmlnsNamespace;
+    }
+
+    public void setTargetXmlnsNamespace(String targetXmlnsNamespace) {
+        this.targetXmlnsNamespace = targetXmlnsNamespace;
+    }
+
+    public String getApiPrefix() {
+        return apiPrefix;
     }
 
     private void addRestSupportingFiles(final String citrusFolder, String schemaFolder) {
@@ -291,4 +341,5 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         supportingFiles.add(new SupportingFile("namespace_handler.mustache", extensionFolder, apiPrefix + "NamespaceHandler.java"));
         supportingFiles.add(new SupportingFile("api-model.mustache", resourceFolder, apiPrefix.toLowerCase() + "-api-model.csv"));
     }
+
 }

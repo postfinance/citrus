@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.stream.Streams;
 import org.citrusframework.exceptions.CitrusRuntimeException;
@@ -85,8 +86,6 @@ class JavaCitrusCodegenIT {
         File classFile = resource.getFile();
         String absolutePath = classFile.getAbsolutePath();
 
-        String javaFilePath = absolutePath
-            .replace("test-classes", "generated-test-sources")
             .replace(".class", ".java");
 
         assertFileContent(new File(javaFilePath), "soap");
@@ -94,39 +93,29 @@ class JavaCitrusCodegenIT {
 
     private static Stream<Arguments> geClassResourcesIgnoringInnerClasses(String path)
         throws IOException {
-        return Streams.of(
-                new PathMatchingResourcePatternResolver().getResources(path + "/**/*.class"))
-            .filter(resource -> {
-                    try {
-                        return !resource.getURI().toString().contains("$");
-                    } catch (Exception e) {
-                        throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
-                    }
-                }
-            ).map(Arguments::arguments);
+        return Streams.of(new PathMatchingResourcePatternResolver().getResources(
+            path + "/**/*.class")).filter(resource -> {
+            try {
+                return !resource.getURI().toString().contains("$");
+            } catch (Exception e) {
+                throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
+            }
+        }).map(Arguments::arguments);
     }
 
-    /*
-     * NOTE: when changes have been performed to mustache templates, the expected files need to be updated.
-     * Be aware that file content may change according to IDE formatting rules if the files are copied via IDE.
-     * Files should therefore be copied using a file explorer which ensures that content of files does not change.
-     */
     private void assertFileContent(File file, String apiDir) throws IOException {
         assertThat(file).exists();
+        String expectedFilePath =
+            "org/citrusframework/openapi/generator/JavaCitrusCodegenIntegrationTest/expectedgen/"
+                + file.getAbsolutePath().substring(file.getAbsolutePath().indexOf(apiDir));
 
-        String expectedFilePath = BASE_PACKAGE + "/JavaCitrusCodegenIT/expectedgen/" + file.getAbsolutePath().substring(file.getAbsolutePath().indexOf(apiDir));
         ClassPathResource classPathResource = new ClassPathResource(expectedFilePath);
 
-        String actualContent = readString(file.toPath());
-        String expectedContent = readString(classPathResource.getFile().toPath());
-
-        // Replace "Generated" with a placeholder
-        String generatedAnnotationPattern = "@jakarta\\.annotation\\.Generated\\(.*?\\)";
-        String placeholder = "@jakarta.annotation.Generated(value = \"org.citrusframework.openapi.generator.JavaCitrusCodegen\", date = \"TIMESTAMP\", comments = \"Generator version: VERSION\")";
-
-        actualContent = actualContent.replaceAll(generatedAnnotationPattern, placeholder);
-        expectedContent = expectedContent.replaceAll(generatedAnnotationPattern, placeholder);
-
-        assertThat(actualContent).isEqualTo(expectedContent);
+        /*
+         * NOTE: when changes have been performed to mustache templates, the expected files need to be updated.
+         * Be aware that file content may change according to IDE formatting rules if the files are copied via IDE.
+         * Files should therefore be copied using a file explorer which ensures that content of files does not change.
+         */
+        assertThat(file).hasSameTextualContentAs(classPathResource.getFile());
     }
 }

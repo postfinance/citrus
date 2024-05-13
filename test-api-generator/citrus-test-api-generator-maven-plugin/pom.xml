@@ -36,6 +36,7 @@
     </build>
 
     <dependencies>
+
         <dependency>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-test-api-generator-core</artifactId>
