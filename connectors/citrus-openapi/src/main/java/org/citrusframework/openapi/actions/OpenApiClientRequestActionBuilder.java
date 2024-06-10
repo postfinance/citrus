@@ -75,6 +75,7 @@ public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBu
 
         @Override
         public Message build(TestContext context, String messageType) {
+            // TODO: TAT-1291 - make parameter substitution more explicit?
             OasDocument oasDocument = openApiSpec.getOpenApiDoc(context);
             OasOperation operation = null;
             OasPathItem pathItem = null;

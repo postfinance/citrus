@@ -6,6 +6,7 @@
 
 @CitrusTest
 public void getPetById() {
+//    variable("petId", "1001");
     // native
     when(openapi(petstoreSpec)
             .client(httpClient)
@@ -14,10 +15,10 @@ public void getPetById() {
             .fork(true));
     // generated - TODO: to be implemented
     when(openapiPetstore()
-            .client()
+            .client(httpClient)
             .getPetById()
             .withPetId("1001")
-            .send()
+            .send() // maybe obsolete?
             .fork(true));
 }
 ```

@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
+import static org.citrusframework.message.MessageType.XML;
 import static org.citrusframework.openapi.actions.OpenApiActionBuilder.openapi;
 
 /**
@@ -81,6 +82,84 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
         then(openapi(petstoreSpec)
                 .client(httpClient)
                 .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void BUG_should_be_possible_to_switch_content_type__to_xml() {
+        variable("petId", "1001");
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .message()
+                .accept("application/xml")
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/${petId}")
+                .message()
+                .accept("@contains('application/xml')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
+                .contentType("application/xml"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK)
+                .message()
+                // TODO XML bodies do not seem to work, even if there is just XML as "produces" in the spec
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
+                // TODO the type/contentType statements are useless, if there is another type in the spec.
+                //      even if there are two. i.E:
+                // # this will always use JSON as type
+                // produces:
+                //   - application/json
+                //   - application/xml
+                .contentType("application/xml")
+                .type(XML));
+    }
+
+    @CitrusTest
+    public void BUG_should_only_validate_the_presence_of_required_properties() {
+        variable("petId", "1001");
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .message()
+                .accept("application/json")
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/${petId}")
+                .message()
+                .accept("@contains('application/json')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                // this should be valid, according to the spec-file
+                .body("""
+                        {
+                        "category": {},
+                        "name": "",
+                        "status": "sold"
+                        }
+                        """)
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK)
+                .message()
+        );
     }
 
     @CitrusTest
