@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
 import static org.citrusframework.message.MessageType.JSON;
 import static org.citrusframework.openapi.generator.gen.OpenapiPetstore.openapiPetstore;
+import static org.citrusframework.validation.PathExpressionValidationContext.Builder.pathExpression;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
@@ -58,20 +59,23 @@ class OpenapiPetstoreTest {
     void testFluentGeneratedOpenapiAction(@CitrusResource TestCaseRunner runner) {
         runner.$(openapiPetstore(httpClient)
                 .getPetById()
-                .withPetId("2002")
-                .withCorrelationIds("5599")
-                .withVerbose(true)
-                .send()
+                .send(request -> request
+                        .withPetId("2002")
+                        .withCorrelationIds("5599")
+                        .withVerbose(true))
         );
 
         respondPet(runner);
 
         runner.$(openapiPetstore(httpClient)
                 .getPetById()
-                .receive(runner)
+                .receive()
                 .message()
-                .type(JSON)
-                .contentType("application/json")
+                .validate(pathExpression()
+                        .jsonPath("$.id", "2002")
+                        .jsonPath("$.category.id", "2002")
+                        .jsonPath("$.tags[0].name", "generated")
+                )
         );
     }
 
