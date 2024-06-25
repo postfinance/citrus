@@ -115,7 +115,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 // .header("correlationId", "@matches('\\w+')@")
         );
 
-        // TODO does not work without..?!
         variable("petId", "1001");
         then(http().server(httpServer)
                 .send()

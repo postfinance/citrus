@@ -46,11 +46,6 @@ import static org.citrusframework.openapi.model.OasModelHelper.*;
  */
 public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBuilder {
 
-    // TODO remove?
-    public OpenApiClientRequestMessageBuilder getMessageBuilder() {
-        return messageBuilder;
-    }
-
     private final OpenApiClientRequestMessageBuilder messageBuilder;
 
     protected OpenApiClientRequestActionBuilder(OpenApiClientRequestMessageBuilder messageBuilder) {
@@ -59,9 +54,16 @@ public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBu
     }
 
     public static OpenApiClientRequestActionBuilder create(OpenApiSpecification openApiSpec, String operationId) {
-        var messageBuilder = new OpenApiClientRequestMessageBuilder(new HttpMessage(), openApiSpec, operationId, Map.of());
+        var messageBuilder = new OpenApiClientRequestMessageBuilder(new HttpMessage(), openApiSpec, operationId);
         return new OpenApiClientRequestActionBuilder(messageBuilder);
     }
+
+
+    public OpenApiClientRequestActionBuilder withParameter(String name, Object number) {
+        messageBuilder.parameters.put(name, number);
+        return this;
+    }
+
 
     protected static class OpenApiClientRequestMessageBuilder extends HttpMessageBuilder {
 
@@ -74,14 +76,12 @@ public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBu
         public OpenApiClientRequestMessageBuilder(
                 HttpMessage httpMessage,
                 OpenApiSpecification openApiSpec,
-                String operationId,
-                Map<String, Object> parameters
+                String operationId
         ) {
             super(httpMessage);
             this.openApiSpec = openApiSpec;
             this.operationId = operationId;
             this.httpMessage = httpMessage;
-            this.parameters.putAll(parameters);
         }
 
         private record OasItem(
@@ -115,11 +115,6 @@ public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBu
                 }
                 return item;
             }
-        }
-
-        public OpenApiClientRequestMessageBuilder withParameter(String name, Object number) {
-            parameters.put(name, number);
-            return this;
         }
 
         @Override

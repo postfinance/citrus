@@ -99,7 +99,7 @@ public class OpenApiClientActionBuilder implements TestActionBuilder.DelegatingT
 
         builder.name("openapi:send-request");
         builder.withReferenceResolver(referenceResolver);
-        openApiOperationBuilder.parameters.forEach(builder.getMessageBuilder()::withParameter);
+        openApiOperationBuilder.parameters.forEach(builder::withParameter);
 
         this.delegate = builder;
         return builder;
