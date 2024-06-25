@@ -27,10 +27,13 @@ import org.citrusframework.spi.Resources;
 import org.citrusframework.testng.spring.TestNGCitrusSpringSupport;
 import org.citrusframework.util.SocketUtils;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
+import static org.citrusframework.message.MessageType.XML;
 import static org.citrusframework.openapi.actions.OpenApiActionBuilder.openapi;
+import static org.citrusframework.openapi.actions.OpenApiClientActionBuilder.OpenApiOperationBuilder.operation;
 
 /**
  * @author Christoph Deppisch
@@ -59,16 +62,88 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     @CitrusTest
     public void getPetById() {
         variable("petId", "1001");
+        variable("verbose", "true");
+        variable("correlationIds", "1234abcd");
+
+        when(openapi(petstoreSpec)
+                        .client(httpClient)
+                        .send("getPetById")
+                        .fork(true)
+                        .message()
+        );
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/1001")
+                .queryParam("verbose", "true")
+                .message()
+                // TODO bug? - cannot check correlationId
+                //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
+                //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
+                .header("correlationIds", "1234abcd")
+                .accept("@contains('application/json')@")
+        );
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void getPetById_requiredParamsShouldBeGeneratedIfNotProvided() {
 
         when(openapi(petstoreSpec)
                 .client(httpClient)
                 .send("getPetById")
+                .fork(true)
+        );
+
+        then(http().server(httpServer)
+                .receive()
+                .get("@matches('/pet/\\d+')@")
+                .message()
+                // TODO bug? - cannot check correlationId
+                //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
+                //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
+                // .header("correlationId", "@matches('\\w+')@")
+        );
+
+        variable("petId", "1001");
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    public void getPetById_setParameterExplicitly() {
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send(operation("getPetById")
+                        .withParameter("petId", "1001")
+                        .withParameter("correlationIds", "5599")
+                        .withParameter("verbose", "true"))
                 .fork(true));
 
         then(http().server(httpServer)
                 .receive()
-                .get("/pet/${petId}")
+                .get("/pet/1001")
                 .message()
+                .queryParam("verbose", "true")
+                .header("correlationIds", "5599")
                 .accept("@contains('application/json')@"));
 
         then(http().server(httpServer)
@@ -84,7 +159,153 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     }
 
     @CitrusTest
-    public void getAddPet() {
+    public void getPetById_generated() {
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send(operation("getPetById")
+                        .withParameter("petId", "1001")
+                        .withParameter("correlationIds", "5599")
+                        .withParameter("verbose", "true"))
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/1001")
+                .message()
+                .queryParam("verbose", "true")
+                .header("correlationIds", "5599")
+                .accept("@contains('application/json')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    /* TODO create issues
+    @CitrusTest
+    public void BUG_getPetById_paramsCanAlsoBeSetWithMessageBuilder() {
+        variable("petId", "1001");
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .fork(true)
+                .message()
+                // TODO Bug - if the params are already set on the message, they get overwritten
+                .queryParam("verbose", "false")
+                .header("correlationIds", "1234F5gXW")
+        );
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/1001")
+                .queryParam("verbose", "true")
+                .message()
+                .header("correlationIds", "1234F5gXW")
+        );
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK));
+    }
+
+    @CitrusTest
+    @Ignore
+    public void BUG_should_be_possible_to_switch_content_type__to_xml() {
+        variable("petId", "1001");
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .message()
+                .accept("application/xml")
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/${petId}")
+                .message()
+                .accept("@contains('application/xml')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
+                .contentType("application/xml"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK)
+                .message()
+                // TODO XML bodies do not seem to work, even if there is just XML as "produces" in the spec
+                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
+                // TODO the type/contentType statements are useless, if there is another type in the spec.
+                //      even if there are two. i.E:
+                // # this will always use JSON as type
+                // produces:
+                //   - application/json
+                //   - application/xml
+                .contentType("application/xml")
+                .type(XML));
+    }
+
+    @CitrusTest
+    @Ignore
+    public void BUG_should_only_validate_the_presence_of_required_properties() {
+        variable("petId", "1001");
+
+        when(openapi(petstoreSpec)
+                .client(httpClient)
+                .send("getPetById")
+                .message()
+                .accept("application/json")
+                .fork(true));
+
+        then(http().server(httpServer)
+                .receive()
+                .get("/pet/${petId}")
+                .message()
+                .accept("@contains('application/json')@"));
+
+        then(http().server(httpServer)
+                .send()
+                .response(HttpStatus.OK)
+                .message()
+                // this should be valid, according to the spec-file
+                .body("""
+                        {
+                        "category": {},
+                        "name": "",
+                        "status": "sold"
+                        }
+                        """)
+                .contentType("application/json"));
+
+        then(openapi(petstoreSpec)
+                .client(httpClient)
+                .receive("getPetById", HttpStatus.OK)
+                .message()
+        );
+    }
+    */
+
+    @CitrusTest
+    public void postAddPet() {
         variable("petId", "1001");
 
         when(openapi(petstoreSpec)

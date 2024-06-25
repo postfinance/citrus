@@ -26,6 +26,8 @@ import org.citrusframework.openapi.model.OasModelHelper;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import static org.citrusframework.openapi.model.OasModelHelper.*;
+
 /**
  * Generates proper payloads and validation expressions based on Open API specification rules. Creates outbound payloads
  * with generated random test data according to specification and creates inbound payloads with proper validation expressions to
@@ -37,19 +39,23 @@ public class OpenApiTestDataGenerator {
 
     /**
      * Creates payload from schema for outbound message.
+     *
      * @param schema
      * @param definitions
      * @return
      */
-    public static String createOutboundPayload(OasSchema schema, Map<String, OasSchema> definitions,
-                                               OpenApiSpecification specification) {
-        if (OasModelHelper.isReferenceType(schema)) {
-            OasSchema resolved = definitions.get(OasModelHelper.getReferenceName(schema.$ref));
+    public static String createOutboundPayload(
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            OpenApiSpecification specification
+    ) {
+        if (isReferenceType(schema)) {
+            OasSchema resolved = definitions.get(getReferenceName(schema.$ref));
             return createOutboundPayload(resolved, definitions, specification);
         }
 
         StringBuilder payload = new StringBuilder();
-        if (OasModelHelper.isObjectType(schema)) {
+        if (isObjectType(schema)) {
             payload.append("{");
 
             if (schema.properties != null) {
@@ -81,14 +87,71 @@ public class OpenApiTestDataGenerator {
     }
 
     /**
+     * Creates control payload from schema for validation.
+     *
+     * @param schema
+     * @param definitions
+     * @return
+     */
+    public static String createInboundPayload(
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            OpenApiSpecification specification
+    ) {
+        if (isReferenceType(schema)) {
+            OasSchema resolved = definitions.get(getReferenceName(schema.$ref));
+            return createInboundPayload(resolved, definitions, specification);
+        }
+
+        StringBuilder payload = new StringBuilder();
+        if (isObjectType(schema)) {
+            payload.append("{");
+
+            if (schema.properties != null) {
+                for (Map.Entry<String, OasSchema> entry : schema.properties.entrySet()) {
+                    if (specification.isValidateOptionalFields() || isRequired(schema, entry.getKey())) {
+                        payload.append("\"")
+                                .append(entry.getKey())
+                                .append("\": ")
+                                .append(createValidationExpression(entry.getValue(), definitions, true, specification))
+                                .append(",");
+                    }
+                }
+            }
+
+            if (payload.toString().endsWith(",")) {
+                payload.replace(payload.length() - 1, payload.length(), "");
+            }
+
+            payload.append("}");
+        } else if (OasModelHelper.isArrayType(schema)) {
+            payload.append("[");
+            payload.append(createValidationExpression((OasSchema) schema.items, definitions, true, specification));
+            payload.append("]");
+        } else {
+            payload.append(createValidationExpression(schema, definitions, false, specification));
+        }
+
+        return payload.toString();
+    }
+
+    /**
      * Use test variable with given name if present or create value from schema with random values
+     *
      * @param schema
      * @param definitions
      * @param quotes
      * @return
      */
-    public static String createRandomValueExpression(String name, OasSchema schema, Map<String, OasSchema> definitions,
-                                                     boolean quotes, OpenApiSpecification specification, TestContext context) {
+    @Deprecated(forRemoval = true)
+    public static String createRandomValueExpression(
+            String name,
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            boolean quotes,
+            OpenApiSpecification specification,
+            TestContext context
+    ) {
         if (context.getVariables().containsKey(name)) {
             return CitrusSettings.VARIABLE_PREFIX + name + CitrusSettings.VARIABLE_SUFFIX;
         }
@@ -98,20 +161,25 @@ public class OpenApiTestDataGenerator {
 
     /**
      * Create payload from schema with random values.
+     *
      * @param schema
      * @param definitions
      * @param quotes
      * @return
      */
-    public static String createRandomValueExpression(OasSchema schema, Map<String, OasSchema> definitions, boolean quotes,
-                                                     OpenApiSpecification specification) {
-        if (OasModelHelper.isReferenceType(schema)) {
-            OasSchema resolved = definitions.get(OasModelHelper.getReferenceName(schema.$ref));
+    public static String createRandomValueExpression(
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            boolean quotes,
+            OpenApiSpecification specification
+    ) {
+        if (isReferenceType(schema)) {
+            OasSchema resolved = definitions.get(getReferenceName(schema.$ref));
             return createRandomValueExpression(resolved, definitions, quotes, specification);
         }
 
         StringBuilder payload = new StringBuilder();
-        if (OasModelHelper.isObjectType(schema) || OasModelHelper.isArrayType(schema)) {
+        if (isObjectType(schema) || OasModelHelper.isArrayType(schema)) {
             payload.append(createOutboundPayload(schema, definitions, specification));
         } else if ("string".equals(schema.type)) {
             if (quotes) {
@@ -147,57 +215,71 @@ public class OpenApiTestDataGenerator {
     }
 
     /**
-     * Creates control payload from schema for validation.
+     * Use test variable with given name (if present) or create random value expression using functions according to
+     * schema type and format.
+     *
+     * @param name
      * @param schema
-     * @param definitions
+     * @param context
      * @return
      */
-    public static String createInboundPayload(OasSchema schema, Map<String, OasSchema> definitions,
-                                              OpenApiSpecification specification) {
-        if (OasModelHelper.isReferenceType(schema)) {
-            OasSchema resolved = definitions.get(OasModelHelper.getReferenceName(schema.$ref));
-            return createInboundPayload(resolved, definitions, specification);
+    public static String createRandomValueExpression(
+            String name,
+            OasSchema schema,
+            TestContext context
+    ) {
+        if (context.getVariables().containsKey(name)) {
+            return CitrusSettings.VARIABLE_PREFIX + name + CitrusSettings.VARIABLE_SUFFIX;
         }
 
-        StringBuilder payload = new StringBuilder();
-        if (OasModelHelper.isObjectType(schema)) {
-            payload.append("{");
+        return createRandomValueExpression(schema);
+    }
 
-            if (schema.properties != null) {
-                for (Map.Entry<String, OasSchema> entry : schema.properties.entrySet()) {
-                    if (specification.isValidateOptionalFields() || isRequired(schema, entry.getKey())) {
-                        payload.append("\"")
-                                .append(entry.getKey())
-                                .append("\": ")
-                                .append(createValidationExpression(entry.getValue(), definitions, true, specification))
-                                .append(",");
-                    }
+    /**
+     * Create random value expression using functions according to schema type and format.
+     *
+     * @param schema
+     * @return
+     */
+    public static String createRandomValueExpression(
+            OasSchema schema
+    ) {
+        switch (schema.type) {
+            case "string":
+                if (schema.format != null && schema.format.equals("date")) {
+                    return "\"citrus:currentDate('yyyy-MM-dd')\"";
+                } else if (schema.format != null && schema.format.equals("date-time")) {
+                    return "\"citrus:currentDate('yyyy-MM-dd'T'hh:mm:ss')\"";
+                } else if (StringUtils.hasText(schema.pattern)) {
+                    return "\"citrus:randomValue(" + schema.pattern + ")\"";
+                } else if (!CollectionUtils.isEmpty(schema.enum_)) {
+                    return "\"citrus:randomEnumValue(" + (String.join(",", schema.enum_)) + ")\"";
+                } else if (schema.format != null && schema.format.equals("uuid")) {
+                    return "citrus:randomUUID()";
+                } else {
+                    return "citrus:randomString(10)";
                 }
-            }
-
-            if (payload.toString().endsWith(",")) {
-                payload.replace(payload.length() - 1, payload.length(), "");
-            }
-
-            payload.append("}");
-        } else if (OasModelHelper.isArrayType(schema)) {
-            payload.append("[");
-            payload.append(createValidationExpression((OasSchema) schema.items, definitions, true, specification));
-            payload.append("]");
-        } else {
-            payload.append(createValidationExpression(schema, definitions, false, specification));
+            case "number":
+            case "integer":
+                return "citrus:randomNumber(8)";
+            case "boolean":
+                return "citrus:randomEnumValue('true', 'false')";
+            default:
+                return "";
         }
-
-        return payload.toString();
     }
 
     /**
      * Checks if given field name is in list of required fields for this schema.
+     *
      * @param schema
      * @param field
      * @return
      */
-    private static boolean isRequired(OasSchema schema, String field) {
+    private static boolean isRequired(
+            OasSchema schema,
+            String field
+    ) {
         if (schema.required == null) {
             return true;
         }
@@ -207,6 +289,7 @@ public class OpenApiTestDataGenerator {
 
     /**
      * Use test variable with given name if present or create validation expression using functions according to schema type and format.
+     *
      * @param name
      * @param schema
      * @param definitions
@@ -214,9 +297,14 @@ public class OpenApiTestDataGenerator {
      * @param context
      * @return
      */
-    public static String createValidationExpression(String name, OasSchema schema, Map<String, OasSchema> definitions,
-                                                    boolean quotes, OpenApiSpecification specification,
-                                                    TestContext context) {
+    public static String createValidationExpression(
+            String name,
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            boolean quotes,
+            OpenApiSpecification specification,
+            TestContext context
+    ) {
         if (context.getVariables().containsKey(name)) {
             return CitrusSettings.VARIABLE_PREFIX + name + CitrusSettings.VARIABLE_SUFFIX;
         }
@@ -226,20 +314,25 @@ public class OpenApiTestDataGenerator {
 
     /**
      * Create validation expression using functions according to schema type and format.
+     *
      * @param schema
      * @param definitions
      * @param quotes
      * @return
      */
-    public static String createValidationExpression(OasSchema schema, Map<String, OasSchema> definitions, boolean quotes,
-                                                    OpenApiSpecification specification) {
-        if (OasModelHelper.isReferenceType(schema)) {
-            OasSchema resolved = definitions.get(OasModelHelper.getReferenceName(schema.$ref));
+    public static String createValidationExpression(
+            OasSchema schema,
+            Map<String, OasSchema> definitions,
+            boolean quotes,
+            OpenApiSpecification specification
+    ) {
+        if (isReferenceType(schema)) {
+            OasSchema resolved = definitions.get(getReferenceName(schema.$ref));
             return createValidationExpression(resolved, definitions, quotes, specification);
         }
 
         StringBuilder payload = new StringBuilder();
-        if (OasModelHelper.isObjectType(schema)) {
+        if (isObjectType(schema)) {
             payload.append("{");
 
             if (schema.properties != null) {
@@ -276,10 +369,13 @@ public class OpenApiTestDataGenerator {
 
     /**
      * Create validation expression using functions according to schema type and format.
+     *
      * @param schema
      * @return
      */
-    private static String createValidationExpression(OasSchema schema) {
+    private static String createValidationExpression(
+            OasSchema schema
+    ) {
         switch (schema.type) {
             case "string":
                 if (schema.format != null && schema.format.equals("date")) {
@@ -303,50 +399,4 @@ public class OpenApiTestDataGenerator {
         }
     }
 
-    /**
-     * Use test variable with given name (if present) or create random value expression using functions according to
-     * schema type and format.
-     * @param name
-     * @param schema
-     * @param context
-     * @return
-     */
-    public static String createRandomValueExpression(String name, OasSchema schema, TestContext context) {
-        if (context.getVariables().containsKey(name)) {
-            return CitrusSettings.VARIABLE_PREFIX + name + CitrusSettings.VARIABLE_SUFFIX;
-        }
-
-        return createRandomValueExpression(schema);
-    }
-
-    /**
-     * Create random value expression using functions according to schema type and format.
-     * @param schema
-     * @return
-     */
-    public static String createRandomValueExpression(OasSchema schema) {
-        switch (schema.type) {
-            case "string":
-                if (schema.format != null && schema.format.equals("date")) {
-                    return "\"citrus:currentDate('yyyy-MM-dd')\"";
-                } else if (schema.format != null && schema.format.equals("date-time")) {
-                    return "\"citrus:currentDate('yyyy-MM-dd'T'hh:mm:ss')\"";
-                } else if (StringUtils.hasText(schema.pattern)) {
-                    return "\"citrus:randomValue(" + schema.pattern + ")\"";
-                } else if (!CollectionUtils.isEmpty(schema.enum_)) {
-                    return "\"citrus:randomEnumValue(" + (String.join(",", schema.enum_)) + ")\"";
-                } else if (schema.format != null && schema.format.equals("uuid")){
-                    return "citrus:randomUUID()";
-                } else {
-                    return "citrus:randomString(10)";
-                }
-            case "number":
-            case "integer":
-                return "citrus:randomNumber(8)";
-            case "boolean":
-                return "citrus:randomEnumValue('true', 'false')";
-            default:
-                return "";
-        }
-    }
 }

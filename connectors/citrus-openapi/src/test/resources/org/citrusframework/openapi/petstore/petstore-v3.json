@@ -111,6 +111,15 @@
                         },
                         "in": "query",
                         "required": false
+                    },
+                    {
+                        "name": "correlationIds",
+                        "description": "Output details",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "in": "header",
+                        "required": false
                     }
                 ],
                 "responses": {

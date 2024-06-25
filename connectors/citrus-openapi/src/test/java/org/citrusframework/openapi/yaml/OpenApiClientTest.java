@@ -16,11 +16,6 @@
 
 package org.citrusframework.openapi.yaml;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-
 import org.citrusframework.TestActor;
 import org.citrusframework.TestCase;
 import org.citrusframework.TestCaseMetaInfo;
@@ -29,7 +24,6 @@ import org.citrusframework.actions.SendMessageAction;
 import org.citrusframework.endpoint.EndpointAdapter;
 import org.citrusframework.endpoint.direct.DirectEndpointAdapter;
 import org.citrusframework.endpoint.direct.DirectSyncEndpointConfiguration;
-import org.citrusframework.endpoint.resolver.EndpointUriResolver;
 import org.citrusframework.http.client.HttpClient;
 import org.citrusframework.http.message.HttpMessage;
 import org.citrusframework.http.message.HttpMessageBuilder;
@@ -38,7 +32,6 @@ import org.citrusframework.http.server.HttpServer;
 import org.citrusframework.message.DefaultMessage;
 import org.citrusframework.message.DefaultMessageQueue;
 import org.citrusframework.message.Message;
-import org.citrusframework.message.MessageHeaders;
 import org.citrusframework.message.MessageQueue;
 import org.citrusframework.spi.BindToRegistry;
 import org.citrusframework.util.SocketUtils;
@@ -53,12 +46,23 @@ import org.citrusframework.yaml.actions.YamlTestActionBuilder;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.citrusframework.endpoint.resolver.EndpointUriResolver.ENDPOINT_URI_HEADER_NAME;
+import static org.citrusframework.endpoint.resolver.EndpointUriResolver.REQUEST_PATH_HEADER_NAME;
 import static org.citrusframework.http.endpoint.builder.HttpEndpoints.http;
+import static org.citrusframework.http.message.HttpMessageHeaders.*;
+import static org.citrusframework.message.MessageHeaders.ID;
+import static org.citrusframework.message.MessageHeaders.TIMESTAMP;
+import static org.springframework.http.HttpMethod.GET;
 
 /**
  * @author Christoph Deppisch
@@ -148,103 +152,109 @@ public class OpenApiClientTest extends AbstractYamlActionTest {
         testLoader.load();
 
         TestCase result = testLoader.getTestCase();
-        Assert.assertEquals(result.getName(), "OpenApiClientTest");
-        Assert.assertEquals(result.getMetaInfo().getAuthor(), "Christoph");
-        Assert.assertEquals(result.getMetaInfo().getStatus(), TestCaseMetaInfo.Status.FINAL);
-        Assert.assertEquals(result.getActionCount(), 4L);
-        Assert.assertEquals(result.getTestAction(0).getClass(), SendMessageAction.class);
-        Assert.assertEquals(result.getTestAction(0).getName(), "openapi:send-request");
+        assertThat(result.getName()).isEqualTo("OpenApiClientTest");
+        assertThat(result.getMetaInfo().getAuthor()).isEqualTo("Christoph");
+        assertThat(result.getMetaInfo().getStatus()).isEqualTo(TestCaseMetaInfo.Status.FINAL);
+        assertThat(result.getActions()).hasSize(4);
 
-        Assert.assertEquals(result.getTestAction(1).getClass(), ReceiveMessageAction.class);
-        Assert.assertEquals(result.getTestAction(1).getName(), "openapi:receive-response");
+        assertThat(result.getTestAction(0).getClass()).isEqualTo(SendMessageAction.class);
+        assertThat(result.getTestAction(0).getName()).isEqualTo("openapi:send-request");
+
+        assertThat(result.getTestAction(1).getClass()).isEqualTo(ReceiveMessageAction.class);
+        assertThat(result.getTestAction(1).getName()).isEqualTo("openapi:receive-response");
 
         int actionIndex = 0;
 
-        SendMessageAction sendMessageAction = (SendMessageAction) result.getTestAction(actionIndex++);
-        Assert.assertFalse(sendMessageAction.isForkMode());
-        Assert.assertTrue(sendMessageAction.getMessageBuilder() instanceof HttpMessageBuilder);
-        HttpMessageBuilder httpMessageBuilder = ((HttpMessageBuilder)sendMessageAction.getMessageBuilder());
-        Assert.assertNotNull(httpMessageBuilder);
-        Assert.assertEquals(httpMessageBuilder.buildMessagePayload(context, sendMessageAction.getMessageType()), "");
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().size(), 5L);
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.ID));
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.TIMESTAMP));
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_REQUEST_METHOD), HttpMethod.GET.name());
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(EndpointUriResolver.REQUEST_PATH_HEADER_NAME), "/pet/${petId}");
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_REQUEST_URI), "/pet/${petId}");
-        Assert.assertNull(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_QUERY_PARAMS));
-        Assert.assertNull(httpMessageBuilder.getMessage().getHeaders().get(EndpointUriResolver.ENDPOINT_URI_HEADER_NAME));
-        Assert.assertEquals(sendMessageAction.getEndpointUri(), "httpClient");
+        var sendMessageAction = (SendMessageAction) result.getTestAction(actionIndex++);
+        assertThat(sendMessageAction.isForkMode()).isFalse();
+        assertThat(sendMessageAction.getEndpointUri()).isEqualTo("httpClient");
+
+        String messageType = sendMessageAction.getMessageType();
+        assertThat(sendMessageAction.getMessageBuilder())
+                .isNotNull()
+                .isInstanceOf(HttpMessageBuilder.class)
+                .extracting(HttpMessageBuilder.class::cast)
+                .satisfies(httpMessageBuilder -> {
+                    assertThat(httpMessageBuilder.buildMessagePayload(context, messageType)).isEqualTo("");
+                    assertThat(httpMessageBuilder.getMessage().getHeaders())
+                            .hasSize(5)
+                            .hasEntrySatisfying(ID, e -> assertThat(e).isNotNull())
+                            .hasEntrySatisfying(TIMESTAMP, e -> assertThat(e).isNotNull())
+                            .doesNotContainKey(HTTP_QUERY_PARAMS)
+                            .doesNotContainKey(ENDPOINT_URI_HEADER_NAME)
+                            .hasEntrySatisfying(HTTP_REQUEST_METHOD, e -> assertThat(e).isEqualTo(GET.name()))
+                            .hasEntrySatisfying(REQUEST_PATH_HEADER_NAME, e -> assertThat(e).isEqualTo("/pet/${petId}"))
+                            .hasEntrySatisfying(HTTP_REQUEST_URI, e -> assertThat(e).isEqualTo("/pet/${petId}"));
+                });
 
         Message controlMessage = new DefaultMessage("");
         Message request = inboundQueue.receive();
         headerValidator.validateMessage(request, controlMessage, context, new HeaderValidationContext());
         validator.validateMessage(request, controlMessage, context, new DefaultValidationContext());
 
-        ReceiveMessageAction receiveMessageAction = (ReceiveMessageAction) result.getTestAction(actionIndex++);
-        Assert.assertEquals(receiveMessageAction.getValidationContexts().size(), 3);
-        Assert.assertEquals(receiveMessageAction.getReceiveTimeout(), 0L);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(0) instanceof XmlMessageValidationContext);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(1) instanceof JsonMessageValidationContext);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(2) instanceof HeaderValidationContext);
+        var receiveMessageAction = (ReceiveMessageAction) result.getTestAction(actionIndex++);
+        assertThat(receiveMessageAction.getValidationContexts()).hasSize(3);
+        assertThat(receiveMessageAction.getReceiveTimeout()).isEqualTo(0L);
+        assertThat(receiveMessageAction.getValidationContexts().get(0)).isInstanceOf(XmlMessageValidationContext.class);
+        assertThat(receiveMessageAction.getValidationContexts().get(1)).isInstanceOf(JsonMessageValidationContext.class);
+        assertThat(receiveMessageAction.getValidationContexts().get(2)).isInstanceOf(HeaderValidationContext.class);
 
-        httpMessageBuilder = ((HttpMessageBuilder)receiveMessageAction.getMessageBuilder());
-        Assert.assertNotNull(httpMessageBuilder);
+        var httpMessageBuilder = ((HttpMessageBuilder) receiveMessageAction.getMessageBuilder());
+        assertThat(httpMessageBuilder).isNotNull();
 
-        Assert.assertEquals(httpMessageBuilder.buildMessagePayload(context, receiveMessageAction.getMessageType()),
-                "{\"id\": \"@isNumber()@\",\"category\": {\"id\": \"@isNumber()@\",\"name\": \"@notEmpty()@\"},\"name\": \"@notEmpty()@\",\"photoUrls\": \"@ignore@\",\"tags\": \"@ignore@\",\"status\": \"@matches(available|pending|sold)@\"}");
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().size(), 5L);
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.ID));
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.TIMESTAMP));
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_STATUS_CODE), 200);
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_REASON_PHRASE), "OK");
-        Assert.assertEquals(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_CONTENT_TYPE), "application/json");
-        Assert.assertNull(receiveMessageAction.getEndpoint());
-        Assert.assertEquals(receiveMessageAction.getEndpointUri(), "httpClient");
-        Assert.assertEquals(receiveMessageAction.getMessageProcessors().size(), 0);
-        Assert.assertEquals(receiveMessageAction.getControlMessageProcessors().size(), 0);
+        assertThat(httpMessageBuilder.buildMessagePayload(context, receiveMessageAction.getMessageType())).isEqualTo("{\"id\": \"@isNumber()@\",\"category\": {\"id\": \"@isNumber()@\",\"name\": \"@notEmpty()@\"},\"name\": \"@notEmpty()@\",\"photoUrls\": \"@ignore@\",\"tags\": \"@ignore@\",\"status\": \"@matches(available|pending|sold)@\"}");
+        assertThat(httpMessageBuilder.getMessage().getHeaders()).hasSize(5);
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(ID)).isNotNull();
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(TIMESTAMP)).isNotNull();
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_STATUS_CODE)).isEqualTo(200);
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_REASON_PHRASE)).isEqualTo("OK");
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(HttpMessageHeaders.HTTP_CONTENT_TYPE)).isEqualTo("application/json");
+        assertThat(receiveMessageAction.getEndpoint()).isNull();
+        assertThat(receiveMessageAction.getEndpointUri()).isEqualTo("httpClient");
+        assertThat(receiveMessageAction.getMessageProcessors()).isEmpty();
+        assertThat(receiveMessageAction.getControlMessageProcessors()).isEmpty();
 
         sendMessageAction = (SendMessageAction) result.getTestAction(actionIndex++);
-        Assert.assertFalse(sendMessageAction.isForkMode());
-        httpMessageBuilder = ((HttpMessageBuilder)sendMessageAction.getMessageBuilder());
-        Assert.assertNotNull(httpMessageBuilder);
-        Assert.assertTrue(httpMessageBuilder.buildMessagePayload(context, sendMessageAction.getMessageType()).toString().startsWith("{\"id\": "));
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.ID));
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.TIMESTAMP));
+        assertThat(sendMessageAction.isForkMode()).isFalse();
+        httpMessageBuilder = ((HttpMessageBuilder) sendMessageAction.getMessageBuilder());
+        assertThat(httpMessageBuilder).isNotNull();
+        assertThat(httpMessageBuilder.buildMessagePayload(context, messageType).toString().startsWith("{\"id\": ")).isTrue();
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(ID)).isNotNull();
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(TIMESTAMP)).isNotNull();
 
         Map<String, Object> requestHeaders = httpMessageBuilder.buildMessageHeaders(context);
-        Assert.assertEquals(requestHeaders.size(), 4L);
-        Assert.assertEquals(requestHeaders.get(HttpMessageHeaders.HTTP_REQUEST_METHOD), HttpMethod.POST.name());
-        Assert.assertEquals(requestHeaders.get(EndpointUriResolver.REQUEST_PATH_HEADER_NAME), "/pet");
-        Assert.assertEquals(requestHeaders.get(HttpMessageHeaders.HTTP_REQUEST_URI), "/pet");
-        Assert.assertEquals(requestHeaders.get(HttpMessageHeaders.HTTP_CONTENT_TYPE), "application/json");
-        Assert.assertNull(sendMessageAction.getEndpoint());
-        Assert.assertEquals(sendMessageAction.getEndpointUri(), "httpClient");
+        assertThat(requestHeaders).hasSize(4);
+        assertThat(requestHeaders.get(HTTP_REQUEST_METHOD)).isEqualTo(HttpMethod.POST.name());
+        assertThat(requestHeaders.get(REQUEST_PATH_HEADER_NAME)).isEqualTo("/pet");
+        assertThat(requestHeaders.get(HTTP_REQUEST_URI)).isEqualTo("/pet");
+        assertThat(requestHeaders.get(HttpMessageHeaders.HTTP_CONTENT_TYPE)).isEqualTo("application/json");
+        assertThat(sendMessageAction.getEndpoint()).isNull();
+        assertThat(sendMessageAction.getEndpointUri()).isEqualTo("httpClient");
 
         receiveMessageAction = (ReceiveMessageAction) result.getTestAction(actionIndex);
-        Assert.assertEquals(receiveMessageAction.getValidationContexts().size(), 3);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(0) instanceof XmlMessageValidationContext);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(1) instanceof JsonMessageValidationContext);
-        Assert.assertTrue(receiveMessageAction.getValidationContexts().get(2) instanceof HeaderValidationContext);
+        assertThat(receiveMessageAction.getValidationContexts()).hasSize(3);
+        assertThat(receiveMessageAction.getValidationContexts().get(0)).isInstanceOf(XmlMessageValidationContext.class);
+        assertThat(receiveMessageAction.getValidationContexts().get(1)).isInstanceOf(JsonMessageValidationContext.class);
+        assertThat(receiveMessageAction.getValidationContexts().get(2)).isInstanceOf(HeaderValidationContext.class);
 
-        httpMessageBuilder = ((HttpMessageBuilder)receiveMessageAction.getMessageBuilder());
-        Assert.assertNotNull(httpMessageBuilder);
-        Assert.assertEquals(httpMessageBuilder.buildMessagePayload(context, receiveMessageAction.getMessageType()), "");
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.ID));
-        Assert.assertNotNull(httpMessageBuilder.getMessage().getHeaders().get(MessageHeaders.TIMESTAMP));
+        httpMessageBuilder = ((HttpMessageBuilder) receiveMessageAction.getMessageBuilder());
+        assertThat(httpMessageBuilder).isNotNull();
+        assertThat(httpMessageBuilder.buildMessagePayload(context, receiveMessageAction.getMessageType())).isEqualTo("");
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(ID)).isNotNull();
+        assertThat(httpMessageBuilder.getMessage().getHeaders().get(TIMESTAMP)).isNotNull();
         Map<String, Object> responseHeaders = httpMessageBuilder.buildMessageHeaders(context);
-        Assert.assertEquals(responseHeaders.size(), 2L);
-        Assert.assertEquals(responseHeaders.get(HttpMessageHeaders.HTTP_STATUS_CODE), 201);
-        Assert.assertEquals(responseHeaders.get(HttpMessageHeaders.HTTP_REASON_PHRASE), "CREATED");
-        Assert.assertNull(receiveMessageAction.getEndpoint());
-        Assert.assertEquals(receiveMessageAction.getEndpointUri(), "httpClient");
+        assertThat(responseHeaders).hasSize(2);
+        assertThat(responseHeaders.get(HttpMessageHeaders.HTTP_STATUS_CODE)).isEqualTo(201);
+        assertThat(responseHeaders.get(HttpMessageHeaders.HTTP_REASON_PHRASE)).isEqualTo("CREATED");
+        assertThat(receiveMessageAction.getEndpoint()).isNull();
+        assertThat(receiveMessageAction.getEndpointUri()).isEqualTo("httpClient");
 
-        Assert.assertEquals(receiveMessageAction.getVariableExtractors().size(), 0L);
+        assertThat(receiveMessageAction.getVariableExtractors()).isEmpty();
     }
 
     @Test
     public void shouldLookupTestActionBuilder() {
-        Assert.assertTrue(YamlTestActionBuilder.lookup("openapi").isPresent());
-        Assert.assertEquals(YamlTestActionBuilder.lookup("openapi").get().getClass(), OpenApi.class);
+        assertThat(YamlTestActionBuilder.lookup("openapi").isPresent()).isTrue();
+        assertThat(YamlTestActionBuilder.lookup("openapi").get()).isOfAnyClassIn(OpenApi.class);
     }
 }

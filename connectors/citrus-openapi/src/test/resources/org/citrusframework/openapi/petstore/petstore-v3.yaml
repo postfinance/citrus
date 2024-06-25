@@ -76,6 +76,13 @@ paths:
             type: boolean
           in: query
           required: false
+        -
+          name: correlationIds
+          description: ID to trace a request
+          schema:
+            type: string
+          in: header
+          required: false
       responses:
         '200':
           content:
