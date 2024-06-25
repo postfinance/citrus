@@ -25,6 +25,9 @@ import org.citrusframework.spi.ReferenceResolverAware;
 import org.citrusframework.util.ObjectHelper;
 import org.springframework.http.HttpStatus;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Action executes http client operations such as sending requests and receiving responses.
  *
@@ -60,11 +63,34 @@ public class OpenApiClientActionBuilder implements TestActionBuilder.DelegatingT
         this.specification = specification;
     }
 
-    /**
-     * Sends Http requests as client.
-     */
-    public OpenApiClientRequestActionBuilder send(String operationId) {
-        OpenApiClientRequestActionBuilder builder = new OpenApiClientRequestActionBuilder(specification, operationId);
+    public static class OpenApiOperationBuilder {
+        private final String operationId;
+        private final Map<String, Object> parameters = new HashMap<>();
+
+        public OpenApiOperationBuilder(String operationId) {
+            this.operationId = operationId;
+        }
+
+        public static OpenApiOperationBuilder operation(String operationId) {
+            return new OpenApiOperationBuilder(operationId);
+        }
+
+        public OpenApiOperationBuilder withParameter(String name, Object value) {
+            parameters.put(name, value);
+            return this;
+        }
+
+        public OpenApiOperationBuilder withParameters(Map<String, Object> parameters) {
+            this.parameters.putAll(parameters);
+            return this;
+        }
+    }
+
+    public OpenApiClientRequestActionBuilder send(OpenApiOperationBuilder openApiOperationBuilder) {
+        var builder = OpenApiClientRequestActionBuilder.create(
+                specification,
+                openApiOperationBuilder.operationId
+        );
         if (httpClient != null) {
             builder.endpoint(httpClient);
         } else {
@@ -73,9 +99,17 @@ public class OpenApiClientActionBuilder implements TestActionBuilder.DelegatingT
 
         builder.name("openapi:send-request");
         builder.withReferenceResolver(referenceResolver);
+        openApiOperationBuilder.parameters.forEach(builder.getMessageBuilder()::withParameter);
 
         this.delegate = builder;
         return builder;
+    }
+
+    /**
+     * Sends Http requests as client.
+     */
+    public OpenApiClientRequestActionBuilder send(String operationId) {
+        return send(OpenApiOperationBuilder.operation(operationId));
     }
 
     /**

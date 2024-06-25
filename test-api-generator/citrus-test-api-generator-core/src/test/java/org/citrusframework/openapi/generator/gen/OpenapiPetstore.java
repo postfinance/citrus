@@ -8,6 +8,9 @@ import org.citrusframework.openapi.actions.OpenApiClientActionBuilder;
 import org.citrusframework.openapi.actions.OpenApiClientRequestActionBuilder;
 import org.citrusframework.openapi.actions.OpenApiClientResponseActionBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.citrusframework.spi.Resources.create;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -17,47 +20,65 @@ public class OpenapiPetstore {
             create("src/test/resources/apis/petstore.yaml")
     );
 
-    public static OpenapiPetstoreBuilder openapiPetstore(HttpClient httpClient, TestCaseRunner runner) {
-        return new OpenapiPetstoreBuilder(httpClient, runner);
+    public static OpenapiPetstoreBuilder openapiPetstore(HttpClient httpClient) {
+        return new OpenapiPetstoreBuilder(httpClient);
     }
 
     public static class OpenapiPetstoreBuilder {
 
         private final HttpClient httpClient;
-        private final TestCaseRunner runner;
 
-        OpenapiPetstoreBuilder(HttpClient httpClient, TestCaseRunner runner) {
+        OpenapiPetstoreBuilder(HttpClient httpClient) {
             this.httpClient = httpClient;
-            // TODO the runner is only needed to set the request params as test-variables, which is ugly...
-            //      see comment in `withPetId()`
-            this.runner = runner;
         }
 
         public GetPetByIdBuilder getPetById() {
-            return new GetPetByIdBuilder(httpClient, petstoreSpec, runner);
+            return new GetPetByIdBuilder(httpClient, petstoreSpec);
         }
 
         public static class GetPetByIdBuilder extends OpenApiClientActionBuilder {
             public static final String OPERATION_ID = "getPetById";
-            private final TestCaseRunner runner;
+            private final Map<String, Object> variables = new HashMap<>();
 
-            public GetPetByIdBuilder(Endpoint httpClient, OpenApiSpecification specification, TestCaseRunner runner) {
+            public GetPetByIdBuilder(Endpoint httpClient, OpenApiSpecification specification) {
                 super(httpClient, specification);
-                this.runner = runner;
             }
 
             public GetPetByIdBuilder withPetId(String petId) {
-                // TODO? move that to super and make it more explicit to set params (e.g. not implicitly via testcase-variables)
-                runner.variable("petId", petId);
+                variables.put("petId", petId);
+                return this;
+            }
+
+            public GetPetByIdBuilder withCorrelationIds(String correlationIds) {
+                variables.put("correlationIds", correlationIds);
+                return this;
+            }
+
+            public GetPetByIdBuilder withVerbose(boolean verbose) {
+                variables.put("verbose", verbose);
                 return this;
             }
 
             public OpenApiClientRequestActionBuilder send() {
-                return send(OPERATION_ID);
+                var openApiOperation = OpenApiOperationBuilder.operation(OPERATION_ID).withParameters(variables);
+                var send = send(openApiOperation);
+                send.fork(true);
+                return send;
             }
 
-            public OpenApiClientResponseActionBuilder receive() {
+            public OpenApiClientResponseActionBuilder receive(TestCaseRunner runner) {
                 return receive(OPERATION_ID, OK);
+            }
+
+            public static class GetPetByIdMessageBuilder extends OpenApiClientRequestActionBuilder {
+
+                protected GetPetByIdMessageBuilder(OpenApiClientRequestActionBuilder.OpenApiClientRequestMessageBuilder messageBuilder) {
+                    super(messageBuilder);
+                }
+
+                public GetPetByIdMessageBuilder create() {
+                    return null;
+                }
             }
         }
     }

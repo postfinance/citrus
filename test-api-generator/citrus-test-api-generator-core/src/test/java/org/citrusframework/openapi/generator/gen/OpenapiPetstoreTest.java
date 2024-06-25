@@ -56,18 +56,19 @@ class OpenapiPetstoreTest {
     @Test
     @CitrusTest
     void testFluentGeneratedOpenapiAction(@CitrusResource TestCaseRunner runner) {
-        runner.$(openapiPetstore(httpClient, runner)
+        runner.$(openapiPetstore(httpClient)
                 .getPetById()
-                .withPetId("1001")
+                .withPetId("2002")
+                .withCorrelationIds("5599")
+                .withVerbose(true)
                 .send()
-                // TODO? set `.fork(true)` in the `.send()`
-                .fork(true));
+        );
 
         respondPet(runner);
 
-        runner.$(openapiPetstore(httpClient, runner)
+        runner.$(openapiPetstore(httpClient)
                 .getPetById()
-                .receive()
+                .receive(runner)
                 .message()
                 .type(JSON)
                 .contentType("application/json")
@@ -77,8 +78,10 @@ class OpenapiPetstoreTest {
     private void respondPet(TestCaseRunner runner) {
         runner.$(http().server(httpServer)
                 .receive()
-                .get("/pet/1001")
+                .get("/pet/2002")
                 .message()
+                .queryParam("verbose", "true")
+                .header("correlationIds", "5599")
                 .accept("@contains('application/json')@"));
         runner.$(http().server(httpServer)
                 .send()

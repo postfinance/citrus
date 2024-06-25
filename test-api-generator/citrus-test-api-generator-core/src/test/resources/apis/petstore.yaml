@@ -168,6 +168,20 @@ paths:
                   schema:
                     type: integer
                     format: int64
+                -
+                  name: verbose
+                  description: Output details
+                  schema:
+                    type: boolean
+                  in: query
+                  required: false
+                -
+                  name: correlationIds
+                  description: ID to trace a request
+                  schema:
+                    type: string
+                  in: header
+                  required: false
             responses:
                 '200':
                     description: successful operation
