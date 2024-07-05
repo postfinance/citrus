@@ -4,6 +4,7 @@ import org.citrusframework.endpoint.Endpoint;
 import org.citrusframework.http.client.HttpClient;
 import org.citrusframework.openapi.OpenApiSpecification;
 import org.citrusframework.openapi.actions.OpenApiClientActionBuilder;
+import org.citrusframework.openapi.actions.OpenApiClientActionBuilder.OpenApiOperationBuilder;
 import org.citrusframework.openapi.actions.OpenApiClientRequestActionBuilder;
 import org.citrusframework.openapi.actions.OpenApiClientResponseActionBuilder;
 
@@ -27,53 +28,63 @@ public class OpenapiPetstore {
         this.httpClient = httpClient;
     }
 
-    public GetPetByIdAction getPetById() {
-        return new GetPetByIdAction(httpClient, petstoreSpec);
+    public PetstoreAction<GetPetByIdRequest> getPetById() {
+        return petstoreAction(new GetPetByIdRequest());
     }
 
-    public static class GetPetByIdAction extends OpenApiClientActionBuilder {
-        public static final String OPERATION_ID = "getPetById";
+    private <B extends OperationRequestBuilder> PetstoreAction<B> petstoreAction(B requestBuilder) {
+        return new PetstoreAction<>(httpClient, petstoreSpec, requestBuilder);
+    }
 
-        public GetPetByIdAction(Endpoint httpClient, OpenApiSpecification specification) {
-            super(httpClient, specification);
+    public static class GetPetByIdRequest extends OperationRequestBuilder {
+        @Override
+        public String getOperationId() {
+            return "getPetById";
         }
 
-        public OpenApiClientRequestActionBuilder send(UnaryOperator<GetPetByIdRequest> builderProvider) {
-            var builder = builderProvider.apply(new GetPetByIdRequest());
+        public GetPetByIdRequest withPetId(String petId) {
+            openApiOperation.withParameter("petId", petId);
+            return this;
+        }
+
+        public GetPetByIdRequest withCorrelationIds(String correlationIds) {
+            openApiOperation.withParameter("correlationIds", correlationIds);
+            return this;
+        }
+
+        public GetPetByIdRequest withVerbose(boolean verbose) {
+            openApiOperation.withParameter("verbose", verbose);
+            return this;
+        }
+    }
+
+    public static abstract class OperationRequestBuilder {
+        protected final OpenApiOperationBuilder openApiOperation = OpenApiOperationBuilder.operation(getOperationId());
+
+        public abstract String getOperationId();
+
+        public OpenApiOperationBuilder build() {
+            return openApiOperation;
+        }
+    }
+
+    public static class PetstoreAction<T extends OperationRequestBuilder> extends OpenApiClientActionBuilder {
+        private final T operation;
+
+        private PetstoreAction(Endpoint httpClient, OpenApiSpecification specification, T operation) {
+            super(httpClient, specification);
+            this.operation = operation;
+        }
+
+        public OpenApiClientRequestActionBuilder send(UnaryOperator<T> builderProvider) {
+            var builder = builderProvider.apply(operation);
             var send = send(builder.build());
             send.fork(true);
             return send;
         }
 
         public OpenApiClientResponseActionBuilder receive() {
-            return receive(OPERATION_ID, "200");
-        }
-
-        public static class GetPetByIdRequest {
-            private final OpenApiOperationBuilder openApiOperation = OpenApiOperationBuilder.operation(OPERATION_ID);
-
-            public static GetPetByIdRequest getPetByIdRequest() {
-                return new GetPetByIdRequest();
-            }
-
-            public GetPetByIdRequest withPetId(String petId) {
-                openApiOperation.withParameter("petId", petId);
-                return this;
-            }
-
-            public GetPetByIdRequest withCorrelationIds(String correlationIds) {
-                openApiOperation.withParameter("correlationIds", correlationIds);
-                return this;
-            }
-
-            public GetPetByIdRequest withVerbose(boolean verbose) {
-                openApiOperation.withParameter("verbose", verbose);
-                return this;
-            }
-
-            public OpenApiOperationBuilder build() {
-                return openApiOperation;
-            }
+            return receive(operation.getOperationId(), "200");
         }
     }
 }

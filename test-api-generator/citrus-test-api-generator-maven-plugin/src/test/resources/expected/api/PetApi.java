@@ -1,4 +1,4 @@
-package {{package}};
+package org.citrusframework.automation.minimal.api;
 
 import org.citrusframework.endpoint.Endpoint;
 import org.citrusframework.http.client.HttpClient;
@@ -12,70 +12,55 @@ import java.util.function.UnaryOperator;
 
 import static org.citrusframework.spi.Resources.create;
 
-public class {{classname}} {
+public class PetApi {
     private static final OpenApiSpecification petstoreSpec = OpenApiSpecification.from(
-            create("{{inputSpec}}")
+            create("api/petstore.yaml")
     );
 
-    public static {{classname}} openapiPetstore(HttpClient httpClient) {
-        return new {{classname}}(httpClient);
+    public static PetApi openapiPetstore(HttpClient httpClient) {
+        return new PetApi(httpClient);
     }
 
     private final HttpClient httpClient;
 
-    private {{classname}}(HttpClient httpClient) {
+    private PetApi(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
-    {{#operations}}
-    {{#operation}}
-    public PetstoreAction<{{operationIdCamelCase}}Request> {{#lambda.camelcase}}{{operationIdCamelCase}}{{/lambda.camelcase}}() {
-        return petstoreAction(new {{operationIdCamelCase}}Request());
+    public PetstoreAction<GetPetByIdRequest> getPetById() {
+        return petstoreAction(new GetPetByIdRequest());
     }
-    {{/operation}}
-    {{/operations}}
 
     private <B extends OperationRequestBuilder> PetstoreAction<B> petstoreAction(B requestBuilder) {
         return new PetstoreAction<>(httpClient, petstoreSpec, requestBuilder);
     }
 
-    {{#operations}}
-    {{#operation}}
     /**
-     * {{operationId}} ({{httpMethod}} {{httpPathPrefix}}{{{path}}}){{#summary}}
-     * {{summary}}{{/summary}}{{#description}}
-     * {{description}}{{/description}}
+     * getPetById (GET /pet/{petId})
+     * Find pet by ID
      **/
-    public static class {{operationIdCamelCase}}Request extends OperationRequestBuilder {
+    public static class GetPetByIdRequest extends OperationRequestBuilder {
         @Override
         public String getOperationId() {
-            return "{{operationId}}";
+            return "getPetById";
         }
 
-        {{#pathParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
+        public GetPetByIdRequest withPetId(Long petId) {
+            openApiOperation.withParameter("petId", petId);
             return this;
         }
-        {{/pathParams}}
 
-        {{#queryParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
+        public GetPetByIdRequest withVerbose(Boolean verbose) {
+            openApiOperation.withParameter("verbose", verbose);
             return this;
         }
-        {{/queryParams}}
 
-        {{#headerParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
+        public GetPetByIdRequest withCorrelationIds(String correlationIds) {
+            openApiOperation.withParameter("correlationIds", correlationIds);
             return this;
         }
-        {{/headerParams}}
     }
 
-    {{/operation}}
-    {{/operations}}
     public static abstract class OperationRequestBuilder {
         protected final OpenApiOperationBuilder openApiOperation = OpenApiOperationBuilder.operation(getOperationId());
 

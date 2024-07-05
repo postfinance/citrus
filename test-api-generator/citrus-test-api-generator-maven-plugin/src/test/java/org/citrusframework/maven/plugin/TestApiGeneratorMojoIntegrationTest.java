@@ -12,6 +12,7 @@ import static org.citrusframework.maven.plugin.TestApiGeneratorMojo.replaceDynam
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.util.ReflectionTestUtils.getField;
 
+import jakarta.annotation.Nonnull;
 import jakarta.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileWriter;
@@ -36,9 +37,10 @@ import org.citrusframework.maven.plugin.stubs.CitrusOpenApiGeneratorMavenProject
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
+public class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
 
     public static final String OTHER_META_FILE_CONTENT = "somenamespace=somevalue";
 
@@ -48,17 +50,17 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
      * Array containing path templates for each generated file, specified with tokens. Tokens can be replaced with values of the respective
      * testing scenario.
      */
-     private static final String[] STANDARD_FILE_PATH_TEMPLATES = new String[]{
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/extension/%CAMEL_PREFIX%NamespaceHandler.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/%CAMEL_PREFIX%AbstractTestRequest.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/%CAMEL_PREFIX%BeanDefinitionParser.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/spring/%CAMEL_PREFIX%BeanConfiguration.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%MODEL_FOLDER%/PingReqType.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%MODEL_FOLDER%/PingRespType.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%REQUEST_FOLDER%/PingApi.java",
-        "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%REQUEST_FOLDER%/PungApi.java",
-        "%TARGET_FOLDER%/%GENERATED_RESOURCES_FOLDER%/%SCHEMA_FOLDER%/%LOWER_PREFIX%-api.xsd",
-        "%TARGET_FOLDER%/%GENERATED_RESOURCES_FOLDER%/%LOWER_PREFIX%-api-model.csv"
+    private static final String[] STANDARD_FILE_PATH_TEMPLATES = new String[]{
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/extension/%CAMEL_PREFIX%NamespaceHandler.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/%CAMEL_PREFIX%AbstractTestRequest.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/citrus/%CAMEL_PREFIX%BeanDefinitionParser.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%INVOKER_FOLDER%/spring/%CAMEL_PREFIX%BeanConfiguration.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%MODEL_FOLDER%/PingReqType.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%MODEL_FOLDER%/PingRespType.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%REQUEST_FOLDER%/PingApi.java",
+            "%TARGET_FOLDER%/%GENERATED_SOURCES_FOLDER%/%REQUEST_FOLDER%/PungApi.java",
+            "%TARGET_FOLDER%/%GENERATED_RESOURCES_FOLDER%/%SCHEMA_FOLDER%/%LOWER_PREFIX%-api.xsd",
+            "%TARGET_FOLDER%/%GENERATED_RESOURCES_FOLDER%/%LOWER_PREFIX%-api-model.csv"
     };
 
     /**
@@ -66,8 +68,8 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
      * testing scenario.
      */
     private static final String[] SPRING_META_FILE_TEMPLATES = new String[]{
-        "%BASE_FOLDER%/%META_INF_FOLDER%/spring.handlers",
-        "%BASE_FOLDER%/%META_INF_FOLDER%/spring.schemas"
+            "%BASE_FOLDER%/%META_INF_FOLDER%/spring.handlers",
+            "%BASE_FOLDER%/%META_INF_FOLDER%/spring.schemas"
     };
 
     private TestApiGeneratorMojo fixture;
@@ -78,31 +80,27 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         setUp();
     }
 
-    static Stream<Arguments> executeMojoWithConfigurations() {
+    public static Stream<Arguments> executeMojoWithConfigurations() {
         return Stream.of(
-            arguments("pom-missing-prefix",
-                new MojoExecutionException("Required parameter 'prefix' not set for api at index '0'!")),
-            arguments("pom-missing-source",
-                new MojoExecutionException("Required parameter 'source' not set for api at index '0'!")),
-            arguments("pom-minimal-config", null),
-            arguments("pom-minimal-with-version-config", null),
-            arguments("pom-multi-config", null),
-            arguments("pom-full-config", null),
-            arguments("pom-full-with-version-config", null),
-            arguments("pom-soap-config", null)
+                arguments("pom-missing-prefix",
+                        new MojoExecutionException("Required parameter 'prefix' not set for api at index '0'!")),
+                arguments("pom-missing-source",
+                        new MojoExecutionException("Required parameter 'source' not set for api at index '0'!")),
+                arguments("pom-minimal-config", null),
+                arguments("pom-minimal-with-version-config", null),
+                arguments("pom-multi-config", null),
+                arguments("pom-full-config", null),
+                arguments("pom-full-with-version-config", null),
+                arguments("pom-soap-config", null)
         );
     }
 
     @ParameterizedTest
-    @MethodSource
-    void executeMojoWithConfigurations(String configName, Exception expectedException)
-        throws Exception {
+    @MethodSource("executeMojoWithConfigurations")
+    public void executeMojoWithConfigurations(String configName, Exception expectedException)
+            throws Exception {
 
-        try {
-            fixture = fixtureFromPom(configName);
-        } catch (MojoExecutionException | MojoFailureException e) {
-            Assertions.fail("Test setup failed!", e);
-        }
+        fixture = fixtureFromPom(configName);
 
         @SuppressWarnings("unchecked")
         List<ApiConfig> apiConfigs = (List<ApiConfig>) getField(fixture, "apis");
@@ -124,8 +122,31 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         } else {
             // When/Then
             assertThatThrownBy(() -> fixture.execute()).isInstanceOf(expectedException.getClass())
-                .hasMessage(expectedException.getMessage());
+                    .hasMessage(expectedException.getMessage());
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "api/PetApi.java"
+    })
+    public void testGenerateAndCompare(String fileName) throws Exception {
+        fixture = fixtureFromPom("pom-minimal-petstore");
+
+        fixture.execute();
+
+        assertThat(getGeneratedFile(fileName))
+                .isFile()
+                .exists()
+                .hasSameTextualContentAs(getExpectedFile(fileName));
+    }
+
+    private static File getGeneratedFile(String file) {
+        return new File("target/pom-minimal-pet/target/generated-test-sources/org/citrusframework/automation/minimal/" + file);
+    }
+
+    private static File getExpectedFile(String file) {
+        return new File("src/test/resources/expected/" + file);
     }
 
     /**
@@ -197,7 +218,7 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
 
         String targetNamespace = replaceDynamicVarsToLowerCase(apiConfig.getTargetXmlnsNamespace(), apiConfig.getPrefix(), apiConfig.getVersion());
         targetNamespace = targetNamespace.replace(":", "\\:");
-        String schemaPath = replaceDynamicVarsToLowerCase((String)getField(fixture, "schemaFolder"), apiConfig.getPrefix(), apiConfig.getVersion());
+        String schemaPath = replaceDynamicVarsToLowerCase((String) getField(fixture, "schemaFolder"), apiConfig.getPrefix(), apiConfig.getVersion());
 
         String text = String.format("%s.xsd=%s/%s-api.xsd", targetNamespace, schemaPath, apiConfig.getPrefix().toLowerCase());
 
@@ -212,22 +233,23 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         switch (apiConfig.getType()) {
             case REST -> text = "HttpClient httpClient";
             case SOAP -> text = "WebServiceClient wsClient";
-            default -> throw new IllegalArgumentException(String.format("No apiTye set in ApiConfig. Expected one of %s",
-                stream(ApiType.values()).map(ApiType::toString).collect(
-                    Collectors.joining())));
+            default ->
+                    throw new IllegalArgumentException(String.format("No apiTye set in ApiConfig. Expected one of %s",
+                            stream(ApiType.values()).map(ApiType::toString).collect(
+                                    Collectors.joining())));
         }
         assertThat(getContentOfFile(apiConfig, "AbstractTestRequest.java")).contains(text);
     }
 
     private void assertTargetNamespace(ApiConfig apiConfig) throws IOException {
         assertThat(getContentOfFile(apiConfig, "-api.xsd")).contains(
-            String.format("targetNamespace=\"%s\"",
-                replaceDynamicVarsToLowerCase(apiConfig.getTargetXmlnsNamespace(), apiConfig.getPrefix(), apiConfig.getVersion())));
+                String.format("targetNamespace=\"%s\"",
+                        replaceDynamicVarsToLowerCase(apiConfig.getTargetXmlnsNamespace(), apiConfig.getPrefix(), apiConfig.getVersion())));
     }
 
     private void assertEndpointName(ApiConfig apiConfig) throws IOException {
         assertThat(getContentOfFile(apiConfig, "AbstractTestRequest")).contains(
-            String.format("@Qualifier(\"%s\")", apiConfig.qualifiedEndpoint()));
+                String.format("@Qualifier(\"%s\")", apiConfig.qualifiedEndpoint()));
     }
 
     private String getContentOfFile(ApiConfig apiConfig, String fileIdentifier) throws IOException {
@@ -244,8 +266,8 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
 
     private String getTemplateContaining(String text) {
         return concat(stream(STANDARD_FILE_PATH_TEMPLATES), stream(SPRING_META_FILE_TEMPLATES))
-            .filter(path -> path.contains(text)).findFirst()
-            .orElseThrow(() -> new AssertionError(String.format("Can't find file template with content: '%s'", text)));
+                .filter(path -> path.contains(text)).findFirst()
+                .orElseThrow(() -> new AssertionError(String.format("Can't find file template with content: '%s'", text)));
     }
 
     @NotNull
@@ -257,31 +279,31 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         String camelCasePrefix = new String(prefixCharArray);
 
         String invokerFolder = toFolder(
-            replaceDynamicVarsToLowerCase(apiConfig.getInvokerPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVarsToLowerCase(apiConfig.getInvokerPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
         String modelFolder = toFolder(
-            replaceDynamicVarsToLowerCase(apiConfig.getModelPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVarsToLowerCase(apiConfig.getModelPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
         String requestFolder = toFolder(
-            replaceDynamicVarsToLowerCase(apiConfig.getApiPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVarsToLowerCase(apiConfig.getApiPackage(), apiConfig.getPrefix(), apiConfig.getVersion()));
         String schemaFolder = toFolder(
-            replaceDynamicVars((String)getField(fixture, "schemaFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVars((String) getField(fixture, "schemaFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
         String generatedSourcesFolder = toFolder(
-            replaceDynamicVars((String)getField(fixture, "sourceFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVars((String) getField(fixture, "sourceFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
         String generatedResourcesFolder = toFolder(
-            replaceDynamicVars((String)getField(fixture, "resourceFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
+                replaceDynamicVars((String) getField(fixture, "resourceFolder"), apiConfig.getPrefix(), apiConfig.getVersion()));
 
         return filePathTemplate
-            .replace("%BASE_FOLDER%", fixture.getMavenProject().getBasedir().getPath())
-            .replace("%TARGET_FOLDER%", fixture.getMavenProject().getBuild().getDirectory())
-            .replace("%SOURCE_FOLDER%", fixture.getMavenProject().getBuild().getSourceDirectory())
-            .replace("%GENERATED_SOURCES_FOLDER%", generatedSourcesFolder)
-            .replace("%GENERATED_RESOURCES_FOLDER%", generatedResourcesFolder)
-            .replace("%INVOKER_FOLDER%", invokerFolder)
-            .replace("%MODEL_FOLDER%", modelFolder)
-            .replace("%REQUEST_FOLDER%", requestFolder)
-            .replace("%SCHEMA_FOLDER%", schemaFolder)
-            .replace("%LOWER_PREFIX%", lowerCasePrefix)
-            .replace("%CAMEL_PREFIX%", camelCasePrefix)
-            .replace("%META_INF_FOLDER%", toFolder((String) getField(fixture, "metaInfFolder")));
+                .replace("%BASE_FOLDER%", fixture.getMavenProject().getBasedir().getPath())
+                .replace("%TARGET_FOLDER%", fixture.getMavenProject().getBuild().getDirectory())
+                .replace("%SOURCE_FOLDER%", fixture.getMavenProject().getBuild().getSourceDirectory())
+                .replace("%GENERATED_SOURCES_FOLDER%", generatedSourcesFolder)
+                .replace("%GENERATED_RESOURCES_FOLDER%", generatedResourcesFolder)
+                .replace("%INVOKER_FOLDER%", invokerFolder)
+                .replace("%MODEL_FOLDER%", modelFolder)
+                .replace("%REQUEST_FOLDER%", requestFolder)
+                .replace("%SCHEMA_FOLDER%", schemaFolder)
+                .replace("%LOWER_PREFIX%", lowerCasePrefix)
+                .replace("%CAMEL_PREFIX%", camelCasePrefix)
+                .replace("%META_INF_FOLDER%", toFolder((String) getField(fixture, "metaInfFolder")));
     }
 
     private String toFolder(String text) {
@@ -293,19 +315,25 @@ class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         return text.replace(".", "/");
     }
 
+    @Nonnull
     private TestApiGeneratorMojo fixtureFromPom(String configName) throws Exception {
-        String goal = "create-test-api";
+        try {
+            String goal = "create-test-api";
 
-        File pomFile = new File(getBasedir(), String.format("src/test/resources/%s/%s", getClass().getSimpleName(), configName + ".xml"));
-        assertThat(pomFile).exists();
+            File pomFile = new File(getBasedir(), String.format("src/test/resources/%s/%s", getClass().getSimpleName(), configName + ".xml"));
+            assertThat(pomFile).exists();
 
-        MavenProject mavenProject = new CitrusOpenApiGeneratorMavenProjectStub(configName);
+            MavenProject mavenProject = new CitrusOpenApiGeneratorMavenProjectStub(configName);
 
-        TestApiGeneratorMojo testApiGeneratorMojo = (TestApiGeneratorMojo) lookupMojo(goal, pomFile);
-        testApiGeneratorMojo.setMavenProject(mavenProject);
-        testApiGeneratorMojo.setMojoExecution(newMojoExecution(goal));
+            TestApiGeneratorMojo testApiGeneratorMojo = (TestApiGeneratorMojo) lookupMojo(goal, pomFile);
+            testApiGeneratorMojo.setMavenProject(mavenProject);
+            testApiGeneratorMojo.setMojoExecution(newMojoExecution(goal));
 
-        return testApiGeneratorMojo;
+            return testApiGeneratorMojo;
+        } catch (MojoExecutionException | MojoFailureException e) {
+            Assertions.fail("Test setup failed!", e);
+            return new TestApiGeneratorMojo();
+        }
     }
 
 }

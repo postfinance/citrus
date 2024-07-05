@@ -313,6 +313,7 @@ public class OpenApiTestDataGenerator {
     }
 
     /**
+     * TODO TAT-1291 this method does not respect optional/required properties
      * Create validation expression using functions according to schema type and format.
      *
      * @param schema

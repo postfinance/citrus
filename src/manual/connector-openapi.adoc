@@ -684,7 +684,7 @@ Further examples can be found here `org.citrusframework.openapi.generator.Genera
 
 To utilize the test API in Java, it's necessary to import the API configuration, that provides the respective request actions.
 The request to test can then be autowired, configured and autowired, as illustrated in the sample below.
-Further examples can be found here `org.citrusframework.openapi.generator.GetPetByIdTest`.
+Further examples can be found here `org.citrusframework.openapi.generator.GetPetByIdIT`.
 
 .Java DSL
 [source,java,indent=0,role="secondary"]

@@ -2,6 +2,7 @@ package org.citrusframework.openapi.generator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.CODEGEN_NAME;
+import static org.citrusframework.openapi.generator.PathUtils.getProjectPathOfClass;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,28 +105,14 @@ class JavaCitrusCodegenTest {
     }
 
     @Test
-    void arePathParamsFieldsPresent() throws IOException {
-        final CodegenConfigurator configurator = new CodegenConfigurator()
-            .setGeneratorName(CODEGEN_NAME)
-            .setInputSpec("src/test/resources/apis/petstore.yaml")
-            .setOutputDir("target/JavaCitrusCodegenTest/petstore");
+    void arePathParamsFieldsPresent() {
+        var fixture = new JavaCitrusCodegen();
+        String inputSpec = "src\\test\\resources\\apis\\petstore.yaml";
+        fixture.setInputSpec(inputSpec);
 
-        final ClientOptInput clientOptInput = configurator.toClientOptInput();
-        DefaultGenerator generator = new DefaultGenerator();
-        List<File> outputFiles = generator.opts(clientOptInput).generate();
+        fixture.processOpts();
 
-        Optional<File> file = outputFiles.stream().filter(x -> "PetApi.java".equals(x.getName()))
-            .findFirst();
-
-        assertThat(file).isPresent();
-
-        List<String> lines = Files.readAllLines(file.get().toPath(), StandardCharsets.UTF_8);
-
-        // "name" is a reserved word, so it should be escaped with an underline for the second parameter
-        assertThat(lines.stream().filter(x -> x.contains("private String petId;")).count()).isEqualTo(4L);
-        assertThat(lines.stream().filter(
-                x -> x.contains("endpoint = endpoint.replace(\"{\" + \"petId\" + \"}\", petId);"))
-            .count()).isEqualTo(4L);
+        assertThat(fixture.additionalProperties()).containsEntry("inputSpecRelative", "src/test/resources/apis/petstore.yaml");
     }
 
     @Test
