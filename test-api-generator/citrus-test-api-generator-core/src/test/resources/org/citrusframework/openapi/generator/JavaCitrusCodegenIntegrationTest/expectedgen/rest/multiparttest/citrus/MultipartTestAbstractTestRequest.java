@@ -39,6 +39,7 @@ import org.citrusframework.http.actions.HttpClientRequestActionBuilder;
 import org.citrusframework.http.actions.HttpClientResponseActionBuilder;
 import org.citrusframework.http.actions.HttpClientResponseActionBuilder.HttpMessageBuilderSupport;
 import org.citrusframework.http.client.HttpClient;
+import org.citrusframework.spi.Resources;
 import org.citrusframework.message.Message;
 import org.citrusframework.testapi.ApiActionBuilderCustomizerService;
 import org.citrusframework.testapi.GeneratedApi;

@@ -50,8 +50,9 @@
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>
-            <version>${openapi-generator-maven-plugin}</version>
+            <version>${org.openapitools.version}</version>
         </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>

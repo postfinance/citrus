@@ -16,6 +16,8 @@
 
 package org.citrusframework.maven.plugin;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.API_ENDPOINT;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.API_TYPE;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.PREFIX;
@@ -28,6 +30,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -66,8 +70,8 @@ public class TestApiGeneratorMojo extends AbstractMojo {
     public static final String DEFAULT_RESOURCE_FOLDER = "generated-test-resources";
     public static final String DEFAULT_BASE_PACKAGE = "org.citrusframework.automation.%PREFIX%.%VERSION%";
     public static final String DEFAULT_INVOKER_PACKAGE = DEFAULT_BASE_PACKAGE;
-    public static final String DEFAULT_API_PACKAGE = DEFAULT_BASE_PACKAGE+".api";
-    public static final String DEFAULT_MODEL_PACKAGE = DEFAULT_BASE_PACKAGE+".model";
+    public static final String DEFAULT_API_PACKAGE = DEFAULT_BASE_PACKAGE + ".api";
+    public static final String DEFAULT_MODEL_PACKAGE = DEFAULT_BASE_PACKAGE + ".model";
     public static final String DEFAULT_SCHEMA_FOLDER_TEMPLATE = "schema/xsd/%VERSION%";
     public static final ApiType DEFAULT_API_TYPE = ApiType.REST;
 
@@ -199,6 +203,7 @@ public class TestApiGeneratorMojo extends AbstractMojo {
 
         codeGenMojo.setPluginContext(getPluginContext());
         codeGenMojo.setBuildContext(buildContext);
+
         return codeGenMojo;
     }
 
@@ -244,6 +249,8 @@ public class TestApiGeneratorMojo extends AbstractMojo {
      * Note that the default values are not properly set by maven processor. Therefore, the default values have been assigned additionally
      * on field level.
      */
+    @Getter
+    @Setter
     public static class ApiConfig {
 
         public static final String DEFAULT_ENDPOINT = "PREFIX_ENDPOINT";

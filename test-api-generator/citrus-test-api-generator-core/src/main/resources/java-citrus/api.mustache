@@ -1,3 +1,25 @@
+/*
+* Copyright the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+/**
+* ==================================================
+* GENERATED CLASS, ALL CHANGES WILL BE LOST
+* ==================================================
+*/
+
 package {{package}};
 
 import org.citrusframework.endpoint.Endpoint;
@@ -13,85 +35,85 @@ import java.util.function.UnaryOperator;
 import static org.citrusframework.spi.Resources.create;
 
 public class {{classname}} {
-    private static final OpenApiSpecification petstoreSpec = OpenApiSpecification.from(
-            create("{{inputSpec}}")
-    );
+private static final OpenApiSpecification petstoreSpec = OpenApiSpecification.from(
+create("{{inputSpec}}")
+);
 
-    public static {{classname}} openapiPetstore(HttpClient httpClient) {
-        return new {{classname}}(httpClient);
-    }
+public static {{classname}} openapiPetstore(HttpClient httpClient) {
+return new {{classname}}(httpClient);
+}
 
-    private final HttpClient httpClient;
+private final HttpClient httpClient;
 
-    private {{classname}}(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
+private {{classname}}(HttpClient httpClient) {
+this.httpClient = httpClient;
+}
 
-    {{#operations}}
+{{#operations}}
     {{#operation}}
-    public PetstoreAction<{{operationIdCamelCase}}Request> {{#lambda.camelcase}}{{operationIdCamelCase}}{{/lambda.camelcase}}() {
-        return petstoreAction(new {{operationIdCamelCase}}Request());
-    }
+        public PetstoreAction<{{operationIdCamelCase}}Request> {{#lambda.camelcase}}{{operationIdCamelCase}}{{/lambda.camelcase}}() {
+            return petstoreAction(new {{operationIdCamelCase}}Request());
+            }
     {{/operation}}
-    {{/operations}}
+{{/operations}}
 
     private <B extends OperationRequestBuilder> PetstoreAction<B> petstoreAction(B requestBuilder) {
-        return new PetstoreAction<>(httpClient, petstoreSpec, requestBuilder);
+    return new PetstoreAction<>(httpClient, petstoreSpec, requestBuilder);
     }
 
     {{#operations}}
-    {{#operation}}
-    /**
-     * {{operationId}} ({{httpMethod}} {{httpPathPrefix}}{{{path}}}){{#summary}}
-     * {{summary}}{{/summary}}{{#description}}
-     * {{description}}{{/description}}
-     **/
-    public static class {{operationIdCamelCase}}Request extends OperationRequestBuilder {
-        @Override
-        public String getOperationId() {
+        {{#operation}}
+            /**
+            * {{operationId}} ({{httpMethod}} {{httpPathPrefix}}{{{path}}}){{#summary}}
+            * {{summary}}{{/summary}}{{#description}}
+            * {{description}}{{/description}}
+            **/
+            public static class {{operationIdCamelCase}}Request extends OperationRequestBuilder {
+            @Override
+            public String getOperationId() {
             return "{{operationId}}";
-        }
+            }
 
-        {{#pathParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
-            return this;
-        }
-        {{/pathParams}}
+            {{#pathParams}}
+                public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
+                openApiOperation.withParameter("{{paramName}}", {{paramName}});
+                return this;
+                }
+            {{/pathParams}}
 
-        {{#queryParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
-            return this;
-        }
-        {{/queryParams}}
+            {{#queryParams}}
+                public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
+                openApiOperation.withParameter("{{paramName}}", {{paramName}});
+                return this;
+                }
+            {{/queryParams}}
 
-        {{#headerParams}}
-        public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
-            openApiOperation.withParameter("{{paramName}}", {{paramName}});
-            return this;
-        }
-        {{/headerParams}}
-    }
+            {{#headerParams}}
+                public {{operationIdCamelCase}}Request with{{#lambda.titlecase}}{{paramName}}{{/lambda.titlecase}}({{dataType}} {{paramName}}) {
+                openApiOperation.withParameter("{{paramName}}", {{paramName}});
+                return this;
+                }
+            {{/headerParams}}
+            }
 
-    {{/operation}}
+        {{/operation}}
     {{/operations}}
     public static abstract class OperationRequestBuilder {
-        protected final OpenApiOperationBuilder openApiOperation = OpenApiOperationBuilder.operation(getOperationId());
+    protected final OpenApiOperationBuilder openApiOperation = OpenApiOperationBuilder.operation(getOperationId());
 
-        public abstract String getOperationId();
+    public abstract String getOperationId();
 
-        public OpenApiOperationBuilder build() {
-            return openApiOperation;
-        }
+    public OpenApiOperationBuilder build() {
+    return openApiOperation;
+    }
     }
 
     public static class PetstoreAction<T extends OperationRequestBuilder> extends OpenApiClientActionBuilder {
         private final T operation;
 
         private PetstoreAction(Endpoint httpClient, OpenApiSpecification specification, T operation) {
-            super(httpClient, specification);
-            this.operation = operation;
+        super(httpClient, specification);
+        this.operation = operation;
         }
 
         public OpenApiClientRequestActionBuilder send(UnaryOperator<T> builderProvider) {
@@ -99,10 +121,10 @@ public class {{classname}} {
             var send = send(builder.build());
             send.fork(true);
             return send;
-        }
+            }
 
-        public OpenApiClientResponseActionBuilder receive() {
+            public OpenApiClientResponseActionBuilder receive() {
             return receive(operation.getOperationId(), "200");
-        }
-    }
-}
+            }
+            }
+            }

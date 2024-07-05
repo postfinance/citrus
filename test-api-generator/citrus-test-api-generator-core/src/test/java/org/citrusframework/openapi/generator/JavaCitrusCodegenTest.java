@@ -5,6 +5,7 @@ import static org.citrusframework.openapi.generator.JavaCitrusCodegen.CODEGEN_NA
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -31,6 +32,31 @@ import org.openapitools.codegen.config.CodegenConfigurator;
  */
 
 class JavaCitrusCodegenTest {
+
+    /**
+     * Get the absolute path to the test resources directory.
+     *
+     * @param pathToFileInTestResources The file within {@code src/test/resources} to look for
+     * @return the absolute path to the file
+     */
+    private String getTestResource(String pathToFileInTestResources) {
+        URL resourceUrl = getClass().getClassLoader().getResource(pathToFileInTestResources);
+        assert resourceUrl != null;
+        File inputSpecFile = new File(resourceUrl.getFile());
+        return inputSpecFile.getAbsolutePath();
+    }
+
+    /**
+     * Get the absolute path to the project's target directory.
+     *
+     * @param pathToFileInTargetDirectory The file within {@code target} to look for
+     * @return the absolute path to the file
+     */
+    private static String getAbsoluteTargetDirectoryPath(String pathToFileInTargetDirectory) {
+        String projectBaseDir = System.getProperty("user.dir"); // Base directory of the project
+        File outputDirFile = new File(projectBaseDir, "target/" + pathToFileInTargetDirectory);
+        return outputDirFile.getAbsolutePath();
+    }
 
     @Test
     void retrieveGeneratorBsSpi() {

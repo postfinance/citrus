@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.citrusframework.exceptions.CitrusRuntimeException;
+import org.citrusframework.maven.plugin.TestApiGeneratorMojo.ApiConfig;
 
 /**
  * Utility class responsible for generating the Spring meta files 'spring.handlers' and 'spring.schemas', used
@@ -52,9 +53,7 @@ public class SpringMetaFileGenerator {
     }
 
     public void generateSpringIntegrationMetaFiles() throws MojoExecutionException {
-
-        String springMetafileDirectory = format("%s/%s", testApiGeneratorMojo.getMavenProject().getBasedir(),
-            testApiGeneratorMojo.metaInfFolder());
+        String springMetafileDirectory = format("%s/%s", testApiGeneratorMojo.getMavenProject().getBasedir(), testApiGeneratorMojo.metaInfFolder());
         File metaFolder = new File(springMetafileDirectory);
         if (!metaFolder.exists() && !metaFolder.mkdirs()) {
             throw new CitrusRuntimeException(
@@ -94,9 +93,7 @@ public class SpringMetaFileGenerator {
         });
     }
 
-    private void writeSpringMetaFile(File springMetafileDirectory, String filename, BiConsumer<FileWriter, ApiConfig> contentFormatter)
-        throws MojoExecutionException {
-
+    private void writeSpringMetaFile(File springMetafileDirectory, String filename, BiConsumer<FileWriter, ApiConfig> contentFormatter) throws MojoExecutionException {
         File handlerFile = new File(format("%s/%s", springMetafileDirectory.getPath(), filename));
         List<String> filteredLines = readAndFilterLines(handlerFile);
 

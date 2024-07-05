@@ -9,6 +9,7 @@ import org.citrusframework.context.TestContext;
 import org.citrusframework.http.client.HttpClient;
 import org.citrusframework.http.client.HttpEndpointConfiguration;
 import org.citrusframework.junit.jupiter.spring.CitrusSpringSupport;
+import org.citrusframework.openapi.generator.SpringBeanConfigurationIT.ClientConfiguration;
 //import org.citrusframework.openapi.generator.rest.petstore.request.PetApi.AddPetRequest;
 import org.citrusframework.openapi.generator.rest.petstore.spring.PetStoreBeanConfiguration;
 import org.junit.jupiter.api.Test;

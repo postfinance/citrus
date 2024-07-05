@@ -7,6 +7,7 @@ import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import org.citrusframework.testapi.ApiActionBuilderCustomizerService;
 import org.citrusframework.openapi.generator.util.TestApiActionBuilderCustomizer;
+import org.citrusframework.testapi.ApiActionBuilderCustomizerService;
 import org.junit.jupiter.api.Test;
 
 class ServiceLoaderTest {
