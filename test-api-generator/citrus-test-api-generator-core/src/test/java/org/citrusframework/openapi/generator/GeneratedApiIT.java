@@ -77,14 +77,14 @@ import org.springframework.util.MultiValueMap;
 //@ExtendWith({CitrusSpringExtension.class})
 //@SpringBootTest(classes = {CitrusSpringConfig.class, GeneratedApiIT.Config.class})
 //@TestPropertySource(
-//    properties = {"applicationServiceClient.basic.username=Max Mustermann",
-//        "applicationServiceClient.basic.password=Top secret"}
+//        properties = {"applicationServiceClient.basic.username=Max Mustermann",
+//                "applicationServiceClient.basic.password=Top secret"}
 //)
 class GeneratedApiIT {
 
     // TODO TAT-1291 migrate tests
 
-//    @Autowired
+    //    @Autowired
 //    private ApplicationContext applicationContext;
 //
 //    @Autowired
@@ -567,55 +567,55 @@ class GeneratedApiIT {
 //        return receiveMessage;
 //    }
 //
-//    public static class Config {
-//
-//        @Bean(name = {"applicationServiceClient", "multipartTestEndpoint",
-//            "soapSampleStoreEndpoint", "petStoreEndpoint"})
-//        public HttpClient applicationServiceClient() {
-//            HttpClient clientMock = mock();
-//            EndpointConfiguration endpointConfigurationMock = mock();
-//            when(clientMock.getEndpointConfiguration()).thenReturn(new HttpEndpointConfiguration());
-//            when(endpointConfigurationMock.getTimeout()).thenReturn(5000L);
-//            return clientMock;
-//        }
-//
-//        @Bean
-//        public ApiActionBuilderCustomizerService customizer() {
-//            return new ApiActionBuilderCustomizerService() {
-//                @Override
-//                public <T extends SendMessageActionBuilder<?, ?, ?>> T build(
-//                    GeneratedApi generatedApi, TestAction action, TestContext context, T builder) {
-//                    builder.getMessageBuilderSupport()
-//                        .header("x-citrus-api-version", generatedApi.getApiVersion());
-//                    return builder;
-//                }
-//            };
-//        }
-//
-//        @Bean({"oas3", "testSchema"})
-//        public SimpleJsonSchema testSchema() {
-//            JsonSchema schemaMock = mock();
-//            SimpleJsonSchema jsonSchemaMock = mock();
-//
-//            when(jsonSchemaMock.getSchema()).thenReturn(schemaMock);
-//
-//            Set<ValidationMessage> okReport = new HashSet<>();
-//            when(schemaMock.validate(any())).thenReturn(okReport);
-//            return jsonSchemaMock;
-//        }
-//
-//        @Bean
-//        public SimpleJsonSchema failingTestSchema() {
-//            JsonSchema schemaMock = mock();
-//            SimpleJsonSchema jsonSchemaMock = mock();
-//
-//            when(jsonSchemaMock.getSchema()).thenReturn(schemaMock);
-//
-//            Set<ValidationMessage> nokReport = new HashSet<>();
-//            nokReport.add(new ValidationMessage.Builder().customMessage(
-//                "This is a simulated validation error message").build());
-//            when(schemaMock.validate(any())).thenReturn(nokReport);
-//            return jsonSchemaMock;
-//        }
-//    }
+    public static class Config {
+
+        @Bean(name = {"applicationServiceClient", "multipartTestEndpoint",
+                "soapSampleStoreEndpoint", "petStoreEndpoint"})
+        public HttpClient applicationServiceClient() {
+            HttpClient clientMock = mock();
+            EndpointConfiguration endpointConfigurationMock = mock();
+            when(clientMock.getEndpointConfiguration()).thenReturn(new HttpEndpointConfiguration());
+            when(endpointConfigurationMock.getTimeout()).thenReturn(5000L);
+            return clientMock;
+        }
+
+        @Bean
+        public ApiActionBuilderCustomizerService customizer() {
+            return new ApiActionBuilderCustomizerService() {
+                @Override
+                public <T extends SendMessageActionBuilder<?, ?, ?>> T build(
+                        GeneratedApi generatedApi, TestAction action, TestContext context, T builder) {
+                    builder.getMessageBuilderSupport()
+                            .header("x-citrus-api-version", generatedApi.getApiVersion());
+                    return builder;
+                }
+            };
+        }
+
+        @Bean({"oas3", "testSchema"})
+        public SimpleJsonSchema testSchema() {
+            JsonSchema schemaMock = mock();
+            SimpleJsonSchema jsonSchemaMock = mock();
+
+            when(jsonSchemaMock.getSchema()).thenReturn(schemaMock);
+
+            Set<ValidationMessage> okReport = new HashSet<>();
+            when(schemaMock.validate(any())).thenReturn(okReport);
+            return jsonSchemaMock;
+        }
+
+        @Bean
+        public SimpleJsonSchema failingTestSchema() {
+            JsonSchema schemaMock = mock();
+            SimpleJsonSchema jsonSchemaMock = mock();
+
+            when(jsonSchemaMock.getSchema()).thenReturn(schemaMock);
+
+            Set<ValidationMessage> nokReport = new HashSet<>();
+            nokReport.add(new ValidationMessage.Builder().customMessage(
+                    "This is a simulated validation error message").build());
+            when(schemaMock.validate(any())).thenReturn(nokReport);
+            return jsonSchemaMock;
+        }
+    }
 }

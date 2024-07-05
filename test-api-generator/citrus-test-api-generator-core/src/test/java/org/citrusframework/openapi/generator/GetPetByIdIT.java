@@ -4,18 +4,24 @@ import org.citrusframework.TestCaseRunner;
 import org.citrusframework.annotations.CitrusResource;
 import org.citrusframework.annotations.CitrusTest;
 import org.citrusframework.config.CitrusSpringConfig;
+import org.citrusframework.context.TestContext;
 import org.citrusframework.http.client.HttpClient;
 import org.citrusframework.http.client.HttpClientBuilder;
 import org.citrusframework.http.server.HttpServer;
 import org.citrusframework.http.server.HttpServerBuilder;
 import org.citrusframework.junit.jupiter.spring.CitrusSpringSupport;
+import org.citrusframework.message.Message;
 import org.citrusframework.openapi.generator.rest.petstore.spring.PetStoreBeanConfiguration;
-import org.citrusframework.spi.BindToRegistry;
 import org.citrusframework.util.SocketUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.io.File;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
 import static org.citrusframework.message.MessageType.JSON;
 import static org.citrusframework.openapi.generator.rest.petstore.request.PetApi.openapiPetstore;
@@ -25,38 +31,14 @@ import static org.springframework.http.HttpStatus.OK;
 
 
 @CitrusSpringSupport
-@ContextConfiguration(classes = {PetStoreBeanConfiguration.class, CitrusSpringConfig.class})
+@ContextConfiguration(classes = {PetStoreBeanConfiguration.class, CitrusSpringConfig.class, GetPetByIdIT.Config.class})
 class GetPetByIdIT {
 
-    private final int port = SocketUtils.findAvailableTcpPort(8080);
+    @Autowired
+    private HttpClient httpClient;
 
-//    private final MessageQueue inboundQueue = new DefaultMessageQueue("inboundQueue");
-//    private final EndpointAdapter endpointAdapter = new DirectEndpointAdapter(direct()
-//            .synchronous()
-//            .timeout(5000L)
-//            .queue(inboundQueue)
-//            .build());
-
-    @BindToRegistry
-    private final HttpClient httpClient = new HttpClientBuilder()
-            .requestUrl("http://localhost:%d".formatted(port))
-            .build();
-
-    // TODO TAT-1291 the GetPetByIdIT class gets instantiated twice, but the second time
-    //  the httpServer, respectively the "endpoint", is not initialized correctly...
-    //  why is the Test Class instantiated twice (once per testmethod?) anyway?!
-    @BindToRegistry
-    private final HttpServer httpServer = new HttpServerBuilder()
-            .port(port)
-            // .endpointAdapter(endpointAdapter)
-            .timeout(5000L)
-            .autoStart(true)
-            .defaultStatus(NO_CONTENT)
-            .build();
-
-    @BeforeEach
-    public void beforeTest() {
-    }
+    @Autowired
+    private HttpServer httpServer;
 
     @Test
     @CitrusTest
@@ -95,8 +77,6 @@ class GetPetByIdIT {
                 openapiPetstore(httpClient)
                         .getPetById()
                         .send(request -> request
-                                // TODO
-                                // .withBodyFile("org/citrusframework/openapi/generator/GeneratedApiTest/payloads/getPetByIdControlMessage1.json")
                                 .withPetId(2002L)
                                 .withCorrelationIds("5599")
                                 .withVerbose(true)
@@ -105,16 +85,17 @@ class GetPetByIdIT {
 
         respondPet(runner);
 
+        var expectedResponse = new File("src/test/resources/org/citrusframework/openapi/generator/GeneratedApiTest/payloads/getPetByIdControlMessage1.json");
         runner.$(
                 openapiPetstore(httpClient)
                         .getPetById()
                         .receive()
                         .message()
-                        .validate(
-                                pathExpression()
-                                        .jsonPath("$.name", "Snoopy")
-                                        .jsonPath("$.id", 2002)
-                        )
+                        .validate((Message message, TestContext context) -> {
+                            assertThat(expectedResponse).exists().content().satisfies(expectedContent -> {
+                                assertThat(message.getPayload(String.class)).isEqualToIgnoringWhitespace(expectedContent);
+                            });
+                        })
         );
     }
 
@@ -147,78 +128,27 @@ class GetPetByIdIT {
                 .contentType("application/json").type(JSON));
     }
 
-   /* @Test
-    @CitrusTest
-    void testValidationFailureByResource(@CitrusResource TestCaseRunner runner) {
+    @TestConfiguration
+    public static class Config {
 
-        // Given
-        getPetByIdRequest.setPetId("1234");
+        private final int port = SocketUtils.findAvailableTcpPort(8080);
 
-        // Then
-        getPetByIdRequest.setResponseStatus(HttpStatus.OK.value());
-        getPetByIdRequest.setResponseReasonPhrase(HttpStatus.OK.getReasonPhrase());
-        // Assert body by resource
-        getPetByIdRequest.setResource(
-            "org/citrusframework/openapi/generator/GeneratedApiTest/payloads/getPetByIdControlMessage2.json");
+        @Bean
+        public HttpClient httpClient() {
+            return new HttpClientBuilder()
+                    .requestUrl("http://localhost:%d".formatted(port))
+                    .build();
+        }
 
-        // When
-        runner.$(assertException()
-            .exception(org.citrusframework.exceptions.CitrusRuntimeException.class)
-            .message("Values not equal for entry: '$['name']', expected 'Garfield' but was 'Snoopy'")
-            .when(
-                getPetByIdRequest
-            )
-        );
+        @Bean
+        public HttpServer httpServer() {
+            return new HttpServerBuilder()
+                    .port(port)
+                    // .endpointAdapter(endpointAdapter)
+                    .timeout(5000L)
+                    .autoStart(true)
+                    .defaultStatus(NO_CONTENT)
+                    .build();
+        }
     }
-
-    @Test
-    @CitrusTest
-    void validateByVariable(@CitrusResource TestContext testContext,
-        @CitrusResource TestCaseRunner runner) {
-
-        // Given
-        getPetByIdRequest.setPetId("1234");
-
-        // Then
-        getPetByIdRequest.setResponseStatus(HttpStatus.OK.value());
-        getPetByIdRequest.setResponseReasonPhrase(HttpStatus.OK.getReasonPhrase());
-
-        // Assert load data into variables
-        getPetByIdRequest.setResponseVariable(Map.of("$", "RESPONSE", "$.id", "ID"));
-
-        // When
-        runner.$(getPetByIdRequest);
-
-        // Then
-        assertThat(testContext)
-            .satisfies(
-                c -> assertThat(c.getVariable("RESPONSE"))
-                    .isNotNull(),
-                c -> assertThat(c.getVariable("ID"))
-                    .isNotNull()
-                    .isEqualTo("12")
-            );
-    }
-
-    @Test
-    @CitrusTest
-    void validateReceivedResponse(@CitrusResource TestContext testContext) {
-
-        // Given
-        getPetByIdRequest.setPetId("1234");
-
-        // When
-        getPetByIdRequest.sendRequest(testContext);
-
-        // Then
-        Message receiveResponse = getPetByIdRequest.receiveResponse(testContext);
-        assertThat(receiveResponse)
-            .isNotNull()
-            .extracting(Message::getPayload)
-            .asString()
-            .isEqualToIgnoringWhitespace(defaultResponse);
-        assertThat(receiveResponse.getHeaders())
-            .containsEntry("citrus_http_status_code", 200)
-            .containsEntry("citrus_http_reason_phrase", "OK");
-    }*/
 }

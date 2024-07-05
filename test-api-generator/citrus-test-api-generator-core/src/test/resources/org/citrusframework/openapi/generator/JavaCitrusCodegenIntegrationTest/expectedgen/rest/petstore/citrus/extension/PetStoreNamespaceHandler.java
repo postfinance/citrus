@@ -22,7 +22,6 @@
 
 package org.citrusframework.openapi.generator.rest.petstore.citrus.extension;
 
-import org.citrusframework.openapi.generator.rest.petstore.request.PetApi;
 import org.citrusframework.openapi.generator.rest.petstore.request.StoreApi;
 import org.citrusframework.openapi.generator.rest.petstore.request.UserApi;
 import org.citrusframework.openapi.generator.rest.petstore.citrus.PetStoreBeanDefinitionParser;

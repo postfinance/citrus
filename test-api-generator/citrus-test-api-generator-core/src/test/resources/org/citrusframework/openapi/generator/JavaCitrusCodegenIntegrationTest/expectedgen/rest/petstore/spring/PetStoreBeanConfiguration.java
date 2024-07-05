@@ -24,7 +24,6 @@ package org.citrusframework.openapi.generator.rest.petstore.spring;
 
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
-import org.citrusframework.openapi.generator.rest.petstore.request.PetApi;
 import org.citrusframework.openapi.generator.rest.petstore.request.StoreApi;
 import org.citrusframework.openapi.generator.rest.petstore.request.UserApi;
 import javax.annotation.processing.Generated;
