@@ -17,11 +17,15 @@
 package org.citrusframework.openapi.integration;
 
 import org.citrusframework.annotations.CitrusTest;
+import org.citrusframework.exceptions.TestCaseFailedException;
+import org.citrusframework.http.actions.HttpClientRequestActionBuilder.HttpMessageBuilderSupport;
 import org.citrusframework.http.client.HttpClient;
 import org.citrusframework.http.client.HttpClientBuilder;
 import org.citrusframework.http.server.HttpServer;
 import org.citrusframework.http.server.HttpServerBuilder;
 import org.citrusframework.openapi.OpenApiSpecification;
+import org.citrusframework.openapi.actions.OpenApiActionBuilder;
+import org.citrusframework.openapi.actions.OpenApiClientResponseActionBuilder;
 import org.citrusframework.spi.BindToRegistry;
 import org.citrusframework.spi.Resources;
 import org.citrusframework.testng.spring.TestNGCitrusSpringSupport;
@@ -33,13 +37,17 @@ import org.testng.annotations.Test;
 import static org.citrusframework.http.actions.HttpActionBuilder.http;
 import static org.citrusframework.message.MessageType.XML;
 import static org.citrusframework.openapi.actions.OpenApiActionBuilder.openapi;
+import static org.testng.Assert.assertThrows;
+import static org.testng.Assert.fail;
 import static org.citrusframework.openapi.actions.OpenApiClientActionBuilder.OpenApiOperationBuilder.operation;
 
 /**
  * @author Christoph Deppisch
  */
-@Test
 public class OpenApiClientIT extends TestNGCitrusSpringSupport {
+
+    public static final String VALID_PET_PATH = "classpath:org/citrusframework/openapi/petstore/pet.json";
+    public static final String INVALID_PET_PATH = "classpath:org/citrusframework/openapi/petstore/pet_invalid.json";
 
     private final int port = SocketUtils.findAvailableTcpPort(8080);
 
@@ -56,11 +64,20 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
             .requestUrl("http://localhost:%d".formatted(port))
             .build();
 
+    /**
+     * Directly loaded open api.
+     */
     private final OpenApiSpecification petstoreSpec = OpenApiSpecification.from(
             Resources.create("classpath:org/citrusframework/openapi/petstore/petstore-v3.json"));
 
     @CitrusTest
-    public void getPetById() {
+    @Test
+    public void shouldExecuteGetPetByIdFromDirectSpec() {
+        shouldExecuteGetPetById(openapi(petstoreSpec), VALID_PET_PATH, true);
+    }
+
+    private void shouldExecuteGetPetById(OpenApiActionBuilder openapi, String responseFile, boolean valid) {
+
         variable("petId", "1001");
         variable("verbose", "true");
         variable("correlationIds", "1234abcd");
@@ -180,135 +197,87 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .send()
                 .response(HttpStatus.OK)
                 .message()
-                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
+                .body(Resources.create(responseFile))
                 .contentType("application/json"));
 
-        then(openapi(petstoreSpec)
+        OpenApiClientResponseActionBuilder clientResponseActionBuilder = openapi
+            .client(httpClient).receive("getPetById", HttpStatus.OK);
+        if (valid) {
+            then(clientResponseActionBuilder);
+        } else {
+            assertThrows(() -> then(clientResponseActionBuilder));
+        }
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldProperlyExecuteGetAndAddPetFromDirectSpec() {
+        shouldExecuteGetAndAddPet(openapi(petstoreSpec));
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldProperlyExecuteGetAndAddPetFromRepository() {
+        shouldExecuteGetAndAddPet(openapi(petstoreSpec));
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldFailOnMissingNameInResponse() {
+        shouldExecuteGetPetById(openapi(petstoreSpec), INVALID_PET_PATH, false);
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldFailOnMissingNameInRequest() {
+        variable("petId", "1001");
+
+        HttpMessageBuilderSupport addPetBuilder = openapi(petstoreSpec)
+            .client(httpClient)
+            .send("addPet")
+            .message().body(Resources.create(INVALID_PET_PATH))
+            .fork(true);
+
+        assertThrows(TestCaseFailedException.class, () ->when(addPetBuilder));
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldFailOnWrongQueryIdType() {
+        variable("petId", "xxxx");
+        HttpMessageBuilderSupport addPetBuilder = openapi(petstoreSpec)
                 .client(httpClient)
-                .receive("getPetById", HttpStatus.OK));
+                .send("addPet")
+                .message().body(Resources.create(VALID_PET_PATH))
+                .fork(true);
+
+        assertThrows(TestCaseFailedException.class, () ->when(addPetBuilder));
+    }
+
+    @CitrusTest
+    @Test
+    public void shouldSucceedOnWrongQueryIdTypeWithOasDisabled() {
+        variable("petId", "xxxx");
+        HttpMessageBuilderSupport addPetBuilder = openapi(petstoreSpec)
+                .client(httpClient)
+                .send("addPet")
+                .message().body(Resources.create(VALID_PET_PATH))
+                .fork(true);
+
+        try {
+            when(addPetBuilder);
+        } catch (Exception e) {
+            fail("Method threw an exception: " + e.getMessage());
+        }
+
     }
 
     /* TODO create issues
     @CitrusTest
-    public void BUG_getPetById_paramsCanAlsoBeSetWithMessageBuilder() {
+    public void getAddPet() {
         variable("petId", "1001");
 
-        when(openapi(petstoreSpec)
-                .client(httpClient)
-                .send("getPetById")
-                .fork(true)
-                .message()
-                // TODO Bug - if the params are already set on the message, they get overwritten
-                .queryParam("verbose", "false")
-                .header("correlationIds", "1234F5gXW")
-        );
-
-        then(http().server(httpServer)
-                .receive()
-                .get("/pet/1001")
-                .queryParam("verbose", "true")
-                .message()
-                .header("correlationIds", "1234F5gXW")
-        );
-
-        then(http().server(httpServer)
-                .send()
-                .response(HttpStatus.OK)
-                .message()
-                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.json"))
-                .contentType("application/json"));
-
-        then(openapi(petstoreSpec)
-                .client(httpClient)
-                .receive("getPetById", HttpStatus.OK));
-    }
-
-    @CitrusTest
-    @Ignore
-    public void BUG_should_be_possible_to_switch_content_type__to_xml() {
-        variable("petId", "1001");
-
-        when(openapi(petstoreSpec)
-                .client(httpClient)
-                .send("getPetById")
-                .message()
-                .accept("application/xml")
-                .fork(true));
-
-        then(http().server(httpServer)
-                .receive()
-                .get("/pet/${petId}")
-                .message()
-                .accept("@contains('application/xml')@"));
-
-        then(http().server(httpServer)
-                .send()
-                .response(HttpStatus.OK)
-                .message()
-                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
-                .contentType("application/xml"));
-
-        then(openapi(petstoreSpec)
-                .client(httpClient)
-                .receive("getPetById", HttpStatus.OK)
-                .message()
-                // TODO XML bodies do not seem to work, even if there is just XML as "produces" in the spec
-                .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
-                // TODO the type/contentType statements are useless, if there is another type in the spec.
-                //      even if there are two. i.E:
-                // # this will always use JSON as type
-                // produces:
-                //   - application/json
-                //   - application/xml
-                .contentType("application/xml")
-                .type(XML));
-    }
-
-    @CitrusTest
-    @Ignore
-    public void BUG_should_only_validate_the_presence_of_required_properties() {
-        variable("petId", "1001");
-
-        when(openapi(petstoreSpec)
-                .client(httpClient)
-                .send("getPetById")
-                .message()
-                .accept("application/json")
-                .fork(true));
-
-        then(http().server(httpServer)
-                .receive()
-                .get("/pet/${petId}")
-                .message()
-                .accept("@contains('application/json')@"));
-
-        then(http().server(httpServer)
-                .send()
-                .response(HttpStatus.OK)
-                .message()
-                // this should be valid, according to the spec-file
-                .body("""
-                        {
-                        "category": {},
-                        "name": "",
-                        "status": "sold"
-                        }
-                        """)
-                .contentType("application/json"));
-
-        then(openapi(petstoreSpec)
-                .client(httpClient)
-                .receive("getPetById", HttpStatus.OK)
-                .message()
-        );
-    }
-    */
-
-    @CitrusTest
-    public void postAddPet() {
-        variable("petId", "1001");
-
-        when(openapi(petstoreSpec)
+        when(openapi
                 .client(httpClient)
                 .send("addPet")
                 .fork(true));
@@ -337,7 +306,7 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .response(HttpStatus.CREATED)
                 .message());
 
-        then(openapi(petstoreSpec)
+        then(openapi
                 .client(httpClient)
                 .receive("addPet", HttpStatus.CREATED));
     }
