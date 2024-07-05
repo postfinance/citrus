@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
 
+// TODO TAT-1291 can this test be removed? in favor of GetPetByIdIT.java
 @ExtendWith(CitrusSpringExtension.class)
 @SpringBootTest(classes = {PetStoreBeanConfiguration.class, CitrusSpringConfig.class, Config.class})
 class OpenapiPetstoreTest {

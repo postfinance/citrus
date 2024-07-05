@@ -119,7 +119,7 @@ public class OpenApiClientRequestActionBuilder extends HttpClientRequestActionBu
 
         @Override
         public Message build(TestContext context, String messageType) {
-            // TODO: TAT-1291 - make parameter substitution more explicit?
+            // TODO TAT-1291 - make parameter substitution more explicit
             context.addVariables(parameters);
             OasDocument oasDocument = openApiSpec.getOpenApiDoc(context);
             var item = OasItem.create(operationId, oasDocument);

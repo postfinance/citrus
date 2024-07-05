@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator;
 
 import static org.citrusframework.spi.Resources.create;
 
-// TODO move to mustache File
+// TODO TAT-1291 is in api.mustache File - delete this class
 public class OpenapiPetstore {
     private static final OpenApiSpecification petstoreSpec = OpenApiSpecification.from(
             create("src/test/resources/apis/petstore.yaml")

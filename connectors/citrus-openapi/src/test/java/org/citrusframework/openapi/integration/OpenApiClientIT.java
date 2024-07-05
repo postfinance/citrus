@@ -66,10 +66,10 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
         variable("correlationIds", "1234abcd");
 
         when(openapi(petstoreSpec)
-                        .client(httpClient)
-                        .send("getPetById")
-                        .fork(true)
-                        .message()
+                .client(httpClient)
+                .send("getPetById")
+                .fork(true)
+                .message()
         );
 
         then(http().server(httpServer)
@@ -77,7 +77,7 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .get("/pet/1001")
                 .queryParam("verbose", "true")
                 .message()
-                // TODO bug? - cannot check correlationId
+                // TODO BUG? - cannot check correlationId
                 //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
                 //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
                 .header("correlationIds", "1234abcd")
@@ -106,10 +106,10 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
         );
 
         then(http().server(httpServer)
-                .receive()
-                .get("@matches('/pet/\\d+')@")
-                .message()
-                // TODO bug? - cannot check correlationId
+                        .receive()
+                        .get("@matches('/pet/\\d+')@")
+                        .message()
+                // TODO BUG? - cannot check correlationId
                 //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
                 //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
                 // .header("correlationId", "@matches('\\w+')@")
@@ -188,7 +188,7 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .receive("getPetById", HttpStatus.OK));
     }
 
-    /* TODO create issues
+    // TODO TAT-1291 create issues for Bugs
     @CitrusTest
     public void BUG_getPetById_paramsCanAlsoBeSetWithMessageBuilder() {
         variable("petId", "1001");
@@ -224,7 +224,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     }
 
     @CitrusTest
-    @Ignore
     public void BUG_should_be_possible_to_switch_content_type__to_xml() {
         variable("petId", "1001");
 
@@ -252,9 +251,9 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .client(httpClient)
                 .receive("getPetById", HttpStatus.OK)
                 .message()
-                // TODO XML bodies do not seem to work, even if there is just XML as "produces" in the spec
+                // TODO BUG XML bodies do not seem to work, even if there is just XML as "produces" in the spec
                 .body(Resources.create("classpath:org/citrusframework/openapi/petstore/pet.xml"))
-                // TODO the type/contentType statements are useless, if there is another type in the spec.
+                // TODO BUG the type/contentType statements are useless, if there is another type in the spec.
                 //      even if there are two. i.E:
                 // # this will always use JSON as type
                 // produces:
@@ -265,7 +264,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
     }
 
     @CitrusTest
-    @Ignore
     public void BUG_should_only_validate_the_presence_of_required_properties() {
         variable("petId", "1001");
 
@@ -286,7 +284,7 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .send()
                 .response(HttpStatus.OK)
                 .message()
-                // this should be valid, according to the spec-file
+                // TODO BUG this should be valid, according to the spec-file
                 .body("""
                         {
                         "category": {},
@@ -302,7 +300,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .message()
         );
     }
-    */
 
     @CitrusTest
     public void postAddPet() {
@@ -318,18 +315,18 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .post("/pet")
                 .message()
                 .body("""
-                        {
-                          "id": "@isNumber()@",
-                          "name": "@notEmpty()@",
-                          "category": {
-                            "id": "@isNumber()@",
-                            "name": "@notEmpty()@"
-                          },
-                          "photoUrls": "@notEmpty()@",
-                          "tags":  "@ignore@",
-                          "status": "@matches(sold|pending|available)@"
-                        }
-                """)
+                                {
+                                  "id": "@isNumber()@",
+                                  "name": "@notEmpty()@",
+                                  "category": {
+                                    "id": "@isNumber()@",
+                                    "name": "@notEmpty()@"
+                                  },
+                                  "photoUrls": "@notEmpty()@",
+                                  "tags":  "@ignore@",
+                                  "status": "@matches(sold|pending|available)@"
+                                }
+                        """)
                 .contentType("application/json;charset=UTF-8"));
 
         then(http().server(httpServer)
