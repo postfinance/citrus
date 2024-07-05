@@ -96,7 +96,7 @@ public class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
     }
 
     @ParameterizedTest
-    @MethodSource("executeMojoWithConfigurations")
+    @MethodSource
     public void executeMojoWithConfigurations(String configName, Exception expectedException)
             throws Exception {
 
@@ -237,10 +237,9 @@ public class TestApiGeneratorMojoIntegrationTest extends AbstractMojoTestCase {
         switch (apiConfig.getType()) {
             case REST -> text = "HttpClient httpClient";
             case SOAP -> text = "WebServiceClient wsClient";
-            default ->
-                    throw new IllegalArgumentException(String.format("No apiTye set in ApiConfig. Expected one of %s",
-                            stream(ApiType.values()).map(ApiType::toString).collect(
-                                    Collectors.joining())));
+            default -> throw new IllegalArgumentException(String.format("No apiTye set in ApiConfig. Expected one of %s",
+                stream(ApiType.values()).map(ApiType::toString).collect(
+                    Collectors.joining())));
         }
         assertThat(getContentOfFile(apiConfig, "AbstractTestRequest.java")).contains(text);
     }

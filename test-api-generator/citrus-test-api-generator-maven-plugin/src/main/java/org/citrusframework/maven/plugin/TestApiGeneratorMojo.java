@@ -22,8 +22,6 @@ import static org.citrusframework.openapi.generator.JavaCitrusCodegen.API_ENDPOI
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.API_TYPE;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.PREFIX;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.TARGET_XMLNS_NAMESPACE;
-import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
@@ -177,7 +175,6 @@ public class TestApiGeneratorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-
         for (int index = 0; index < apis.size(); index++) {
             ApiConfig apiConfig = apis.get(index);
             validateApiConfig(index, apiConfig);
@@ -222,7 +219,6 @@ public class TestApiGeneratorMojo extends AbstractMojo {
      * Replace the placeholders '%PREFIX%' and '%VERSION%' in the given text.
      */
     static String replaceDynamicVars(String text, String prefix, String version) {
-
         if (text == null) {
             return null;
         }
@@ -331,81 +327,8 @@ public class TestApiGeneratorMojo extends AbstractMojo {
         @Parameter(property = API_NAMESPACE_PROPERTY, defaultValue = DEFAULT_TARGET_NAMESPACE_TEMPLATE)
         private String targetXmlnsNamespace = DEFAULT_TARGET_NAMESPACE_TEMPLATE;
 
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public void setPrefix(String prefix) {
-            this.prefix = prefix;
-        }
-
-        public String getSource() {
-            return source;
-        }
-
-        public void setSource(String source) {
-            this.source = source;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public void setVersion(String version) {
-            this.version = version;
-        }
-
         public String qualifiedEndpoint() {
             return DEFAULT_ENDPOINT.equals(endpoint) ? getPrefix().toLowerCase() + "Endpoint" : endpoint;
-        }
-
-        public void setEndpoint(String endpoint) {
-            this.endpoint = endpoint;
-        }
-
-        public ApiType getType() {
-            return type;
-        }
-
-        public void setType(ApiType type) {
-            this.type = type;
-        }
-
-        public void setUseTags(boolean useTags) {
-            this.useTags = useTags;
-        }
-
-        public String getInvokerPackage() {
-            return invokerPackage;
-        }
-
-        public void setInvokerPackage(String invokerPackage) {
-            this.invokerPackage = invokerPackage;
-        }
-
-        public String getApiPackage() {
-            return apiPackage;
-        }
-
-        public void setApiPackage(String apiPackage) {
-            this.apiPackage = apiPackage;
-        }
-
-        public String getModelPackage() {
-            return modelPackage;
-        }
-
-        public void setModelPackage(String modelPackage) {
-            this.modelPackage = modelPackage;
-        }
-
-        public String getTargetXmlnsNamespace() {
-            return targetXmlnsNamespace;
-        }
-
-        public void setTargetXmlnsNamespace(String targetXmlnsNamespace) {
-            this.targetXmlnsNamespace = targetXmlnsNamespace;
         }
 
         Map<String, Object> toConfigOptionsProperties() {
@@ -426,8 +349,5 @@ public class TestApiGeneratorMojo extends AbstractMojo {
 
             return configOptionsProperties;
         }
-
     }
-
-
 }
