@@ -272,62 +272,6 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         }
     }
 
-    public void setApiPrefix(String apiPrefix) {
-        this.apiPrefix = apiPrefix;
-    }
-
-    public String getHttpClient() {
-        return httpClient;
-    }
-
-    public void setHttpClient(String httpClient) {
-        this.httpClient = httpClient;
-    }
-
-    public String getHttpPathPrefix() {
-        return httpPathPrefix;
-    }
-
-    public void setHttpPathPrefix(String httpPathPrefix) {
-        this.httpPathPrefix = httpPathPrefix;
-    }
-
-    public String getOpenapiSchema() {
-        return openapiSchema;
-    }
-
-    public void setOpenapiSchema(String openapiSchema) {
-        this.openapiSchema = openapiSchema;
-    }
-
-    public String getResourceFolder() {
-        return resourceFolder;
-    }
-
-    public void setResourceFolder(String resourceFolder) {
-        this.resourceFolder = resourceFolder;
-    }
-
-    public String getGeneratedSchemaFolder() {
-        return generatedSchemaFolder;
-    }
-
-    public void setGeneratedSchemaFolder(String generatedSchemaFolder) {
-        this.generatedSchemaFolder = generatedSchemaFolder;
-    }
-
-    public String getTargetXmlnsNamespace() {
-        return targetXmlnsNamespace;
-    }
-
-    public void setTargetXmlnsNamespace(String targetXmlnsNamespace) {
-        this.targetXmlnsNamespace = targetXmlnsNamespace;
-    }
-
-    public String getApiPrefix() {
-        return apiPrefix;
-    }
-
     private void addRestSupportingFiles(final String citrusFolder, String schemaFolder) {
         supportingFiles.add(new SupportingFile("schema.mustache", schemaFolder, apiPrefix.toLowerCase() + "-api.xsd"));
         supportingFiles.add(new SupportingFile("test_base.mustache", citrusFolder, apiPrefix + ABSTRACT_TEST_REQUEST_JAVA));

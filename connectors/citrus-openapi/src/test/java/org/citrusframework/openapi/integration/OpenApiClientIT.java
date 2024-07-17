@@ -77,9 +77,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                 .get("/pet/1001")
                 .queryParam("verbose", "true")
                 .message()
-                // TODO BUG? - cannot check correlationId
-                //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
-                //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
                 .header("correlationIds", "1234abcd")
                 .accept("@contains('application/json')@")
         );
@@ -109,10 +106,6 @@ public class OpenApiClientIT extends TestNGCitrusSpringSupport {
                         .receive()
                         .get("@matches('/pet/\\d+')@")
                         .message()
-                // TODO BUG? - cannot check correlationId
-                //  see: org/citrusframework/validation/DefaultMessageHeaderValidator.java:68
-                //  see: org.citrusframework.message.MessageHeaderUtils.isSpringInternalHeader
-                // .header("correlationId", "@matches('\\w+')@")
         );
 
         variable("petId", "1001");
