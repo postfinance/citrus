@@ -13,7 +13,6 @@ import org.citrusframework.openapi.generator.SpringBeanConfigurationIT.ClientCon
 import org.citrusframework.openapi.generator.rest.petstore.request.PetApi.AddPetRequest;
 import org.citrusframework.openapi.generator.rest.petstore.spring.PetStoreBeanConfiguration;
 import org.junit.jupiter.api.Test;
-import org.citrusframework.openapi.generator.SpringBeanConfigurationIT.ClientConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;

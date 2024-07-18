@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.stream.Streams;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.junit.jupiter.api.Test;
@@ -48,14 +49,14 @@ class JavaCitrusCodegenIT {
     @Test
     void noAdditionalFiles() throws IOException {
         long expectedFileCount = countFilesRecursively(
-                Path.of(getAbsoluteTestResourcePath(
-                        BASE_PACKAGE + "/JavaCitrusCodegenIT/expectedgen/rest")));
+            Path.of(getAbsoluteTestResourcePath(
+                BASE_PACKAGE + "/JavaCitrusCodegenIT/expectedgen/rest")));
         long actualFileCount = countFilesRecursively(
-                Path.of(getAbsoluteTargetDirectoryPath(
-                        "generated-test-sources/" + BASE_PACKAGE + "/rest")));
+            Path.of(getAbsoluteTargetDirectoryPath(
+                "generated-test-sources/" + BASE_PACKAGE + "/rest")));
 
         assertEquals(expectedFileCount, actualFileCount,
-                "Directories do not have the same number of files.");
+            "Directories do not have the same number of files.");
     }
 
     static Stream<Arguments> getResourcesForRest() throws IOException {
@@ -68,15 +69,15 @@ class JavaCitrusCodegenIT {
         File classFile = resource.getFile();
         String absolutePath = classFile.getAbsolutePath();
         String javaFilePath = absolutePath
-                .replace("test-classes", "generated-test-sources")
-                .replace(".class", ".java");
+            .replace("test-classes", "generated-test-sources")
+            .replace(".class", ".java");
 
         assertFileContent(new File(javaFilePath), "rest");
     }
 
     static Stream<Arguments> getResourcesForSoap() throws IOException {
         return geClassResourcesIgnoringInnerClasses(
-                BASE_PACKAGE + "/soap/bookservice");
+            BASE_PACKAGE + "/soap/bookservice");
     }
 
     @ParameterizedTest
@@ -86,24 +87,24 @@ class JavaCitrusCodegenIT {
         String absolutePath = classFile.getAbsolutePath();
 
         String javaFilePath = absolutePath
-                .replace("test-classes", "generated-test-sources")
-                .replace(".class", ".java");
+            .replace("test-classes", "generated-test-sources")
+            .replace(".class", ".java");
 
         assertFileContent(new File(javaFilePath), "soap");
     }
 
     private static Stream<Arguments> geClassResourcesIgnoringInnerClasses(String path)
-            throws IOException {
+        throws IOException {
         return Streams.of(
-                        new PathMatchingResourcePatternResolver().getResources(path + "/**/*.class"))
-                .filter(resource -> {
-                            try {
-                                return !resource.getURI().toString().contains("$");
-                            } catch (Exception e) {
-                                throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
-                            }
-                        }
-                ).map(Arguments::arguments);
+                new PathMatchingResourcePatternResolver().getResources(path + "/**/*.class"))
+            .filter(resource -> {
+                    try {
+                        return !resource.getURI().toString().contains("$");
+                    } catch (Exception e) {
+                        throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
+                    }
+                }
+            ).map(Arguments::arguments);
     }
 
     /*
