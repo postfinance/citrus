@@ -1,6 +1,11 @@
 {
-    "id": 12,
+    "id": 2002,
     "name": "Snoopy",
-    "tags": ["comic dog"],
-    "photoUrls": ["url1", "url2"]
+    "tags": [],
+    "photoUrls": [],
+    "category": {
+        "name": "a name",
+        "id": 112233
+    },
+    "status": "available"
 }
