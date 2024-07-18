@@ -73,6 +73,7 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
 
     public JavaCitrusCodegen() {
         super();
+
         // the root folder where all files are emitted
         outputFolder = "generated-code" + File.separator + "java";
 
@@ -191,8 +192,7 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         additionalProperties.put(API_ENDPOINT, httpClient);
 
         if (additionalProperties.containsKey(GENERATED_SCHEMA_FOLDER)) {
-            this.setGeneratedSchemaFolder(
-                additionalProperties.get(GENERATED_SCHEMA_FOLDER).toString());
+            this.setGeneratedSchemaFolder(additionalProperties.get(GENERATED_SCHEMA_FOLDER).toString());
         }
         additionalProperties.put(GENERATED_SCHEMA_FOLDER, generatedSchemaFolder);
 
@@ -229,17 +229,14 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         additionalProperties.put(RESOURCE_FOLDER, resourceFolder);
 
         if (additionalProperties.containsKey(TARGET_XMLNS_NAMESPACE)) {
-            this.setTargetXmlnsNamespace(
-                additionalProperties.get(TARGET_XMLNS_NAMESPACE).toString());
+            this.setTargetXmlnsNamespace(additionalProperties.get(TARGET_XMLNS_NAMESPACE).toString());
         } else {
-            this.targetXmlnsNamespace = String.format(
-                "http://www.citrusframework.org/citrus-test-schema/%s-api", apiPrefix.toLowerCase());
+            this.targetXmlnsNamespace = format("http://www.citrusframework.org/citrus-test-schema/%s-api", apiPrefix.toLowerCase());
         }
         additionalProperties.put(TARGET_XMLNS_NAMESPACE, targetXmlnsNamespace);
 
         // define different folders where the files will be emitted
-        final String invokerFolder = (sourceFolder + File.separator + invokerPackage).replace(".",
-            File.separator);
+        final String invokerFolder = (sourceFolder + File.separator + invokerPackage).replace(".", File.separator);
         final String citrusFolder = invokerFolder + File.separator + "citrus";
         final String extensionFolder = citrusFolder + File.separator + "extension";
         final String springFolder = invokerFolder + File.separator + "spring";
@@ -251,7 +248,7 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         } else if (API_TYPE_SOAP.equals(apiType)) {
             addSoapSupportingFiles(citrusFolder, schemaFolder);
         } else {
-            throw new IllegalArgumentException(String.format("Unknown API_TYPE: '%s'", apiType));
+            throw new IllegalArgumentException(format("Unknown API_TYPE: '%s'", apiType));
         }
 
         addDefaultSupportingFiles(citrusFolder, extensionFolder, springFolder);
@@ -294,5 +291,4 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         supportingFiles.add(new SupportingFile("namespace_handler.mustache", extensionFolder, apiPrefix + "NamespaceHandler.java"));
         supportingFiles.add(new SupportingFile("api-model.mustache", resourceFolder, apiPrefix.toLowerCase() + "-api-model.csv"));
     }
-
 }
