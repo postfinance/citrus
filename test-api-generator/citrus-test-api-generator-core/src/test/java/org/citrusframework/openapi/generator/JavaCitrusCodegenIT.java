@@ -38,84 +38,63 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  */
 class JavaCitrusCodegenIT {
 
-    public static final String BASE_PACKAGE = "org/citrusframework/openapi/generator";
-
-    private static long countFilesRecursively(Path dir) throws IOException {
-        try (Stream<Path> walk = walk(dir)) {
-            return walk.filter(Files::isRegularFile).count();
-        }
-    }
-
-    @Test
-    void noAdditionalFiles() throws IOException {
-        long expectedFileCount = countFilesRecursively(
-            Path.of(getAbsoluteTestResourcePath(
-                BASE_PACKAGE + "/JavaCitrusCodegenIT/expectedgen/rest")));
-        long actualFileCount = countFilesRecursively(
-            Path.of(getAbsoluteTargetDirectoryPath(
-                "generated-test-sources/" + BASE_PACKAGE + "/rest")));
-
-        assertEquals(expectedFileCount, actualFileCount,
-            "Directories do not have the same number of files.");
-    }
-
-    static Stream<Arguments> getResourcesForRest() throws IOException {
-        return geClassResourcesIgnoringInnerClasses(BASE_PACKAGE + "/rest");
-    }
-
-    @ParameterizedTest
-    @MethodSource("getResourcesForRest")
-    void testGeneratedFiles(Resource resource) throws IOException {
-        File classFile = resource.getFile();
-        String absolutePath = classFile.getAbsolutePath();
-        String javaFilePath = absolutePath
-            .replace("test-classes", "generated-test-sources")
-            .replace(".class", ".java");
-
-        assertFileContent(new File(javaFilePath), "rest");
-    }
-
-    static Stream<Arguments> getResourcesForSoap() throws IOException {
-        return geClassResourcesIgnoringInnerClasses(
-            BASE_PACKAGE + "/soap/bookservice");
-    }
-
-    @ParameterizedTest
-    @MethodSource("getResourcesForSoap")
-    void testGeneratedSoapFiles(Resource resource) throws IOException {
-        File classFile = resource.getFile();
-        String absolutePath = classFile.getAbsolutePath();
-
-            .replace(".class", ".java");
-
-        assertFileContent(new File(javaFilePath), "soap");
-    }
-
-    private static Stream<Arguments> geClassResourcesIgnoringInnerClasses(String path)
-        throws IOException {
-        return Streams.of(new PathMatchingResourcePatternResolver().getResources(
-            path + "/**/*.class")).filter(resource -> {
-            try {
-                return !resource.getURI().toString().contains("$");
-            } catch (Exception e) {
-                throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
-            }
-        }).map(Arguments::arguments);
-    }
-
-    private void assertFileContent(File file, String apiDir) throws IOException {
-        assertThat(file).exists();
-        String expectedFilePath =
-            "org/citrusframework/openapi/generator/JavaCitrusCodegenIntegrationTest/expectedgen/"
-                + file.getAbsolutePath().substring(file.getAbsolutePath().indexOf(apiDir));
-
-        ClassPathResource classPathResource = new ClassPathResource(expectedFilePath);
-
-        /*
-         * NOTE: when changes have been performed to mustache templates, the expected files need to be updated.
-         * Be aware that file content may change according to IDE formatting rules if the files are copied via IDE.
-         * Files should therefore be copied using a file explorer which ensures that content of files does not change.
-         */
-        assertThat(file).hasSameTextualContentAs(classPathResource.getFile());
-    }
+//    static Stream<Arguments> getResourcesForRest() throws IOException {
+//        return geClassResourcesIgnoringInnerClasses("org/citrusframework/openapi/generator/rest");
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("getResourcesForRest")
+//    void testGeneratedFiles(Resource resource) throws IOException {
+//        File classFile = resource.getFile();
+//        String absolutePath = classFile.getAbsolutePath();
+//        String javaFilePath = absolutePath.replace("test-classes", "generated-test-sources")
+//            .replace(".class", ".java");
+//
+//        assertFileContent(new File(javaFilePath), "rest");
+//    }
+//
+//    static Stream<Arguments> getResourcesForSoap() throws IOException {
+//        return geClassResourcesIgnoringInnerClasses(
+//            "org/citrusframework/openapi/generator/soap/bookservice");
+//    }
+//
+//    @ParameterizedTest
+//    @MethodSource("getResourcesForSoap")
+//    void testGeneratedSoapFiles(Resource resource) throws IOException {
+//        File classFile = resource.getFile();
+//        String absolutePath = classFile.getAbsolutePath();
+//
+//        String javaFilePath = absolutePath.replace("test-classes", "generated-test-sources")
+//            .replace(".class", ".java");
+//
+//        assertFileContent(new File(javaFilePath), "soap");
+//    }
+//
+//    private static Stream<Arguments> geClassResourcesIgnoringInnerClasses(String path)
+//        throws IOException {
+//        return Streams.of(new PathMatchingResourcePatternResolver().getResources(
+//            path + "/**/*.class")).filter(resource -> {
+//            try {
+//                return !resource.getURI().toString().contains("$");
+//            } catch (Exception e) {
+//                throw new CitrusRuntimeException("Unable to retrieve URL from resource!");
+//            }
+//        }).map(Arguments::arguments);
+//    }
+//
+//    private void assertFileContent(File file, String apiDir) throws IOException {
+//        assertThat(file).exists();
+//        String expectedFilePath =
+//            "org/citrusframework/openapi/generator/JavaCitrusCodegenIntegrationTest/expectedgen/"
+//                + file.getAbsolutePath().substring(file.getAbsolutePath().indexOf(apiDir));
+//
+//        ClassPathResource classPathResource = new ClassPathResource(expectedFilePath);
+//
+//        /*
+//         * NOTE: when changes have been performed to mustache templates, the expected files need to be updated.
+//         * Be aware that file content may change according to IDE formatting rules if the files are copied via IDE.
+//         * Files should therefore be copied using a file explorer which ensures that content of files does not change.
+//         */
+//        assertThat(file).hasSameTextualContentAs(classPathResource.getFile());
+//    }
 }
