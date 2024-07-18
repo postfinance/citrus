@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+    <id>${petId}</id>
+    <name>citrus:randomEnumValue('hasso','cutie','fluffy')</name>
+    <category>
+        <id>${petId}</id>
+        <name>citrus:randomEnumValue('dog', 'cat', 'fish')</name>
+    </category>
+    <photoUrls>http://localhost:8080/photos/${petId}</photoUrls>
+    <tags>
+        <id>${petId}</id>
+        <name>generated</name>
+    </tags>
+    <status>citrus:randomEnumValue('available', 'pending', 'sold')</status>
+</root>

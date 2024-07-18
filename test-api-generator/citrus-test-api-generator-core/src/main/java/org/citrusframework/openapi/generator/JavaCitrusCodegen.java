@@ -291,4 +291,5 @@ public class JavaCitrusCodegen extends AbstractJavaCodegen {
         supportingFiles.add(new SupportingFile("namespace_handler.mustache", extensionFolder, apiPrefix + "NamespaceHandler.java"));
         supportingFiles.add(new SupportingFile("api-model.mustache", resourceFolder, apiPrefix.toLowerCase() + "-api-model.csv"));
     }
+
 }

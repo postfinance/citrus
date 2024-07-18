@@ -36,12 +36,17 @@
     </build>
 
     <dependencies>
+
         <dependency>
             <groupId>org.citrusframework</groupId>
             <artifactId>citrus-test-api-generator-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.openapitools</groupId>
+            <artifactId>openapi-generator</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>

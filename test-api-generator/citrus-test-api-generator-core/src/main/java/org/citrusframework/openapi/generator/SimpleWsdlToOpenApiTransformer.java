@@ -86,6 +86,9 @@ public class SimpleWsdlToOpenApiTransformer {
 
     /**
      * Performs the actual transformation from bindings into OpenApi operations.
+     *
+     * @param bindings
+     * @return
      */
     private OpenAPI transformToOpenApi(Map<?, ?> bindings) {
         OpenAPI openAPI = new OpenAPI();

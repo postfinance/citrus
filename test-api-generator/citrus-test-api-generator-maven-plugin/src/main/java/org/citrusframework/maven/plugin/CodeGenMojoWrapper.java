@@ -18,7 +18,9 @@ package org.citrusframework.maven.plugin;
 
 import static java.lang.String.format;
 import static org.citrusframework.openapi.generator.JavaCitrusCodegen.CODEGEN_NAME;
+import static java.lang.String.format;
 
+import org.citrusframework.openapi.generator.JavaCitrusCodegen;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,4 +98,5 @@ public class CodeGenMojoWrapper extends CodeGenMojo {
                 format("Could not reflectively set field value '%s' for field '%s'", fieldValue, fieldName));
         }
     }
+
 }
