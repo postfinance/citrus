@@ -197,7 +197,7 @@
     <ascii-table-version>1.8.0</ascii-table-version>
     <assertj.version>3.27.3</assertj.version>
     <awaitility.version>4.3.0</awaitility.version>
-    <aws-java-sdk2.version>2.34.0</aws-java-sdk2.version>
+    <aws-java-sdk2.version>2.34.2</aws-java-sdk2.version>
     <bouncycastle.version>1.82</bouncycastle.version>
     <byte.buddy.version>1.17.7</byte.buddy.version>
     <commons.dbcp2.version>2.13.0</commons.dbcp2.version>
@@ -220,11 +220,12 @@
     <jackson.version>2.20.0</jackson.version>
     <jackson.version.short>2.20</jackson.version.short>
     <jackson-databind-nullable.version>0.2.6</jackson-databind-nullable.version>
-    <jakarta.activation.api.version>2.1.3</jakarta.activation.api.version>
-    <jakarta.activation.version>2.0.1</jakarta.activation.version>
+    <angus-activation.version>2.0.3</angus-activation.version>
+    <jakarta-activation.version>2.0.1</jakarta-activation.version>
+    <jakarta-activation-api.version>2.1.3</jakarta-activation-api.version>
     <jakarta.annotation-api.version>3.0.0</jakarta.annotation-api.version>
     <jakarta.jms-api.version>3.1.0</jakarta.jms-api.version>
-    <jakarta.mail.version>2.0.4</jakarta.mail.version>
+    <jakarta-mail.version>2.1.5</jakarta-mail.version>
     <jakarta.servlet-api.version>6.1.0</jakarta.servlet-api.version>
     <jakarta.validation.version>3.1.1</jakarta.validation.version>
     <jakarta.websocket-api.version>2.2.0</jakarta.websocket-api.version>
@@ -232,7 +233,7 @@
     <jakarta.xml.soap-api.version>3.0.2</jakarta.xml.soap-api.version>
     <jansi.version>2.4.2</jansi.version>
     <javapoet.version>1.13.0</javapoet.version>
-    <jaxb.version>4.0.5</jaxb.version>
+    <jaxb.version>4.0.6</jaxb.version>
     <jetty.version>12.0.27</jetty.version>
     <jetty.websocket-api.version>2.0.0</jetty.websocket-api.version>
     <jsch.version>0.1.55</jsch.version>
@@ -270,7 +271,7 @@
     <sshd.version>2.15.0</sshd.version>
     <swagger.version>2.2.37</swagger.version>
     <swagger.parser.version>2.1.22</swagger.parser.version>
-    <swagger-request-validator.version>2.45.1</swagger-request-validator.version>
+    <swagger-request-validator.version>2.46.0</swagger-request-validator.version>
     <testcontainers.version>1.21.3</testcontainers.version>
     <testng.version>7.11.0</testng.version>
     <!-- bound to https://mvnrepository.com/artifact/io.fabric8/kubernetes-httpclient-vertx/${k8s.client.version} -->
@@ -306,12 +307,12 @@
       <dependency>
         <groupId>jakarta.activation</groupId>
         <artifactId>jakarta.activation-api</artifactId>
-        <version>${jakarta.activation.api.version}</version>
+        <version>${jakarta-activation-api.version}</version>
       </dependency>
       <dependency>
         <groupId>com.sun.activation</groupId>
         <artifactId>jakarta.activation</artifactId>
-        <version>${jakarta.activation.version}</version>
+        <version>${jakarta-activation.version}</version>
       </dependency>
 
       <dependency>
@@ -861,13 +862,18 @@
         <version>${greenmail.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.eclipse.angus</groupId>
-        <artifactId>jakarta.mail</artifactId>
-        <version>${jakarta.mail.version}</version>
+        <groupId>jakarta.mail</groupId>
+        <artifactId>jakarta.mail-api</artifactId>
+        <version>${jakarta-mail.version}</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.angus</groupId>
         <artifactId>angus-activation</artifactId>
+        <version>${angus-activation.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.angus</groupId>
+        <artifactId>angus-mail</artifactId>
         <version>${angus-mail.version}</version>
       </dependency>
 
@@ -1649,7 +1655,7 @@
             <dependency>
               <groupId>jakarta.activation</groupId>
               <artifactId>jakarta.activation-api</artifactId>
-              <version>${jakarta.activation.api.version}</version>
+              <version>${jakarta-activation-api.version}</version>
             </dependency>
             <dependency>
               <groupId>jakarta.xml.bind</groupId>

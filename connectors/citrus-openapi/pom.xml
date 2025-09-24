@@ -48,7 +48,32 @@
     <dependency>
       <groupId>com.atlassian.oai</groupId>
       <artifactId>swagger-request-validator-core</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.mail</groupId>
+          <artifactId>mailapi</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
+    <!--
+        force com.sun.mail:mailapi to v2 major.
+        citrusframework/citrus-simulator won't build otherwise.
+    -->
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>mailapi</artifactId>
+      <version>2.0.2</version>
+    </dependency>
+    <!--
+        on the other hand, include mail API (and API only!) so om.atlassian.oai:swagger-request-validator-core builds correctly.
+    -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>javax.mail-api</artifactId>
+      <version>1.6.2</version>
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
