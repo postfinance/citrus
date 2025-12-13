@@ -16,11 +16,12 @@
 
 package org.citrusframework.config.xml;
 
-import org.citrusframework.config.util.BeanDefinitionParserUtils;
 import org.citrusframework.container.RepeatOnErrorUntilTrue;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
+
+import java.time.Duration;
 
 /**
  * Bean definition parser for repeat-on-error-until-true container in test case.
@@ -30,11 +31,7 @@ public class RepeatOnErrorUntilTrueParser extends AbstractIterationTestActionPar
 
     @Override
 	public BeanDefinitionBuilder parseComponent(Element element, ParserContext parserContext) {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(RepeatOnErrorUntilTrueFactoryBean.class);
-
-        BeanDefinitionParserUtils.setPropertyValue(builder, element.getAttribute("auto-sleep"), "autoSleep");
-
-        return builder;
+        return BeanDefinitionBuilder.rootBeanDefinition(RepeatOnErrorUntilTrueFactoryBean.class);
     }
 
     /**
@@ -48,7 +45,7 @@ public class RepeatOnErrorUntilTrueParser extends AbstractIterationTestActionPar
          * Setter for auto sleep time (in milliseconds).
          * @param autoSleep the auto sleep time in between repeats in milliseconds
          */
-        public void setAutoSleep(Long autoSleep) {
+        public void setAutoSleep(Duration autoSleep) {
             this.builder.autoSleep(autoSleep);
         }
 

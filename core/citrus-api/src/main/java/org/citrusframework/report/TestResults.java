@@ -16,16 +16,12 @@
 
 package org.citrusframework.report;
 
+import org.citrusframework.TestResult;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.citrusframework.TestResult;
+import java.util.*;
 
 import static java.util.Collections.synchronizedSet;
 
@@ -96,15 +92,6 @@ public class TestResults {
         return count;
     }
 
-    /**
-     * Calculates percentage of success tests.
-     * @deprecated will return {@code double} value in the future!
-     */
-    @Deprecated
-    public String getSuccessPercentage() {
-        return getSuccessPercentageFormatted();
-    }
-
     public String getSuccessPercentageFormatted() {
         return results.isEmpty() || getSuccess() == 0 ? ZERO_PERCENTAGE : getNewDecimalFormat().format((double) getSuccess() / (results.size()) * 100);
     }
@@ -126,16 +113,6 @@ public class TestResults {
         return count;
     }
 
-    /**
-     * Calculates percentage of failed tests.
-     *
-     * @deprecated will return {@code double} value in the future!
-     */
-    @Deprecated
-    public String getFailedPercentage() {
-        return getFailedPercentageFormatted();
-    }
-
     public String getFailedPercentageFormatted() {
         return results.isEmpty() || getFailed() == 0 ? ZERO_PERCENTAGE : getNewDecimalFormat().format((double) getFailed() / (results.size()) * 100);
     }
@@ -155,16 +132,6 @@ public class TestResults {
         }
 
         return count;
-    }
-
-    /**
-     * Calculates percentage of skipped tests.
-     *
-     * @deprecated will return {@code double} value in the future!
-     */
-    @Deprecated
-    public String getSkippedPercentage() {
-        return getSkippedPercentageFormatted();
     }
 
     public String getSkippedPercentageFormatted() {

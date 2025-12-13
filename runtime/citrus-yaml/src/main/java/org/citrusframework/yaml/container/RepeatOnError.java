@@ -16,14 +16,15 @@
 
 package org.citrusframework.yaml.container;
 
-import java.util.List;
-
 import org.citrusframework.TestActionBuilder;
 import org.citrusframework.container.RepeatOnErrorUntilTrue;
 import org.citrusframework.spi.ReferenceResolver;
 import org.citrusframework.spi.ReferenceResolverAware;
 import org.citrusframework.yaml.SchemaProperty;
 import org.citrusframework.yaml.TestActions;
+
+import java.time.Duration;
+import java.util.List;
 
 public class RepeatOnError implements TestActionBuilder<RepeatOnErrorUntilTrue>, ReferenceResolverAware {
 
@@ -56,7 +57,7 @@ public class RepeatOnError implements TestActionBuilder<RepeatOnErrorUntilTrue>,
 
     @SchemaProperty(description = "Automatically sleep the time in milliseconds with each attempt.")
     public void setAutoSleep(long milliseconds) {
-        builder.autoSleep(milliseconds);
+        builder.autoSleep(Duration.ofMillis(milliseconds));
     }
 
     @SchemaProperty(advanced = true, description = "Test variable holding the current iteration index.")

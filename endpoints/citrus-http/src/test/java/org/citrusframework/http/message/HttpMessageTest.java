@@ -253,13 +253,13 @@ public class HttpMessageTest {
     @Test
     public void testStatusCodeObjectIsPreserved() {
         //GIVEN
-        httpMessage.header(HttpMessageHeaders.HTTP_STATUS_CODE, HttpStatus.I_AM_A_TEAPOT);
+        httpMessage.header(HttpMessageHeaders.HTTP_STATUS_CODE, HttpStatus.GONE);
 
         //WHEN
         final HttpStatusCode statusCode = httpMessage.getStatusCode();
 
         //THEN
-        assertEquals(statusCode, HttpStatus.I_AM_A_TEAPOT);
+        assertEquals(statusCode, HttpStatus.GONE);
     }
 
     @Test

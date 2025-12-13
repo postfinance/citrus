@@ -24,11 +24,14 @@ import org.citrusframework.actions.EchoAction;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+
 import static org.citrusframework.container.HamcrestConditionExpression.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.testng.Assert.assertEquals;
 
 public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport implements TestActionSupport {
+
     @Test
     public void testRepeatOnErrorBuilderWithHamcrestConditionExpression() {
         DefaultTestCaseRunner builder = new DefaultTestCaseRunner(context);
@@ -56,7 +59,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport implemen
 
         RepeatOnErrorUntilTrue container = (RepeatOnErrorUntilTrue)test.getActions().get(0);
         assertEquals(container.getActionCount(), 3);
-        assertEquals(container.getAutoSleep(), Long.valueOf(250L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(250L));
         assertEquals(container.getCondition(), "i gt 5");
         assertEquals(container.getStart(), 1);
         assertEquals(container.getIndexName(), "i");
@@ -64,7 +67,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport implemen
 
         container = (RepeatOnErrorUntilTrue)test.getActions().get(1);
         assertEquals(container.getActionCount(), 1);
-        assertEquals(container.getAutoSleep(), Long.valueOf(200L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(200L));
         assertEquals(container.getStart(), 2);
         assertEquals(container.getIndexName(), "k");
         assertEquals(container.getTestAction(0).getClass(), EchoAction.class);

@@ -27,6 +27,7 @@ on:
   push:
     branches:
       - main
+      - fix/spring-7-support
     paths-ignore:
       - '**.adoc'
       - '**.md'

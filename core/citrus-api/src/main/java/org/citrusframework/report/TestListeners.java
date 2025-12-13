@@ -16,10 +16,10 @@
 
 package org.citrusframework.report;
 
+import org.citrusframework.TestCase;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.citrusframework.TestCase;
 
 /**
  * Class that spreads test events to all available test listeners
@@ -34,16 +34,6 @@ public class TestListeners implements TestListenerAware {
     public void onTestFailure(TestCase test, Throwable cause) {
         for (TestListener listener : testListeners) {
             listener.onTestFailure(test, cause);
-        }
-    }
-
-    /**
-     * @deprecated use on {@link #onTestExecutionEnd(TestCase)}
-     */
-    @Deprecated(forRemoval = true)
-    public void onTestFinish(TestCase test) {
-        for (TestListener listener : testListeners) {
-            listener.onTestFinish(test);
         }
     }
 

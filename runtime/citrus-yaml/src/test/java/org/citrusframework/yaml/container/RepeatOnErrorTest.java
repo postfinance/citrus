@@ -25,6 +25,8 @@ import org.citrusframework.yaml.actions.AbstractYamlActionTest;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+
 public class RepeatOnErrorTest extends AbstractYamlActionTest {
 
     @Test
@@ -44,7 +46,7 @@ public class RepeatOnErrorTest extends AbstractYamlActionTest {
         Assert.assertEquals(action.getCondition(), "i > 3");
         Assert.assertEquals(action.getIndexName(), "i");
         Assert.assertEquals(action.getStart(), 1);
-        Assert.assertEquals(action.getAutoSleep(), Long.valueOf(1000L));
+        Assert.assertEquals(action.getAutoSleepDuration(), Duration.ofMillis(1000L));
         Assert.assertEquals(action.getActionCount(), 1);
         Assert.assertEquals(action.getTestAction(0).getClass(), EchoAction.class);
 
@@ -52,7 +54,7 @@ public class RepeatOnErrorTest extends AbstractYamlActionTest {
         Assert.assertEquals(action.getCondition(), "index >= 2");
         Assert.assertEquals(action.getIndexName(), "index");
         Assert.assertEquals(action.getStart(), 1);
-        Assert.assertEquals(action.getAutoSleep(), Long.valueOf(1000L));
+        Assert.assertEquals(action.getAutoSleepDuration(), Duration.ofMillis(1000L));
         Assert.assertEquals(action.getActionCount(), 1);
         Assert.assertEquals(action.getTestAction(0).getClass(), EchoAction.class);
 
@@ -60,7 +62,7 @@ public class RepeatOnErrorTest extends AbstractYamlActionTest {
         Assert.assertEquals(action.getCondition(), "i >= 10");
         Assert.assertEquals(action.getIndexName(), "i");
         Assert.assertEquals(action.getStart(), 1);
-        Assert.assertEquals(action.getAutoSleep(), Long.valueOf(500L));
+        Assert.assertEquals(action.getAutoSleepDuration(), Duration.ofMillis(500L));
         Assert.assertEquals(action.getActionCount(), 2);
         Assert.assertEquals(action.getTestAction(0).getClass(), EchoAction.class);
         Assert.assertEquals(action.getTestAction(1).getClass(), EchoAction.class);
@@ -69,7 +71,7 @@ public class RepeatOnErrorTest extends AbstractYamlActionTest {
         Assert.assertEquals(action.getCondition(), "i >= 5");
         Assert.assertEquals(action.getIndexName(), "i");
         Assert.assertEquals(action.getStart(), 1);
-        Assert.assertEquals(action.getAutoSleep(), Long.valueOf(250L));
+        Assert.assertEquals(action.getAutoSleepDuration(), Duration.ofMillis(250L));
         Assert.assertEquals(action.getActionCount(), 1);
         Assert.assertEquals(action.getTestAction(0).getClass(), EchoAction.class);
     }

@@ -22,6 +22,13 @@ import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.testng.spring.TestNGCitrusSpringSupport;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+
+import static org.citrusframework.actions.EchoAction.Builder.echo;
+import static org.citrusframework.actions.FailAction.Builder.fail;
+import static org.citrusframework.container.Assert.Builder.assertException;
+import static org.citrusframework.container.RepeatOnErrorUntilTrue.Builder.repeatOnError;
+
 @Test
 public class RepeatOnErrorJavaIT extends TestNGCitrusSpringSupport implements TestActionSupport {
 
@@ -31,12 +38,12 @@ public class RepeatOnErrorJavaIT extends TestNGCitrusSpringSupport implements Te
 
         run(repeatOnError().until("i = 5").index("i").actions(echo("${i}. Versuch: ${message}")));
 
-        run(repeatOnError().until("i = 5").index("i").autoSleep(500).actions(echo("${i}. Versuch: ${message}")));
+        run(repeatOnError().until("i = 5").index("i").autoSleep(Duration.ofMillis(500)).actions(echo("${i}. Versuch: ${message}")));
 
         run(assertException()
             .exception(CitrusRuntimeException.class)
             .when(repeatOnError()
-                .until("i = 3").index("i").autoSleep(200)
+                .until("i = 3").index("i").autoSleep(Duration.ofMillis(200))
                 .actions(echo("${i}. Versuch: ${message}"), fail(""))
         ));
 

@@ -36,7 +36,7 @@ public class RepeatOnErrorUntilTrueParserTest extends AbstractActionParserTest<R
         assertEquals(action.getCondition(), "i gt 3");
         assertEquals(action.getIndexName(), "i");
         assertEquals(action.getStart(), 1);
-        assertEquals(action.getAutoSleep(), Long.valueOf(1000L));
+        assertEquals(action.getAutoSleepDuration(),Duration.ofMillis(1000L));
         assertEquals(action.getActionCount(), 1);
         assertNull(action.getTimeout());
 
@@ -44,7 +44,7 @@ public class RepeatOnErrorUntilTrueParserTest extends AbstractActionParserTest<R
         assertEquals(action.getCondition(), "index gt= 2");
         assertEquals(action.getIndexName(), "index");
         assertEquals(action.getStart(), 1);
-        assertEquals(action.getAutoSleep(), Long.valueOf(1000L));
+        assertEquals(action.getAutoSleepDuration(),Duration.ofMillis(1000L));
         assertEquals(action.getActionCount(), 1);
         assertNull(action.getTimeout());
 
@@ -52,7 +52,7 @@ public class RepeatOnErrorUntilTrueParserTest extends AbstractActionParserTest<R
         assertEquals(action.getCondition(), "i gt= 10");
         assertEquals(action.getIndexName(), "i");
         assertEquals(action.getStart(), 1);
-        assertEquals(action.getAutoSleep(), Long.valueOf(500L));
+        assertEquals(action.getAutoSleepDuration(),Duration.ofMillis(1000L));
         assertEquals(action.getActionCount(), 2);
         assertNull(action.getTimeout());
 
@@ -60,7 +60,7 @@ public class RepeatOnErrorUntilTrueParserTest extends AbstractActionParserTest<R
         assertEquals(action.getCondition(), "i gt= 5");
         assertEquals(action.getIndexName(), "i");
         assertEquals(action.getStart(), 1);
-        assertEquals(action.getAutoSleep(), Long.valueOf(250L));
+        assertEquals(action.getAutoSleepDuration(),Duration.ofMillis(1000L));
         assertEquals(action.getActionCount(), 1);
         assertEquals(action.getTimeout(), Duration.ofSeconds(1));
     }

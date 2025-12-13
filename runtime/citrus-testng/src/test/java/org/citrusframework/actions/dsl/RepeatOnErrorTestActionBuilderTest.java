@@ -24,6 +24,11 @@ import org.citrusframework.container.RepeatOnErrorUntilTrue;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.time.Duration;
+
+import static org.citrusframework.actions.EchoAction.Builder.echo;
+import static org.citrusframework.actions.SleepAction.Builder.sleep;
+import static org.citrusframework.container.RepeatOnErrorUntilTrue.Builder.repeatOnError;
 import static org.testng.Assert.assertEquals;
 
 public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
@@ -32,11 +37,11 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
         DefaultTestCaseRunner builder = new DefaultTestCaseRunner(context);
         builder.variable("var", "foo");
 
-        builder.$(repeatOnError().autoSleep(250)
+        builder.$(repeatOnError().autoSleep(Duration.ofMillis(250))
                         .until("i gt 5")
                 .actions(echo("${var}"), sleep().milliseconds(50), echo("${var}")));
 
-        builder.$(repeatOnError().autoSleep(200)
+        builder.$(repeatOnError().autoSleep(Duration.ofMillis(200))
                         .index("k")
                         .startsWith(2)
                         .until("k gt= 5")
@@ -54,7 +59,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
 
         RepeatOnErrorUntilTrue container = (RepeatOnErrorUntilTrue)test.getActions().get(0);
         assertEquals(container.getActionCount(), 3);
-        assertEquals(container.getAutoSleep(), Long.valueOf(250L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(250));
         assertEquals(container.getCondition(), "i gt 5");
         assertEquals(container.getStart(), 1);
         assertEquals(container.getIndexName(), "i");
@@ -62,7 +67,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
 
         container = (RepeatOnErrorUntilTrue)test.getActions().get(1);
         assertEquals(container.getActionCount(), 1);
-        assertEquals(container.getAutoSleep(), Long.valueOf(200L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(200));
         assertEquals(container.getCondition(), "k gt= 5");
         assertEquals(container.getStart(), 2);
         assertEquals(container.getIndexName(), "k");
@@ -74,11 +79,11 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
         DefaultTestCaseRunner builder = new DefaultTestCaseRunner(context);
         builder.variable("var", "foo");
 
-        builder.$(repeatOnError().autoSleep(250)
+        builder.$(repeatOnError().autoSleep(Duration.ofMillis(250))
                         .until("i gt 5")
                 .actions(echo("${var}"), sleep().milliseconds(50), echo("${var}")));
 
-        builder.$(repeatOnError().autoSleep(200)
+        builder.$(repeatOnError().autoSleep(Duration.ofMillis(200))
                         .index("k")
                         .startsWith(2)
                         .until((index, context) -> index >= 5)
@@ -96,7 +101,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
 
         RepeatOnErrorUntilTrue container = (RepeatOnErrorUntilTrue)test.getActions().get(0);
         assertEquals(container.getActionCount(), 3);
-        assertEquals(container.getAutoSleep(), Long.valueOf(250L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(250));
         assertEquals(container.getCondition(), "i gt 5");
         assertEquals(container.getStart(), 1);
         assertEquals(container.getIndexName(), "i");
@@ -104,7 +109,7 @@ public class RepeatOnErrorTestActionBuilderTest extends UnitTestSupport {
 
         container = (RepeatOnErrorUntilTrue)test.getActions().get(1);
         assertEquals(container.getActionCount(), 1);
-        assertEquals(container.getAutoSleep(), Long.valueOf(200L));
+        assertEquals(container.getAutoSleepDuration(), Duration.ofMillis(200));
         assertEquals(container.getStart(), 2);
         assertEquals(container.getIndexName(), "k");
         assertEquals(container.getTestAction(0).getClass(), EchoAction.class);

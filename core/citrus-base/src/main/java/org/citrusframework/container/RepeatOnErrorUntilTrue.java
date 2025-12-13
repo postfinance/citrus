@@ -16,13 +16,13 @@
 
 package org.citrusframework.container;
 
-import java.time.Duration;
-
 import org.citrusframework.AbstractIteratingContainerBuilder;
 import org.citrusframework.context.TestContext;
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 
 /**
  * Looping test container iterating the nested test actions in case an error occurred in one
@@ -89,17 +89,6 @@ public class RepeatOnErrorUntilTrue extends AbstractIteratingActionContainer {
 
             logger.info("Returning after {}", autoSleep);
         }
-    }
-
-    /**
-     * Gets the duration this action sleeps in milliseconds.
-     *
-     * @return the autoSleep
-     * @deprecated use {@link RepeatOnErrorUntilTrue#getAutoSleepDuration()} instead
-     */
-    @Deprecated(forRemoval = true)
-    public Long getAutoSleep() {
-        return autoSleep.toMillis();
     }
 
     /**

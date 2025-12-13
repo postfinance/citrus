@@ -16,12 +16,12 @@
 
 package org.citrusframework.report;
 
-import java.io.IOException;
-import java.util.Properties;
-
 import org.citrusframework.exceptions.CitrusRuntimeException;
 import org.citrusframework.util.FileUtils;
 import org.citrusframework.util.PropertyUtils;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Reporter creates a summary report as file.
@@ -45,11 +45,11 @@ public class SummaryReporter extends AbstractOutputFileReporter {
             Properties reportProps = new Properties();
             reportProps.put("test.cnt", Integer.toString(testResults.getSize()));
             reportProps.put("skipped.test.cnt", Integer.toString(testResults.getSkipped()));
-            reportProps.put("skipped.test.pct", testResults.getSkippedPercentage());
+            reportProps.put("skipped.test.pct", testResults.getSkippedPercentageFormatted());
             reportProps.put("failed.test.cnt", Integer.toString(testResults.getFailed()));
-            reportProps.put("failed.test.pct", testResults.getFailedPercentage());
+            reportProps.put("failed.test.pct", testResults.getFailedPercentageFormatted());
             reportProps.put("success.test.cnt", Integer.toString(testResults.getSuccess()));
-            reportProps.put("success.test.pct", testResults.getSuccessPercentage());
+            reportProps.put("success.test.pct", testResults.getSuccessPercentageFormatted());
             return PropertyUtils.replacePropertiesInString(FileUtils.readToString(FileUtils.getFileResource(reportTemplate)), reportProps);
         } catch (IOException e) {
             throw new CitrusRuntimeException("Failed to generate summary test report", e);

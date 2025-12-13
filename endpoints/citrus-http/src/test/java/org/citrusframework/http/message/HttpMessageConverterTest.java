@@ -374,7 +374,7 @@ public class HttpMessageConverterTest {
     @Test
     public void testHttpEntityDefaultMessageBodyIsSetOnInbound() {
         // GIVEN
-        final HttpEntity<String> httpEntity = new HttpEntity<>(null);
+        final HttpEntity<String> httpEntity = new HttpEntity<>((String) null);
 
         // WHEN
         final HttpMessage httpMessage = messageConverter.convertInbound(httpEntity, endpointConfiguration, testContext);
@@ -426,7 +426,7 @@ public class HttpMessageConverterTest {
     @Test
     public void testCustomStatusCodeIsSetOnInbound() {
         // GIVEN
-        final ResponseEntity<?> responseEntity = new ResponseEntity<>(null, null, 555);
+        final ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatusCode.valueOf(555));
 
         // WHEN
         final HttpMessage httpMessage = messageConverter.convertInbound(responseEntity, endpointConfiguration, testContext);

@@ -17,13 +17,21 @@
 package org.citrusframework.http.message;
 
 import org.mockito.Mockito;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpOutputMessage;
+import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Random;
 import java.util.function.Consumer;
 
@@ -70,7 +78,6 @@ public class DelegatingHttpEntityMessageConverterTest {
         return new Object[][] {
                 new Object[] { new ByteArrayInputStream("Hello Citrus!".getBytes()), "Hello Citrus!", MediaType.TEXT_PLAIN },
                 new Object[] { new ByteArrayInputStream("{ \"message\": \"Hello Citrus!\" }".getBytes()), "{ \"message\": \"Hello Citrus!\" }", MediaType.APPLICATION_JSON },
-                new Object[] { new ByteArrayInputStream("{ \"message\": \"Hello Citrus!\" }".getBytes()), "{ \"message\": \"Hello Citrus!\" }", MediaType.APPLICATION_JSON_UTF8 },
                 new Object[] { new ByteArrayInputStream("<message>Hello Citrus!</message>".getBytes()), "<message>Hello Citrus!</message>", MediaType.APPLICATION_XML },
                 new Object[] { new ByteArrayInputStream("message=Hello+Citrus%21&user=Leonard".getBytes()), formData, MediaType.APPLICATION_FORM_URLENCODED },
                 new Object[] { new ByteArrayInputStream(pdfData), pdfData, MediaType.APPLICATION_PDF },
@@ -98,11 +105,10 @@ public class DelegatingHttpEntityMessageConverterTest {
     @DataProvider
     public Object[][] writeProvider() {
         return new Object[][] {
-                new Object[] { "Hello Citrus!", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(new String(outStream.toByteArray()), "Hello Citrus!"), MediaType.TEXT_PLAIN },
-                new Object[] { "{ \"message\": \"Hello Citrus!\" }", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(new String(outStream.toByteArray()), "{ \"message\": \"Hello Citrus!\" }"), MediaType.APPLICATION_JSON },
-                new Object[] { "{ \"message\": \"Hello Citrus!\" }", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(new String(outStream.toByteArray()), "{ \"message\": \"Hello Citrus!\" }"), MediaType.APPLICATION_JSON_UTF8 },
-                new Object[] { "<message>Hello Citrus!</message>", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(new String(outStream.toByteArray()), "<message>Hello Citrus!</message>"), MediaType.APPLICATION_XML },
-                new Object[] { formData, (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(new String(outStream.toByteArray()), "message=Hello+Citrus%21&user=Leonard"), MediaType.APPLICATION_FORM_URLENCODED },
+                new Object[] { "Hello Citrus!", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toString(), "Hello Citrus!"), MediaType.TEXT_PLAIN },
+                new Object[] { "{ \"message\": \"Hello Citrus!\" }", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toString(), "{ \"message\": \"Hello Citrus!\" }"), MediaType.APPLICATION_JSON },
+                new Object[] { "<message>Hello Citrus!</message>", (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toString(), "<message>Hello Citrus!</message>"), MediaType.APPLICATION_XML },
+                new Object[] { formData, (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toString(), "message=Hello+Citrus%21&user=Leonard"), MediaType.APPLICATION_FORM_URLENCODED },
                 new Object[] { pdfData, (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toByteArray(), pdfData), MediaType.APPLICATION_PDF },
                 new Object[] { imageData, (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toByteArray(), imageData), MediaType.APPLICATION_OCTET_STREAM },
                 new Object[] { imageData, (Consumer<ByteArrayOutputStream>) outStream -> Assert.assertEquals(outStream.toByteArray(), imageData), MediaType.IMAGE_PNG }

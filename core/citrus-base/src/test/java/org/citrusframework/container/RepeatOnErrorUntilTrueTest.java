@@ -51,23 +51,7 @@ public class RepeatOnErrorUntilTrueTest extends UnitTestSupport {
     }
 
     @Test
-    public void buildWithLongApi() {
-        var autoSleepMillis = 5L;
-
-        RepeatOnErrorUntilTrue repeat = new RepeatOnErrorUntilTrue.Builder()
-                .autoSleep(autoSleepMillis)
-                .build();
-
-        assertThat(repeat)
-                .satisfies(
-                        r -> assertThat(r.getAutoSleep()).isEqualTo(autoSleepMillis),
-                        r -> assertThat(r.getAutoSleepDuration()).isEqualTo(Duration.ofMillis(autoSleepMillis))
-                );
-    }
-
-    @Test
     public void buildWithDurationApi() {
-        var autoSleepMillis = 120_000L;
         var autoSleepDuration = Duration.ofMinutes(2);
 
         RepeatOnErrorUntilTrue repeat = new RepeatOnErrorUntilTrue.Builder()
@@ -76,7 +60,6 @@ public class RepeatOnErrorUntilTrueTest extends UnitTestSupport {
 
         assertThat(repeat)
                 .satisfies(
-                        r -> assertThat(r.getAutoSleep()).isEqualTo(autoSleepMillis),
                         r -> assertThat(r.getAutoSleepDuration()).isEqualTo(autoSleepDuration)
                 );
     }

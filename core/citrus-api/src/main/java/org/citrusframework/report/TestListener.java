@@ -28,14 +28,6 @@ public interface TestListener {
     void onTestStart(TestCase test);
 
     /**
-     * @deprecated use on {@link #onTestExecutionEnd(TestCase)}
-     */
-    @Deprecated(forRemoval = true)
-    default void onTestFinish(TestCase test) {
-        // Do nothing
-    }
-
-    /**
      * Invoked when test execution starts
      * (after {@link org.citrusframework.container.BeforeTest} execution} execution)
      */
@@ -51,13 +43,13 @@ public interface TestListener {
      * @see #onTestEnd(TestCase)
      */
     default void onTestExecutionEnd(TestCase test) {
-        onTestFinish(test);
+        // Default implementation does nothing
     }
 
     /**
      * Invoked at the very end of test execution
      *
-     * @see #onTestFinish(TestCase)
+     * @see #onTestExecutionEnd(TestCase)
      */
     default void onTestEnd(TestCase test) {
         // Default implementation does nothing

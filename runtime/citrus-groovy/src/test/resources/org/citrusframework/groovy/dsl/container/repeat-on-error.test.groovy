@@ -16,6 +16,11 @@
 
 package org.citrusframework.groovy.dsl.container
 
+import java.time.Duration
+
+import static org.citrusframework.actions.EchoAction.Builder.echo
+import static org.citrusframework.container.RepeatOnErrorUntilTrue.Builder.repeatOnError
+
 name "RepeatOnErrorTest"
 author "Christoph"
 status "FINAL"
@@ -37,7 +42,7 @@ actions {
 
     $(repeatOnError()
         .until("i >= 10")
-        .autoSleep(500L)
+        .autoSleep(Duration.ofMillis(500L))
         .actions(
             echo().message("Hello Citrus!"),
             echo().message("Hello You!")
@@ -45,7 +50,7 @@ actions {
 
     $(repeatOnError()
         .until("i >= 5")
-        .autoSleep(250L)
+        .autoSleep(Duration.ofMillis(250L))
         .actions(
             echo().message("Hello Citrus!")
         ))

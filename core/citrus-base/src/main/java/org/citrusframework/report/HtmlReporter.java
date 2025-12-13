@@ -16,16 +16,6 @@
 
 package org.citrusframework.report;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-
 import org.apache.commons.codec.binary.Base64;
 import org.citrusframework.TestCase;
 import org.citrusframework.TestCaseMetaInfo;
@@ -36,6 +26,16 @@ import org.citrusframework.util.PropertyUtils;
 import org.citrusframework.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Basic logging reporter generating a HTML report with detailed test results.
@@ -104,11 +104,11 @@ public class HtmlReporter extends AbstractOutputFileReporter implements TestList
             Properties reportProps = new Properties();
             reportProps.put("test.cnt", Integer.toString(testResults.getSize()));
             reportProps.put("skipped.test.cnt", Integer.toString(testResults.getSkipped()));
-            reportProps.put("skipped.test.pct", testResults.getSkippedPercentage());
+            reportProps.put("skipped.test.pct", testResults.getSkippedPercentageFormatted());
             reportProps.put("failed.test.cnt", Integer.toString(testResults.getFailed()));
-            reportProps.put("failed.test.pct", testResults.getFailedPercentage());
+            reportProps.put("failed.test.pct", testResults.getFailedPercentageFormatted());
             reportProps.put("success.test.cnt", Integer.toString(testResults.getSuccess()));
-            reportProps.put("success.test.pct", testResults.getSuccessPercentage());
+            reportProps.put("success.test.pct", testResults.getSuccessPercentageFormatted());
             reportProps.put("test.results", reportDetails.toString());
             reportProps.put("logo.data", getLogoImageData());
             return PropertyUtils.replacePropertiesInString(FileUtils.readToString(FileUtils.getFileResource(reportTemplate)), reportProps);
